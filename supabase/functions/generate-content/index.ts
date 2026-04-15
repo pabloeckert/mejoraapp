@@ -126,16 +126,6 @@ serve(async (req) => {
       });
     }
 
-    const { data: diagResult } = await supabase
-      .from("diagnostic_results")
-      .select("perfil, puntaje_total")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .single();
-
-    const perfil = diagResult?.perfil || "ESTANCADO";
-    const perfilInfo = PERFILES_INFO[perfil] || PERFILES_INFO.ESTANCADO;
 
     const { category, guidelines } = await req.json().catch(() => ({ category: "tip", guidelines: "" }));
 
