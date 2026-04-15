@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -50,16 +51,17 @@ const Auth = () => {
     setLoading(false);
   };
 
-  const handleOAuth = async (provider: "google" | "azure") => {
+  const handleGoogleLogin = async () => {
     setLoading(true);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: { redirectTo: window.location.origin },
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
     });
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+    if (result.error) {
+      toast({ title: "Error", description: String(result.error), variant: "destructive" });
       setLoading(false);
     }
+    if (result.redirected) return;
+    setLoading(false);
   };
 
   const handleForgotPassword = async () => {
@@ -98,7 +100,7 @@ const Auth = () => {
               <Button
                 variant="outline"
                 className="w-full h-11 gap-3"
-                onClick={() => handleOAuth("google")}
+                onClick={handleGoogleLogin}
                 disabled={loading}
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -108,20 +110,6 @@ const Auth = () => {
                   <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                 </svg>
                 Continuar con Google
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full h-11 gap-3"
-                onClick={() => handleOAuth("azure")}
-                disabled={loading}
-              >
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path d="M11.4 2H2v9.4h9.4V2z" fill="#F25022"/>
-                  <path d="M22 2h-9.4v9.4H22V2z" fill="#7FBA00"/>
-                  <path d="M11.4 12.6H2V22h9.4v-9.4z" fill="#00A4EF"/>
-                  <path d="M22 12.6h-9.4V22H22v-9.4z" fill="#FFB900"/>
-                </svg>
-                Continuar con Microsoft
               </Button>
             </div>
 
