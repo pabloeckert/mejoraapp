@@ -137,12 +137,13 @@ serve(async (req) => {
     const perfil = diagResult?.perfil || "ESTANCADO";
     const perfilInfo = PERFILES_INFO[perfil] || PERFILES_INFO.ESTANCADO;
 
-    const { category } = await req.json().catch(() => ({ category: "tip" }));
+    const { category, guidelines } = await req.json().catch(() => ({ category: "tip", guidelines: "" }));
 
     const categoryPrompts: Record<string, string> = {
       tip: "un tip práctico y accionable que pueda aplicar hoy mismo. Que sea contundente, en 2-3 párrafos cortos. Que empiece nombrando el dolor y termine con una acción concreta",
-      articulo: "un artículo corto (3-4 párrafos) con una estrategia concreta. Usá la estructura ESPEJO→DOLOR→SALIDA. Que el lector sienta que le están hablando a él",
+      estrategia: "un artículo corto (3-4 párrafos) con una estrategia concreta. Usá la estructura ESPEJO→DOLOR→SALIDA. Que el lector sienta que le están hablando a él",
       reflexion: "una reflexión provocadora que lo haga cuestionar su forma de operar. Usá la estructura de CONFRONTACIÓN DIRECTA. Que incomode para ordenar. Que al terminar de leer piense 'esto me pasa a mí exactamente'",
+      noticia: "un análisis breve de una tendencia o situación actual relevante para negocios. Que sea concreto, útil y con una bajada práctica",
     };
 
     const promptType = categoryPrompts[category] || categoryPrompts.tip;
@@ -150,15 +151,11 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const systemPrompt = `${SYSTEM_PROMPT_BASE}
+    const guidelinesBlock = guidelines ? `\n\n## LINEAMIENTOS DEL ADMINISTRADOR\n${guidelines}` : "";
 
-## CONTEXTO DEL USUARIO
-El usuario tiene el perfil "${perfilInfo.nombre}".
-- Su dolor principal: ${perfilInfo.dolor}
-- Lo que desea: ${perfilInfo.deseo}
-- Frase que lo define: "${perfilInfo.frase}"
+    const systemPrompt = `${SYSTEM_PROMPT_BASE}${guidelinesBlock}
 
-Generá contenido personalizado para este perfil. Que sienta que le estás hablando directamente a él/ella.`;
+El contenido es para la comunidad de negocios en general. Generá contenido que resuene con emprendedores y empresarios argentinos.
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
