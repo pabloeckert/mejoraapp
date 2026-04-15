@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Lightbulb, FileText, Brain, Newspaper, Loader2 } from "lucide-react";
+import { Lightbulb, FileText, Brain, Newspaper, Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 
 const ICON_MAP: Record<string, typeof Lightbulb> = {
@@ -9,6 +10,8 @@ const ICON_MAP: Record<string, typeof Lightbulb> = {
   Brain,
   Newspaper,
 };
+
+const POSTS_PER_PAGE = 10;
 
 interface Category {
   id: string;
@@ -30,7 +33,8 @@ const ContenidoDeValor = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<string>("todos");
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -50,9 +54,20 @@ const ContenidoDeValor = () => {
     fetchData();
   }, []);
 
-  const filtered = activeFilter
+  const filtered = activeFilter !== "todos"
     ? posts.filter((p) => p.content_categories?.slug === activeFilter)
     : posts;
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / POSTS_PER_PAGE));
+  const paginatedPosts = filtered.slice(
+    (currentPage - 1) * POSTS_PER_PAGE,
+    currentPage * POSTS_PER_PAGE
+  );
+
+  // Reset page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeFilter]);
 
   const getIcon = (iconName?: string) => ICON_MAP[iconName || ""] || Lightbulb;
 
@@ -66,6 +81,18 @@ const ContenidoDeValor = () => {
     }
   };
 
+  const getPageNumbers = () => {
+    const pages: number[] = [];
+    const maxVisible = 5;
+    let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    let end = Math.min(totalPages, start + maxVisible - 1);
+    if (end - start + 1 < maxVisible) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
+  };
+
   return (
     <div className="space-y-4 animate-fade-in">
       <div className="space-y-1">
@@ -73,36 +100,6 @@ const ContenidoDeValor = () => {
         <p className="text-sm text-muted-foreground">
           Tips, estrategias y reflexiones para tu negocio.
         </p>
-      </div>
-
-      {/* Category filters */}
-      <div className="flex flex-wrap gap-2">
-        <button
-          onClick={() => setActiveFilter(null)}
-          className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border
-            ${!activeFilter
-              ? "bg-mc-dark-blue text-white border-mc-dark-blue shadow-md"
-              : "bg-background text-muted-foreground border-border hover:border-mc-dark-blue/40 hover:text-foreground"}`}
-        >
-          Todos
-        </button>
-        {categories.map((cat) => {
-          const Icon = getIcon(cat.icono);
-          const isActive = activeFilter === cat.slug;
-          return (
-            <button
-              key={cat.id}
-              onClick={() => setActiveFilter(isActive ? null : cat.slug)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all border
-                ${isActive
-                  ? "bg-mc-dark-blue text-white border-mc-dark-blue shadow-md"
-                  : "bg-background text-muted-foreground border-border hover:border-mc-dark-blue/40 hover:text-foreground"}`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              {cat.nombre}
-            </button>
-          );
-        })}
       </div>
 
       {/* Feed */}
@@ -122,7 +119,7 @@ const ContenidoDeValor = () => {
         </Card>
       ) : (
         <div className="space-y-3">
-          {filtered.map((post) => {
+          {paginatedPosts.map((post) => {
             const cat = post.content_categories;
             const Icon = getIcon(cat?.icono);
             const date = new Date(post.published_at);
@@ -146,6 +143,77 @@ const ContenidoDeValor = () => {
               </Card>
             );
           })}
+        </div>
+      )}
+
+      {/* Bottom bar: Pagination + Filter */}
+      {!loading && filtered.length > 0 && (
+        <div className="flex items-center justify-between gap-2 pt-2 pb-1">
+          {/* Pagination */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1}
+              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 disabled:pointer-events-none transition-colors"
+              aria-label="Primera página"
+            >
+              <ChevronsLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 disabled:pointer-events-none transition-colors"
+              aria-label="Página anterior"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            {getPageNumbers().map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`min-w-[28px] h-7 rounded-md text-xs font-bold transition-colors
+                  ${page === currentPage
+                    ? "bg-mc-dark-blue text-white shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}
+              >
+                {page}
+              </button>
+            ))}
+
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 disabled:pointer-events-none transition-colors"
+              aria-label="Página siguiente"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={currentPage === totalPages}
+              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 disabled:pointer-events-none transition-colors"
+              aria-label="Última página"
+            >
+              <ChevronsRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Filter dropdown */}
+          <Select value={activeFilter} onValueChange={setActiveFilter}>
+            <SelectTrigger className="w-auto min-w-[120px] h-8 text-xs font-bold border-border gap-1.5">
+              <Filter className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+              <SelectValue placeholder="Filtrar" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos</SelectItem>
+              {categories.map((cat) => (
+                <SelectItem key={cat.id} value={cat.slug}>
+                  {cat.nombre}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       )}
     </div>
