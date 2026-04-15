@@ -86,7 +86,7 @@ const Auth = () => {
       <div className="w-full max-w-md space-y-6">
         {/* Logo */}
         <div className="flex justify-center">
-          <img src={logoComunidad} alt="Mejora Continua - Comunidad de Negocios" className="h-20 object-contain" />
+          <img src={logoComunidad} alt="Mejora Continua - Comunidad de Negocios" <img src={logoComunidad} alt="Mejora Continua - Comunidad de Negocios" className="h-14 object-contain" /> />
         </div>
 
         <Card className="border-0 shadow-lg">
