@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import chicaImg from "@/assets/chica.png";
 
 interface WallPost {
   id: string;
@@ -45,7 +46,6 @@ const Muro = () => {
       .eq("status", "approved")
       .order("created_at", { ascending: false })
       .limit(50);
-
     if (!error && data) setPosts(data);
     setLoadingPosts(false);
   }, []);
@@ -56,15 +56,12 @@ const Muro = () => {
       .from("wall_likes")
       .select("post_id")
       .eq("user_id", user.id);
-
     if (data) setLikedPosts(new Set(data.map((l) => l.post_id)));
   }, [user]);
 
   useEffect(() => {
     fetchPosts();
     fetchLikes();
-
-    // Realtime subscription
     const channel = supabase
       .channel("wall_posts_changes")
       .on(
@@ -75,45 +72,30 @@ const Muro = () => {
         }
       )
       .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [fetchPosts, fetchLikes]);
 
   const handlePost = async () => {
     const content = newPost.trim();
     if (!content || posting) return;
-
     setPosting(true);
     try {
       const { data, error } = await supabase.functions.invoke("moderate-post", {
         body: { content },
       });
-
       if (error) throw error;
-
       if (data?.rejected) {
-        toast({
-          title: "Post no publicado",
-          description: data.reason,
-          variant: "destructive",
-        });
+        toast({ title: "Post no publicado", description: data.reason, variant: "destructive" });
       } else if (data?.success) {
         setNewPost("");
         toast({ title: "¡Publicado!", description: "Tu post ya está en el muro." });
-        // Realtime will pick it up, but also refresh
         fetchPosts();
       } else if (data?.error) {
         toast({ title: "Error", description: data.error, variant: "destructive" });
       }
     } catch (err) {
       console.error(err);
-      toast({
-        title: "Error",
-        description: "No se pudo publicar. Intentá de nuevo.",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "No se pudo publicar. Intentá de nuevo.", variant: "destructive" });
     } finally {
       setPosting(false);
     }
@@ -121,30 +103,20 @@ const Muro = () => {
 
   const toggleLike = async (postId: string) => {
     if (!user) return;
-
     const isLiked = likedPosts.has(postId);
-
-    // Optimistic update
     setLikedPosts((prev) => {
       const next = new Set(prev);
       isLiked ? next.delete(postId) : next.add(postId);
       return next;
     });
     setPosts((prev) =>
-      prev.map((p) =>
-        p.id === postId
-          ? { ...p, likes_count: p.likes_count + (isLiked ? -1 : 1) }
-          : p
-      )
+      prev.map((p) => p.id === postId ? { ...p, likes_count: p.likes_count + (isLiked ? -1 : 1) } : p)
     );
-
     if (isLiked) {
       await supabase.from("wall_likes").delete().eq("post_id", postId).eq("user_id", user.id);
     } else {
       await supabase.from("wall_likes").insert({ post_id: postId, user_id: user.id });
     }
-
-    // Update likes_count via service (we'll update locally for now)
   };
 
   return (
@@ -167,20 +139,9 @@ const Muro = () => {
             maxLength={MAX_LENGTH}
           />
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">
-              {newPost.length}/{MAX_LENGTH}
-            </span>
-            <Button
-              size="sm"
-              onClick={handlePost}
-              disabled={!newPost.trim() || posting}
-              className="gap-1.5"
-            >
-              {posting ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Send className="w-3.5 h-3.5" />
-              )}
+            <span className="text-xs text-muted-foreground">{newPost.length}/{MAX_LENGTH}</span>
+            <Button size="sm" onClick={handlePost} disabled={!newPost.trim() || posting} className="gap-1.5">
+              {posting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
               Publicar
             </Button>
           </div>
@@ -199,9 +160,7 @@ const Muro = () => {
       ) : posts.length === 0 ? (
         <Card className="border-dashed border-2">
           <CardContent className="flex flex-col items-center justify-center py-10 text-center">
-            <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center mb-4">
-              <MessageSquare className="w-6 h-6 text-primary" />
-            </div>
+            <img src={chicaImg} alt="" className="w-20 h-20 mb-4 object-contain" />
             <h3 className="font-semibold text-foreground mb-2">El muro está vacío</h3>
             <p className="text-sm text-muted-foreground max-w-[280px]">
               Sé el primero en compartir. Todo es anónimo.
@@ -216,9 +175,7 @@ const Muro = () => {
             return (
               <Card key={post.id} className="hover:shadow-sm transition-shadow">
                 <CardContent className="p-3">
-                  <p className="text-sm text-foreground whitespace-pre-line leading-relaxed">
-                    {post.content}
-                  </p>
+                  <p className="text-sm text-foreground whitespace-pre-line leading-relaxed">{post.content}</p>
                   <div className="flex items-center justify-between mt-2.5">
                     <span className="text-[10px] text-muted-foreground">
                       {isOwn ? "Vos" : "Anónimo"} · {timeAgo(post.created_at)}
@@ -226,14 +183,9 @@ const Muro = () => {
                     <button
                       onClick={() => toggleLike(post.id)}
                       className={`flex items-center gap-1 text-xs transition-colors px-2 py-1 rounded-full
-                        ${isLiked
-                          ? "text-destructive bg-destructive/10"
-                          : "text-muted-foreground hover:text-destructive hover:bg-destructive/5"
-                        }`}
+                        ${isLiked ? "text-destructive bg-destructive/10" : "text-muted-foreground hover:text-destructive hover:bg-destructive/5"}`}
                     >
-                      <Heart
-                        className={`w-3.5 h-3.5 ${isLiked ? "fill-current" : ""}`}
-                      />
+                      <Heart className={`w-3.5 h-3.5 ${isLiked ? "fill-current" : ""}`} />
                       {post.likes_count > 0 && <span>{post.likes_count}</span>}
                     </button>
                   </div>

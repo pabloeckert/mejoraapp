@@ -2,6 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Brand Fonts */
+@font-face {
+  font-family: 'Bw Modelica';
+  src: url('/fonts/BwModelica-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Bw Modelica';
+  src: url('/fonts/BwModelica-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Bw Modelica';
+  src: url('/fonts/BwModelica-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Bw Modelica';
+  src: url('/fonts/BwModelica-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Bw Modelica';
+  src: url('/fonts/BwModelica-ExtraBold.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'League Spartan';
+  src: url('/fonts/LeagueSpartan-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   :root {
     --background: 0 0% 98%;
@@ -101,6 +145,10 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-family: 'Bw Modelica', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'League Spartan', 'Bw Modelica', system-ui, sans-serif;
   }
 }
