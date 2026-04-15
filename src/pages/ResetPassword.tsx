@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import logoHorizontal from "@/assets/logo-horizontal.png";
+import logoComunidad from "@/assets/logo-comunidad.png";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
@@ -42,7 +42,7 @@ const ResetPassword = () => {
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md space-y-6">
         <div className="flex justify-center">
-          <img src={logoHorizontal} alt="Mejora Continua" className="h-16 object-contain" />
+          <img src={logoComunidad} alt="Mejora Continua - Comunidad de Negocios" className="h-16 object-contain" />
         </div>
         <Card className="border-0 shadow-lg">
           <CardHeader className="text-center">
