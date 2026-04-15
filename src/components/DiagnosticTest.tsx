@@ -13,8 +13,6 @@ import {
 import { cn } from "@/lib/utils";
 import { ArrowLeft, ArrowRight, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import chicaImg from "@/assets/chica.png";
-import chicoImg from "@/assets/chico.png";
 
 type Step = "intro" | "question" | "loading" | "result";
 
@@ -85,15 +83,13 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
   if (step === "intro") {
     return (
       <div className="max-w-xl mx-auto animate-fade-in">
-        <div className="bg-mc-diag-blue rounded-t-xl px-6 py-7 text-center text-white relative overflow-hidden">
-          <img src={chicaImg} alt="" className="absolute -right-4 -bottom-2 h-28 opacity-20 pointer-events-none" />
+        <div className="bg-mc-diag-blue rounded-t-xl px-6 py-7 text-center text-white">
           <h1 className="text-xl font-extrabold leading-tight mb-1">
             ¿Te animás a ver cómo está tu negocio?
           </h1>
           <p className="text-xs opacity-75">8 preguntas. Diagnóstico preciso.</p>
         </div>
         <div className="bg-card rounded-b-xl shadow-lg p-6 text-center">
-          <img src={chicoImg} alt="Diagnóstico" className="w-24 h-24 mx-auto mb-4 object-contain" />
           <h2 className="text-lg font-black text-mc-diag-blue mb-3">
             Tu proyecto puede estar frenado y no lo estás viendo.
           </h2>
@@ -199,7 +195,7 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
   if (step === "loading") {
     return (
       <div className="max-w-xl mx-auto text-center py-16 animate-fade-in">
-        <img src={chicaImg} alt="" className="w-20 h-20 mx-auto mb-4 object-contain animate-pulse" />
+        <div className="w-12 h-12 border-3 border-mc-diag-blue border-t-transparent rounded-full animate-spin mx-auto mb-4" />
         <h2 className="text-lg font-extrabold text-mc-diag-blue mb-2">Analizando tu negocio…</h2>
         <p className="text-sm text-muted-foreground">
           Procesando tus respuestas y generando tu diagnóstico personalizado.
@@ -276,7 +272,6 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
         </div>
 
         <div className="bg-mc-diag-blue rounded-xl p-6 text-center text-white">
-          <img src={chicoImg} alt="" className="w-16 h-16 mx-auto mb-3 object-contain" />
           <h3 className="text-base font-extrabold mb-2">{perfilData.ctaTitle}</h3>
           <p className="text-xs opacity-80 mb-4 leading-relaxed">{perfilData.ctaText}</p>
           <a
