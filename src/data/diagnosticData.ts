@@ -227,6 +227,44 @@ export const PERFILES: Record<string, DiagnosticProfile> = {
     ctaTitle: "Con la estructura correcta ahora, el crecimiento se multiplica.",
     ctaText: "Esta es la etapa donde se decide el techo de tu negocio. Hablemos antes de que ese techo se construya solo.",
   },
+  EQUIPO_DESALINEADO: {
+    color: "#E5A000",
+    tagline: "Tu equipo quiere avanzar. Pero nadie sabe hacia dónde.",
+    desc: "No es que tu equipo sea malo. Es que no tienen un marco común. Las prioridades cambian cada semana, las reuniones no producen decisiones, y los conflictos se acumulan en silencio. Cada uno interpreta su rol a su manera porque nadie se sentó a definirlo con claridad. El resultado: mucha energía desperdiciada y poca tracción real.",
+    mirror: [
+      '"Tengo gente buena pero cada uno tira para su lado."',
+      '"Las reuniones no sirven — hablamos mucho y decidimos poco."',
+      '"No sé si el problema soy yo como líder o el equipo."',
+      '"Hay tensiones que nadie nombra pero todos sienten."',
+    ],
+    symptoms: [
+      "Los roles no están claros — hay superposiciones y huecos",
+      "Las prioridades cambian cada semana sin criterio definido",
+      "Las reuniones terminan sin decisiones concretas ni responsables",
+      "Los conflictos se acumulan en silencio hasta que explotan",
+    ],
+    ctaTitle: "No están desmotivados. Están desordenados.",
+    ctaText: "Un equipo sin marco común gasta más energía en coordinarse que en producir. Eso se resuelve con claridad, no con motivación.",
+  },
+  VENDEDOR_SIN_RESULTADOS: {
+    color: "#C64E4A",
+    tagline: "Ponés el cuerpo todos los días. Pero la caja no lo refleja.",
+    desc: "No es que no trabajes — trabajás más que la mayoría. El problema es que el esfuerzo no se traduce en resultados porque no hay una estrategia detrás. Vendés por impulso, reaccionás a lo que aparece, y al final del mes los números no cierran. Y eso te genera un péndulo emocional entre la euforia de un buen día y la angustia de una semana vacía.",
+    mirror: [
+      '"Trabajo un montón pero la plata no aparece."',
+      '"Un mes bien, otro mal — no hay regularidad."',
+      '"Probé de todo: redes, publicidad, cursos… nada funciona de verdad."',
+      '"A veces pienso que el problema soy yo."',
+    ],
+    symptoms: [
+      "Los ingresos son irregulares — no podés predecir el mes que viene",
+      "No tenés un proceso de venta definido, vendés como podés",
+      "Invertiste en soluciones que prometían resultados mágicos y no funcionaron",
+      "El desgaste emocional es tan grande como el esfuerzo físico",
+    ],
+    ctaTitle: "No te falta esfuerzo. Te falta estrategia.",
+    ctaText: "El problema no es cuánto trabajás sino cómo lo hacés. En 45 minutos te mostramos dónde está la fuga y cómo taparla.",
+  },
 };
 
 export function shuffle<T>(arr: T[]): T[] {
@@ -252,24 +290,42 @@ export function detectarPerfil(answers: Record<number, number>): string {
   const ejeComercial = v2 + v3;
   const ejeEstrategico = v6 + v7;
 
+  // BP1: Saturado — todo depende de él, sin procesos
   if (v1 <= 2 && v5 <= 2) return "SATURADO";
   if (v5 === 1 && v4 <= 2 && v8 <= 2) return "SATURADO";
 
+  // BP4: Equipo Desalineado — equipo sin marco común
+  if (v4 <= 2 && v1 >= 3 && v5 >= 3) return "EQUIPO_DESALINEADO";
+  if (v4 <= 2 && v7 >= 3 && v8 <= 3) return "EQUIPO_DESALINEADO";
+
+  // BP7: Vendedor sin Resultados — esfuerzo sin retorno
+  if (v2 <= 2 && v3 <= 2 && v8 <= 2) return "VENDEDOR_SIN_RESULTADOS";
+  if (v3 <= 2 && v2 <= 2 && v5 <= 3 && v8 <= 2) return "VENDEDOR_SIN_RESULTADOS";
+
+  // BP3: Invisible — no sabe posicionarse
   if (v2 <= 2 && v3 <= 2) return "INVISIBLE";
   if (v2 === 3 && v3 <= 2 && v6 <= 2) return "INVISIBLE";
 
+  // BP2: Líder Solo — visión sin equipo que ejecute
   if (v7 >= 3 && v1 <= 3 && v4 <= 2) return "LIDER_SOLO";
   if (v1 <= 2 && v7 >= 3 && v6 <= 2 && v5 >= 3) return "LIDER_SOLO";
 
+  // BP5: Desconectado — funciona pero sin timón estratégico
   if (v1 >= 3 && v7 <= 2 && v6 <= 2) return "DESCONECTADO";
   if (v1 >= 5 && v6 === 1 && v7 <= 3) return "DESCONECTADO";
 
+  // BP8: Estancado — funciona pero no crece
   if (v2 === 3 && v7 <= 3 && (v8 === 3 || v8 === 2)) return "ESTANCADO";
   if (v2 <= 3 && v7 <= 2 && v5 >= 3 && v1 >= 3) return "ESTANCADO";
 
+  // BP6: Nueva Generación
   if (v8 >= 3 && v7 >= 2 && v6 <= 2 && v2 <= 3) return "NUEVA_GEN";
 
+  // Fallbacks por eje más débil
+  const ejeEquipo = v4;
   const min = Math.min(ejeOperativo, ejeComercial, ejeEstrategico);
+  if (ejeEquipo <= 2 && min > ejeEquipo * 2) return "EQUIPO_DESALINEADO";
+  if (min === ejeComercial && v8 <= 2) return "VENDEDOR_SIN_RESULTADOS";
   if (min === ejeOperativo) return "SATURADO";
   if (min === ejeComercial) return "INVISIBLE";
   if (min === ejeEstrategico) return v1 >= 3 ? "DESCONECTADO" : "LIDER_SOLO";
