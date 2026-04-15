@@ -76,24 +76,29 @@ const ContenidoDeValor = () => {
       </div>
 
       {/* Category filters */}
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+      <div className="flex flex-wrap gap-2">
         <button
           onClick={() => setActiveFilter(null)}
-          className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors
-            ${!activeFilter ? "bg-mc-dark-blue text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
+          className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border
+            ${!activeFilter
+              ? "bg-mc-dark-blue text-white border-mc-dark-blue shadow-md"
+              : "bg-background text-muted-foreground border-border hover:border-mc-dark-blue/40 hover:text-foreground"}`}
         >
           Todos
         </button>
         {categories.map((cat) => {
           const Icon = getIcon(cat.icono);
+          const isActive = activeFilter === cat.slug;
           return (
             <button
               key={cat.id}
-              onClick={() => setActiveFilter(activeFilter === cat.slug ? null : cat.slug)}
-              className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors
-                ${activeFilter === cat.slug ? "bg-mc-dark-blue text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
+              onClick={() => setActiveFilter(isActive ? null : cat.slug)}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all border
+                ${isActive
+                  ? "bg-mc-dark-blue text-white border-mc-dark-blue shadow-md"
+                  : "bg-background text-muted-foreground border-border hover:border-mc-dark-blue/40 hover:text-foreground"}`}
             >
-              <Icon className="w-3 h-3" />
+              <Icon className="w-3.5 h-3.5" />
               {cat.nombre}
             </button>
           );
