@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
-import logoHorizontal from "@/assets/logo-horizontal.png";
+import logoComunidad from "@/assets/logo-comunidad.png";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -84,7 +84,7 @@ const Auth = () => {
       <div className="w-full max-w-md space-y-6">
         {/* Logo */}
         <div className="flex justify-center">
-          <img src={logoHorizontal} alt="Mejora Continua" className="h-16 object-contain" />
+          <img src={logoComunidad} alt="Mejora Continua - Comunidad de Negocios" className="h-20 object-contain" />
         </div>
 
         <Card className="border-0 shadow-lg">
