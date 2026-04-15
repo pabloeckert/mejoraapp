@@ -1,7 +1,30 @@
-import { Sparkles, MessageCircle, Calendar, Monitor, Users } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Bell, ExternalLink, Calendar, Loader2, MessageCircle, Users, Monitor } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
-const novedades = [
+interface Novedad {
+  id: string;
+  titulo: string;
+  resumen: string | null;
+  contenido: string | null;
+  imagen_url: string | null;
+  enlace_externo: string | null;
+  published_at: string | null;
+  created_at: string;
+}
+
+const formatDate = (date: string) => {
+  return new Date(date).toLocaleDateString("es-AR", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+// Static services cards shown always
+const servicios = [
   {
     icon: Users,
     title: "Consultoría Estratégica",
@@ -26,33 +49,125 @@ const novedades = [
 ];
 
 const Novedades = () => {
+  const [novedades, setNovedades] = useState<Novedad[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchNovedades = async () => {
+      const { data, error } = await supabase
+        .from("novedades")
+        .select("id, titulo, resumen, contenido, imagen_url, enlace_externo, published_at, created_at")
+        .eq("publicado", true)
+        .order("published_at", { ascending: false })
+        .limit(20);
+
+      if (!error && data) setNovedades(data);
+      setLoading(false);
+    };
+
+    fetchNovedades();
+  }, []);
+
   return (
     <div className="space-y-4 animate-fade-in">
       <div className="space-y-1">
         <h1 className="text-xl font-bold text-foreground">Novedades MC</h1>
         <p className="text-sm text-muted-foreground">
-          Herramientas, eventos y recursos para impulsar tu negocio.
+          Últimas noticias, eventos y recursos de la comunidad.
         </p>
       </div>
 
-      <div className="space-y-3">
-        {novedades.map((item) => {
+      {/* Dynamic novedades from DB */}
+      {loading ? (
+        <div className="flex justify-center py-6">
+          <Loader2 className="w-5 h-5 animate-spin text-primary" />
+        </div>
+      ) : novedades.length > 0 ? (
+        <div className="space-y-3">
+          {novedades.map((novedad) => {
+            const isExpanded = expanded === novedad.id;
+            const dateStr = novedad.published_at || novedad.created_at;
+
+            return (
+              <Card key={novedad.id} className="overflow-hidden hover:shadow-sm transition-shadow">
+                {novedad.imagen_url && (
+                  <div className="aspect-video w-full overflow-hidden bg-secondary">
+                    <img
+                      src={novedad.imagen_url}
+                      alt={novedad.titulo}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                )}
+                <CardContent className="p-3">
+                  <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mb-1.5">
+                    <Calendar className="w-3 h-3" />
+                    <span>{formatDate(dateStr)}</span>
+                  </div>
+                  <h3 className="font-bold text-foreground text-sm leading-snug mb-1">
+                    {novedad.titulo}
+                  </h3>
+                  {novedad.resumen && (
+                    <p className="text-xs text-muted-foreground leading-relaxed mb-2">
+                      {novedad.resumen}
+                    </p>
+                  )}
+                  {novedad.contenido && (
+                    <>
+                      {isExpanded && (
+                        <div className="text-sm text-foreground/90 whitespace-pre-line leading-relaxed mb-2">
+                          {novedad.contenido}
+                        </div>
+                      )}
+                      <button
+                        onClick={() => setExpanded(isExpanded ? null : novedad.id)}
+                        className="text-xs font-medium text-primary hover:underline"
+                      >
+                        {isExpanded ? "Ver menos" : "Leer más"}
+                      </button>
+                    </>
+                  )}
+                  {novedad.enlace_externo && (
+                    <div className="mt-2">
+                      <Button variant="outline" size="sm" className="gap-1.5 text-xs h-7" asChild>
+                        <a href={novedad.enlace_externo} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="w-3 h-3" />
+                          Ver más
+                        </a>
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      ) : null}
+
+      {/* Static services section */}
+      <div className="space-y-1 pt-2">
+        <h2 className="text-sm font-semibold text-muted-foreground">Herramientas y servicios</h2>
+      </div>
+      <div className="space-y-2">
+        {servicios.map((item) => {
           const Icon = item.icon;
           return (
-            <Card key={item.title} className="hover:shadow-md transition-shadow">
-              <CardContent className="flex items-start gap-4 p-4">
-                <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
-                  <Icon className="w-5 h-5 text-mc-dark-blue" />
+            <Card key={item.title} className="hover:shadow-sm transition-shadow">
+              <CardContent className="flex items-start gap-3 p-3">
+                <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center shrink-0">
+                  <Icon className="w-4 h-4 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-sm text-foreground">{item.title}</h3>
-                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{item.desc}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{item.desc}</p>
                   {item.cta && (
                     <a
                       href="https://wa.me/543764358152?text=Hola%2C%20quiero%20info%20de%20Mejora%20Continua"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 mt-2 text-xs font-semibold text-mc-blue hover:underline"
+                      className="inline-flex items-center gap-1.5 mt-1.5 text-xs font-semibold text-primary hover:underline"
                     >
                       <MessageCircle className="w-3.5 h-3.5" />
                       Escribinos por WhatsApp

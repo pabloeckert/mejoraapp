@@ -73,6 +73,45 @@ export type Database = {
           },
         ]
       }
+      novedades: {
+        Row: {
+          contenido: string | null
+          created_at: string
+          enlace_externo: string | null
+          id: string
+          imagen_url: string | null
+          publicado: boolean
+          published_at: string | null
+          resumen: string | null
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          contenido?: string | null
+          created_at?: string
+          enlace_externo?: string | null
+          id?: string
+          imagen_url?: string | null
+          publicado?: boolean
+          published_at?: string | null
+          resumen?: string | null
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          contenido?: string | null
+          created_at?: string
+          enlace_externo?: string | null
+          id?: string
+          imagen_url?: string | null
+          publicado?: boolean
+          published_at?: string | null
+          resumen?: string | null
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
