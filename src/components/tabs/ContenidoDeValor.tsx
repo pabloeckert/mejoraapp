@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import chicoImg from "@/assets/chico.png";
 
 type Category = "tip" | "articulo" | "reflexion";
 
@@ -33,13 +34,11 @@ const ContenidoDeValor = () => {
       const { data, error } = await supabase.functions.invoke("generate-content", {
         body: { category },
       });
-
       if (error) throw error;
       if (data?.error) {
         toast({ title: "Error", description: data.error, variant: "destructive" });
         return;
       }
-
       const piece: ContentPiece = {
         titulo: data.titulo,
         contenido: data.contenido,
@@ -49,11 +48,7 @@ const ContenidoDeValor = () => {
       setHistory((prev) => [piece, ...prev].slice(0, 10));
     } catch (err: any) {
       console.error(err);
-      toast({
-        title: "Error al generar contenido",
-        description: "Intentá de nuevo en unos segundos.",
-        variant: "destructive",
-      });
+      toast({ title: "Error al generar contenido", description: "Intentá de nuevo en unos segundos.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -69,7 +64,7 @@ const ContenidoDeValor = () => {
       <div className="space-y-1">
         <h1 className="text-xl font-bold text-foreground">Contenido de Valor</h1>
         <p className="text-sm text-muted-foreground">
-          Artículos, tips y estrategias generados por IA, alineados con tu perfil.
+          Tips, estrategias y reflexiones generados por IA, alineados con tu perfil.
         </p>
       </div>
 
@@ -81,10 +76,7 @@ const ContenidoDeValor = () => {
             onClick={() => generateContent(key)}
             disabled={loading}
             className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all text-center
-              ${selectedCategory === key && !loading
-                ? "border-primary bg-primary/5"
-                : "border-border hover:border-primary/40 bg-card"
-              }
+              ${selectedCategory === key && !loading ? "border-primary bg-primary/5" : "border-border hover:border-primary/40 bg-card"}
               ${loading ? "opacity-60 cursor-wait" : "cursor-pointer"}
             `}
           >
@@ -101,9 +93,7 @@ const ContenidoDeValor = () => {
       {loading && (
         <Card className="border-primary/20">
           <CardContent className="flex flex-col items-center justify-center py-10 text-center">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-3 animate-pulse">
-              <Sparkles className="w-5 h-5 text-primary animate-spin" />
-            </div>
+            <img src={chicoImg} alt="" className="w-16 h-16 mb-3 object-contain animate-pulse" />
             <p className="text-sm text-muted-foreground">Generando contenido para vos...</p>
           </CardContent>
         </Card>
@@ -144,9 +134,7 @@ const ContenidoDeValor = () => {
       {!loading && !content && (
         <Card className="border-dashed border-2">
           <CardContent className="flex flex-col items-center justify-center py-10 text-center">
-            <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center mb-4">
-              <BookOpen className="w-6 h-6 text-primary" />
-            </div>
+            <img src={chicoImg} alt="Contenido" className="w-20 h-20 mb-4 object-contain" />
             <h3 className="font-semibold text-foreground mb-2">Elegí una categoría</h3>
             <p className="text-sm text-muted-foreground max-w-[280px]">
               Seleccioná arriba qué tipo de contenido querés y lo generamos al instante con IA.

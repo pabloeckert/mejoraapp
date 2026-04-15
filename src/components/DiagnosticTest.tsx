@@ -11,8 +11,10 @@ import {
   DiagnosticQuestion,
 } from "@/data/diagnosticData";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, ArrowRight, Search, MessageCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import chicaImg from "@/assets/chica.png";
+import chicoImg from "@/assets/chico.png";
 
 type Step = "intro" | "question" | "loading" | "result";
 
@@ -41,28 +43,20 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
   };
 
   const goNext = () => {
-    if (currentIdx < 7) {
-      setCurrentIdx((i) => i + 1);
-    } else {
-      showResult();
-    }
+    if (currentIdx < 7) setCurrentIdx((i) => i + 1);
+    else showResult();
   };
 
   const goBack = () => {
-    if (currentIdx > 0) {
-      setCurrentIdx((i) => i - 1);
-    } else {
-      setStep("intro");
-    }
+    if (currentIdx > 0) setCurrentIdx((i) => i - 1);
+    else setStep("intro");
   };
 
   const showResult = async () => {
     setStep("loading");
-
     const perfil = detectarPerfil(answers);
     const puntajeTotal = Object.values(answers).reduce((a, b) => a + b, 0);
 
-    // Save to DB
     if (user) {
       try {
         await supabase.from("diagnostic_results").insert({
@@ -71,7 +65,6 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
           puntaje_total: puntajeTotal,
           respuestas: answers as any,
         });
-
         await supabase
           .from("profiles")
           .update({ has_completed_diagnostic: true })
@@ -80,7 +73,6 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
         console.error("Error saving diagnostic:", err);
       }
     }
-
     setTimeout(() => setStep("result"), 2200);
   };
 
@@ -93,14 +85,15 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
   if (step === "intro") {
     return (
       <div className="max-w-xl mx-auto animate-fade-in">
-        <div className="bg-mc-diag-blue rounded-t-xl px-6 py-7 text-center text-white">
+        <div className="bg-mc-diag-blue rounded-t-xl px-6 py-7 text-center text-white relative overflow-hidden">
+          <img src={chicaImg} alt="" className="absolute -right-4 -bottom-2 h-28 opacity-20 pointer-events-none" />
           <h1 className="text-xl font-extrabold leading-tight mb-1">
             ¿Te animás a ver cómo está tu negocio?
           </h1>
           <p className="text-xs opacity-75">8 preguntas. Diagnóstico preciso.</p>
         </div>
         <div className="bg-card rounded-b-xl shadow-lg p-6 text-center">
-          <div className="text-5xl mb-4">🔍</div>
+          <img src={chicoImg} alt="Diagnóstico" className="w-24 h-24 mx-auto mb-4 object-contain" />
           <h2 className="text-lg font-black text-mc-diag-blue mb-3">
             Tu proyecto puede estar frenado y no lo estás viendo.
           </h2>
@@ -123,12 +116,6 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
           >
             Empezar diagnóstico →
           </Button>
-          <button
-            onClick={onComplete}
-            className="block w-full mt-4 text-sm text-muted-foreground hover:underline"
-          >
-            Saltar por ahora
-          </button>
         </div>
       </div>
     );
@@ -139,7 +126,6 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
     const labels = ["A", "B", "C", "D"];
     return (
       <div className="max-w-xl mx-auto animate-fade-in">
-        {/* Header */}
         <div className="bg-mc-diag-blue rounded-t-xl px-5 py-4 text-white">
           <div className="text-[10px] font-bold tracking-widest uppercase opacity-65 mb-1">
             Pregunta {currentIdx + 1} de 8
@@ -149,14 +135,12 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
           </h2>
           <p className="text-[11px] opacity-75 leading-relaxed">{currentQuestion.sub}</p>
         </div>
-        {/* Progress */}
         <div className="h-1 bg-white/25">
           <div
             className="h-full bg-mc-diag-red transition-all duration-400"
             style={{ width: `${progress}%` }}
           />
         </div>
-        {/* Options */}
         <div className="bg-card rounded-b-xl shadow-lg p-5">
           <div className="space-y-2.5">
             {currentQuestion.opts.map((opt, i) => {
@@ -215,7 +199,7 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
   if (step === "loading") {
     return (
       <div className="max-w-xl mx-auto text-center py-16 animate-fade-in">
-        <div className="w-14 h-14 border-4 border-border border-t-mc-diag-red rounded-full animate-spin mx-auto mb-6" />
+        <img src={chicaImg} alt="" className="w-20 h-20 mx-auto mb-4 object-contain animate-pulse" />
         <h2 className="text-lg font-extrabold text-mc-diag-blue mb-2">Analizando tu negocio…</h2>
         <p className="text-sm text-muted-foreground">
           Procesando tus respuestas y generando tu diagnóstico personalizado.
@@ -233,7 +217,6 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
 
     return (
       <div className="max-w-xl mx-auto animate-fade-in space-y-5">
-        {/* Tagline */}
         <div
           className="text-lg font-black text-center text-white py-5 px-5 rounded-xl leading-tight"
           style={{ backgroundColor: perfilData.color }}
@@ -241,12 +224,10 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
           {perfilData.tagline}
         </div>
 
-        {/* Description */}
         <div className="bg-secondary border-l-4 border-mc-diag-blue p-4 rounded-r-xl">
           <p className="text-sm text-foreground leading-relaxed">{perfilData.desc}</p>
         </div>
 
-        {/* Mirror phrases */}
         <div>
           <h3 className="text-[11px] font-bold tracking-widest text-muted-foreground uppercase mb-3">
             Lo que te dijiste esta semana
@@ -264,7 +245,6 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
           </div>
         </div>
 
-        {/* Symptoms */}
         <div>
           <h3 className="text-[11px] font-bold tracking-widest text-muted-foreground uppercase mb-3">
             Lo que tu negocio está mostrando
@@ -295,8 +275,8 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
           </div>
         </div>
 
-        {/* CTA */}
         <div className="bg-mc-diag-blue rounded-xl p-6 text-center text-white">
+          <img src={chicoImg} alt="" className="w-16 h-16 mx-auto mb-3 object-contain" />
           <h3 className="text-base font-extrabold mb-2">{perfilData.ctaTitle}</h3>
           <p className="text-xs opacity-80 mb-4 leading-relaxed">{perfilData.ctaText}</p>
           <a
