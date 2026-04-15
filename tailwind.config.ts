@@ -63,6 +63,9 @@ export default {
           "dark-blue": "hsl(var(--mc-dark-blue))",
           yellow: "hsl(var(--mc-yellow))",
           black: "hsl(var(--mc-black))",
+          "diag-blue": "hsl(var(--mc-diag-blue))",
+          "diag-red": "hsl(var(--mc-diag-red))",
+          "diag-yellow": "hsl(var(--mc-diag-yellow))",
         },
       },
       borderRadius: {
