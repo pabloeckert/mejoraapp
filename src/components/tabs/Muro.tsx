@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import chicaImg from "@/assets/chica.png";
+
 
 interface WallPost {
   id: string;
@@ -160,7 +160,7 @@ const Muro = () => {
       ) : posts.length === 0 ? (
         <Card className="border-dashed border-2">
           <CardContent className="flex flex-col items-center justify-center py-10 text-center">
-            <img src={chicaImg} alt="" className="w-20 h-20 mb-4 object-contain" />
+            <MessageSquare className="w-12 h-12 text-muted-foreground/40 mb-4" />
             <h3 className="font-semibold text-foreground mb-2">El muro está vacío</h3>
             <p className="text-sm text-muted-foreground max-w-[280px]">
               Sé el primero en compartir. Todo es anónimo.

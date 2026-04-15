@@ -1,62 +1,69 @@
-import { useState } from "react";
-import { BookOpen, Lightbulb, FileText, Brain, RefreshCw, Sparkles } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { Lightbulb, FileText, Brain, Newspaper, Loader2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import chicoImg from "@/assets/chico.png";
 
-type Category = "tip" | "articulo" | "reflexion";
+const ICON_MAP: Record<string, typeof Lightbulb> = {
+  Lightbulb,
+  FileText,
+  Brain,
+  Newspaper,
+};
 
-interface ContentPiece {
-  titulo: string;
-  contenido: string;
-  categoria: Category;
+interface Category {
+  id: string;
+  nombre: string;
+  slug: string;
+  icono: string;
 }
 
-const CATEGORIES: { key: Category; label: string; icon: typeof Lightbulb; desc: string }[] = [
-  { key: "tip", label: "Tip práctico", icon: Lightbulb, desc: "Algo que podés aplicar hoy" },
-  { key: "articulo", label: "Estrategia", icon: FileText, desc: "Una idea para tu negocio" },
-  { key: "reflexion", label: "Reflexión", icon: Brain, desc: "Para cuestionar cómo operás" },
-];
+interface Post {
+  id: string;
+  titulo: string;
+  contenido: string;
+  published_at: string;
+  category_id: string;
+  content_categories?: { nombre: string; slug: string; icono: string } | null;
+}
 
 const ContenidoDeValor = () => {
-  const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [content, setContent] = useState<ContentPiece | null>(null);
-  const [history, setHistory] = useState<ContentPiece[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
-  const generateContent = async (category: Category) => {
-    setLoading(true);
-    setSelectedCategory(category);
-    try {
-      const { data, error } = await supabase.functions.invoke("generate-content", {
-        body: { category },
-      });
-      if (error) throw error;
-      if (data?.error) {
-        toast({ title: "Error", description: data.error, variant: "destructive" });
-        return;
-      }
-      const piece: ContentPiece = {
-        titulo: data.titulo,
-        contenido: data.contenido,
-        categoria: data.categoria || category,
-      };
-      setContent(piece);
-      setHistory((prev) => [piece, ...prev].slice(0, 10));
-    } catch (err: any) {
-      console.error(err);
-      toast({ title: "Error al generar contenido", description: "Intentá de nuevo en unos segundos.", variant: "destructive" });
-    } finally {
+  useEffect(() => {
+    const fetchData = async () => {
+      const [catRes, postRes] = await Promise.all([
+        supabase.from("content_categories").select("*").eq("activa", true).order("created_at"),
+        supabase
+          .from("content_posts")
+          .select("*, content_categories(nombre, slug, icono)")
+          .eq("estado", "publicado")
+          .order("published_at", { ascending: false })
+          .limit(50),
+      ]);
+      if (catRes.data) setCategories(catRes.data);
+      if (postRes.data) setPosts(postRes.data as any);
       setLoading(false);
-    }
-  };
+    };
+    fetchData();
+  }, []);
 
-  const categoryIcon = (cat: Category) => {
-    const found = CATEGORIES.find((c) => c.key === cat);
-    return found ? found.icon : BookOpen;
+  const filtered = activeFilter
+    ? posts.filter((p) => p.content_categories?.slug === activeFilter)
+    : posts;
+
+  const getIcon = (iconName?: string) => ICON_MAP[iconName || ""] || Lightbulb;
+
+  const getCategoryColor = (slug?: string) => {
+    switch (slug) {
+      case "tip": return "bg-mc-yellow/15 text-mc-yellow";
+      case "estrategia": return "bg-mc-blue/15 text-mc-blue";
+      case "reflexion": return "bg-mc-red/15 text-mc-red";
+      case "noticia": return "bg-mc-dark-blue/15 text-mc-dark-blue";
+      default: return "bg-muted text-muted-foreground";
+    }
   };
 
   return (
@@ -64,101 +71,71 @@ const ContenidoDeValor = () => {
       <div className="space-y-1">
         <h1 className="text-xl font-bold text-foreground">Contenido de Valor</h1>
         <p className="text-sm text-muted-foreground">
-          Tips, estrategias y reflexiones generados por IA, alineados con tu perfil.
+          Tips, estrategias y reflexiones para tu negocio.
         </p>
       </div>
 
-      {/* Category selector */}
-      <div className="grid grid-cols-3 gap-2">
-        {CATEGORIES.map(({ key, label, icon: Icon, desc }) => (
-          <button
-            key={key}
-            onClick={() => generateContent(key)}
-            disabled={loading}
-            className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all text-center
-              ${selectedCategory === key && !loading ? "border-primary bg-primary/5" : "border-border hover:border-primary/40 bg-card"}
-              ${loading ? "opacity-60 cursor-wait" : "cursor-pointer"}
-            `}
-          >
-            <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center">
-              <Icon className="w-4 h-4 text-primary" />
-            </div>
-            <span className="text-xs font-semibold text-foreground leading-tight">{label}</span>
-            <span className="text-[10px] text-muted-foreground leading-tight">{desc}</span>
-          </button>
-        ))}
+      {/* Category filters */}
+      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        <button
+          onClick={() => setActiveFilter(null)}
+          className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors
+            ${!activeFilter ? "bg-mc-dark-blue text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
+        >
+          Todos
+        </button>
+        {categories.map((cat) => {
+          const Icon = getIcon(cat.icono);
+          return (
+            <button
+              key={cat.id}
+              onClick={() => setActiveFilter(activeFilter === cat.slug ? null : cat.slug)}
+              className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors
+                ${activeFilter === cat.slug ? "bg-mc-dark-blue text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
+            >
+              <Icon className="w-3 h-3" />
+              {cat.nombre}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Loading state */}
-      {loading && (
-        <Card className="border-primary/20">
-          <CardContent className="flex flex-col items-center justify-center py-10 text-center">
-            <img src={chicoImg} alt="" className="w-16 h-16 mb-3 object-contain animate-pulse" />
-            <p className="text-sm text-muted-foreground">Generando contenido para vos...</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Content display */}
-      {!loading && content && (
-        <Card className="border-primary/20 shadow-md">
-          <CardHeader className="pb-2">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex items-center gap-2">
-                {(() => {
-                  const CatIcon = categoryIcon(content.categoria);
-                  return <CatIcon className="w-4 h-4 text-primary shrink-0 mt-0.5" />;
-                })()}
-                <CardTitle className="text-base leading-snug">{content.titulo}</CardTitle>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="shrink-0 h-8 w-8"
-                onClick={() => generateContent(content.categoria)}
-                title="Generar otro"
-              >
-                <RefreshCw className="w-4 h-4" />
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-sm text-foreground/90 whitespace-pre-line leading-relaxed">
-              {content.contenido}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Empty state */}
-      {!loading && !content && (
+      {/* Feed */}
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        </div>
+      ) : filtered.length === 0 ? (
         <Card className="border-dashed border-2">
           <CardContent className="flex flex-col items-center justify-center py-10 text-center">
-            <img src={chicoImg} alt="Contenido" className="w-20 h-20 mb-4 object-contain" />
-            <h3 className="font-semibold text-foreground mb-2">Elegí una categoría</h3>
+            <Lightbulb className="w-12 h-12 text-muted-foreground/40 mb-4" />
+            <h3 className="font-semibold text-foreground mb-2">Todavía no hay publicaciones</h3>
             <p className="text-sm text-muted-foreground max-w-[280px]">
-              Seleccioná arriba qué tipo de contenido querés y lo generamos al instante con IA.
+              Pronto vas a encontrar acá contenido pensado para tu negocio.
             </p>
           </CardContent>
         </Card>
-      )}
-
-      {/* History */}
-      {history.length > 1 && (
-        <div className="space-y-2">
-          <h2 className="text-sm font-semibold text-muted-foreground">Anteriores</h2>
-          {history.slice(1).map((item, i) => {
-            const HistIcon = categoryIcon(item.categoria);
+      ) : (
+        <div className="space-y-3">
+          {filtered.map((post) => {
+            const cat = post.content_categories;
+            const Icon = getIcon(cat?.icono);
+            const date = new Date(post.published_at);
             return (
-              <Card
-                key={i}
-                className="cursor-pointer hover:border-primary/30 transition-colors"
-                onClick={() => setContent(item)}
-              >
-                <CardContent className="py-3 px-4">
+              <Card key={post.id} className="shadow-sm hover:shadow-md transition-shadow">
+                <CardContent className="p-4 space-y-2">
                   <div className="flex items-center gap-2">
-                    <HistIcon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                    <span className="text-sm font-medium text-foreground truncate">{item.titulo}</span>
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${getCategoryColor(cat?.slug)}`}>
+                      <Icon className="w-3 h-3" />
+                      {cat?.nombre || "General"}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground ml-auto">
+                      {date.toLocaleDateString("es-AR", { day: "numeric", month: "short" })}
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-foreground text-sm leading-snug">{post.titulo}</h3>
+                  <div className="text-sm text-foreground/85 whitespace-pre-line leading-relaxed">
+                    {post.contenido}
                   </div>
                 </CardContent>
               </Card>

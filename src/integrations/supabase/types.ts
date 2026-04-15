@@ -14,6 +14,115 @@ export type Database = {
   }
   public: {
     Tables: {
+      content_categories: {
+        Row: {
+          activa: boolean
+          created_at: string
+          descripcion: string | null
+          icono: string | null
+          id: string
+          nombre: string
+          slug: string
+        }
+        Insert: {
+          activa?: boolean
+          created_at?: string
+          descripcion?: string | null
+          icono?: string | null
+          id?: string
+          nombre: string
+          slug: string
+        }
+        Update: {
+          activa?: boolean
+          created_at?: string
+          descripcion?: string | null
+          icono?: string | null
+          id?: string
+          nombre?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      content_guidelines: {
+        Row: {
+          category_id: string | null
+          created_at: string
+          ejemplos: string | null
+          id: string
+          instrucciones: string
+          updated_at: string
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string
+          ejemplos?: string | null
+          id?: string
+          instrucciones: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string
+          ejemplos?: string | null
+          id?: string
+          instrucciones?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_guidelines_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "content_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_posts: {
+        Row: {
+          category_id: string | null
+          contenido: string
+          created_at: string
+          created_by: string | null
+          estado: string
+          fuente: string | null
+          id: string
+          published_at: string | null
+          titulo: string
+        }
+        Insert: {
+          category_id?: string | null
+          contenido: string
+          created_at?: string
+          created_by?: string | null
+          estado?: string
+          fuente?: string | null
+          id?: string
+          published_at?: string | null
+          titulo: string
+        }
+        Update: {
+          category_id?: string | null
+          contenido?: string
+          created_at?: string
+          created_by?: string | null
+          estado?: string
+          fuente?: string | null
+          id?: string
+          published_at?: string | null
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_posts_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "content_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       diagnostic_results: {
         Row: {
           created_at: string

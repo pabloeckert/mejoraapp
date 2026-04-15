@@ -2,18 +2,19 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Navigate } from "react-router-dom";
-import { Shield, Newspaper, MessageSquare, Users, ArrowLeft } from "lucide-react";
+import { Shield, Newspaper, MessageSquare, Users, ArrowLeft, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AdminNovedades from "@/components/admin/AdminNovedades";
 import AdminMuro from "@/components/admin/AdminMuro";
 import AdminUsuarios from "@/components/admin/AdminUsuarios";
+import AdminContenido from "@/components/admin/AdminContenido";
 
-type AdminTab = "novedades" | "muro" | "usuarios";
+type AdminTab = "contenido" | "novedades" | "muro" | "usuarios";
 
 const Admin = () => {
   const { session, loading, user } = useAuth();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [activeTab, setActiveTab] = useState<AdminTab>("novedades");
+  const [activeTab, setActiveTab] = useState<AdminTab>("contenido");
 
   useEffect(() => {
     if (!user) return;
@@ -39,6 +40,7 @@ const Admin = () => {
   if (!isAdmin) return <Navigate to="/" replace />;
 
   const tabs: { key: AdminTab; label: string; icon: typeof Newspaper }[] = [
+    { key: "contenido", label: "Contenido", icon: BookOpen },
     { key: "novedades", label: "Novedades", icon: Newspaper },
     { key: "muro", label: "Muro", icon: MessageSquare },
     { key: "usuarios", label: "Usuarios", icon: Users },
@@ -84,6 +86,7 @@ const Admin = () => {
 
       {/* Content */}
       <main className="max-w-4xl mx-auto px-4 py-4">
+        {activeTab === "contenido" && <AdminContenido />}
         {activeTab === "novedades" && <AdminNovedades />}
         {activeTab === "muro" && <AdminMuro />}
         {activeTab === "usuarios" && <AdminUsuarios />}
