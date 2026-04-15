@@ -155,7 +155,7 @@ serve(async (req) => {
 
     const systemPrompt = `${SYSTEM_PROMPT_BASE}${guidelinesBlock}
 
-El contenido es para la comunidad de negocios en general. Generá contenido que resuene con emprendedores y empresarios argentinos.
+El contenido es para la comunidad de negocios en general. Generá contenido que resuene con emprendedores y empresarios argentinos.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
