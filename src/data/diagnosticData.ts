@@ -276,62 +276,76 @@ export function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+/**
+ * Vectorized profile detection.
+ * Each profile is defined by score signatures across 3 axes:
+ *   - operativo: v1 (dependency) + v5 (processes)
+ *   - comercial: v2 (acquisition) + v3 (pricing)
+ *   - estratégico: v6 (advisors) + v7 (vision)
+ *   - equipo: v4 (team alignment)
+ *   - emocional: v8 (owner state)
+ *
+ * Instead of nested if/else, we compute a "fit score" for each profile
+ * and pick the best match. More maintainable and testable.
+ */
+const PROFILE_RULES: Array<{
+  key: string;
+  /** Weighted score function: higher = better fit */
+  fit: (answers: Record<number, number>) => number;
+}> = [
+  {
+    key: "SATURADO",
+    fit: (a) => (a[1] <= 2 ? 3 : 0) + (a[5] <= 2 ? 3 : 0) + (a[4] <= 2 ? 1 : 0) + (a[8] <= 2 ? 1 : 0),
+  },
+  {
+    key: "EQUIPO_DESALINEADO",
+    fit: (a) => (a[4] <= 2 ? 3 : 0) + (a[1] >= 3 ? 1 : 0) + (a[5] >= 3 ? 1 : 0) + (a[7] >= 3 ? 1 : 0),
+  },
+  {
+    key: "VENDEDOR_SIN_RESULTADOS",
+    fit: (a) => (a[2] <= 2 ? 2 : 0) + (a[3] <= 2 ? 2 : 0) + (a[8] <= 2 ? 2 : 0),
+  },
+  {
+    key: "INVISIBLE",
+    fit: (a) => (a[2] <= 2 ? 2 : 0) + (a[3] <= 2 ? 2 : 0) + (a[6] <= 2 ? 1 : 0),
+  },
+  {
+    key: "LIDER_SOLO",
+    fit: (a) => (a[7] >= 3 ? 2 : 0) + (a[1] <= 2 ? 2 : 0) + (a[4] <= 2 ? 2 : 0) + (a[5] >= 3 ? 1 : 0),
+  },
+  {
+    key: "DESCONECTADO",
+    fit: (a) => (a[1] >= 3 ? 1 : 0) + (a[7] <= 2 ? 2 : 0) + (a[6] <= 2 ? 2 : 0),
+  },
+  {
+    key: "ESTANCADO",
+    fit: (a) => (a[2] <= 3 ? 1 : 0) + (a[7] <= 2 ? 1 : 0) + (a[8] <= 3 ? 1 : 0) + (a[1] >= 3 ? 1 : 0) + (a[5] >= 3 ? 1 : 0),
+  },
+  {
+    key: "NUEVA_GEN",
+    fit: (a) => (a[8] >= 3 ? 2 : 0) + (a[7] >= 2 ? 1 : 0) + (a[6] <= 2 ? 1 : 0) + (a[2] <= 3 ? 1 : 0),
+  },
+];
+
 export function detectarPerfil(answers: Record<number, number>): string {
-  const v1 = answers[1] || 3;
-  const v2 = answers[2] || 3;
-  const v3 = answers[3] || 3;
-  const v4 = answers[4] || 3;
-  const v5 = answers[5] || 3;
-  const v6 = answers[6] || 3;
-  const v7 = answers[7] || 3;
-  const v8 = answers[8] || 3;
+  // Default neutral scores for unanswered questions
+  const a: Record<number, number> = {};
+  for (let i = 1; i <= 8; i++) {
+    a[i] = answers[i] ?? 3;
+  }
 
-  const ejeOperativo = v1 + v5;
-  const ejeComercial = v2 + v3;
-  const ejeEstrategico = v6 + v7;
+  let bestKey = "ESTANCADO";
+  let bestScore = -1;
 
-  // BP1: Saturado — todo depende de él, sin procesos
-  if (v1 <= 2 && v5 <= 2) return "SATURADO";
-  if (v5 === 1 && v4 <= 2 && v8 <= 2) return "SATURADO";
+  for (const rule of PROFILE_RULES) {
+    const score = rule.fit(a);
+    if (score > bestScore) {
+      bestScore = score;
+      bestKey = rule.key;
+    }
+  }
 
-  // BP4: Equipo Desalineado — equipo sin marco común
-  if (v4 <= 2 && v1 >= 3 && v5 >= 3) return "EQUIPO_DESALINEADO";
-  if (v4 <= 2 && v7 >= 3 && v8 <= 3) return "EQUIPO_DESALINEADO";
-
-  // BP7: Vendedor sin Resultados — esfuerzo sin retorno
-  if (v2 <= 2 && v3 <= 2 && v8 <= 2) return "VENDEDOR_SIN_RESULTADOS";
-  if (v3 <= 2 && v2 <= 2 && v5 <= 3 && v8 <= 2) return "VENDEDOR_SIN_RESULTADOS";
-
-  // BP3: Invisible — no sabe posicionarse
-  if (v2 <= 2 && v3 <= 2) return "INVISIBLE";
-  if (v2 === 3 && v3 <= 2 && v6 <= 2) return "INVISIBLE";
-
-  // BP2: Líder Solo — visión sin equipo que ejecute
-  if (v7 >= 3 && v1 <= 3 && v4 <= 2) return "LIDER_SOLO";
-  if (v1 <= 2 && v7 >= 3 && v6 <= 2 && v5 >= 3) return "LIDER_SOLO";
-
-  // BP5: Desconectado — funciona pero sin timón estratégico
-  if (v1 >= 3 && v7 <= 2 && v6 <= 2) return "DESCONECTADO";
-  if (v1 >= 5 && v6 === 1 && v7 <= 3) return "DESCONECTADO";
-
-  // BP8: Estancado — funciona pero no crece
-  if (v2 === 3 && v7 <= 3 && (v8 === 3 || v8 === 2)) return "ESTANCADO";
-  if (v2 <= 3 && v7 <= 2 && v5 >= 3 && v1 >= 3) return "ESTANCADO";
-
-  // BP6: Nueva Generación
-  if (v8 >= 3 && v7 >= 2 && v6 <= 2 && v2 <= 3) return "NUEVA_GEN";
-
-  // Fallbacks por eje más débil
-  const ejeEquipo = v4;
-  const min = Math.min(ejeOperativo, ejeComercial, ejeEstrategico);
-  if (ejeEquipo <= 2 && min > ejeEquipo * 2) return "EQUIPO_DESALINEADO";
-  if (min === ejeComercial && v8 <= 2) return "VENDEDOR_SIN_RESULTADOS";
-  if (min === ejeOperativo) return "SATURADO";
-  if (min === ejeComercial) return "INVISIBLE";
-  if (min === ejeEstrategico) return v1 >= 3 ? "DESCONECTADO" : "LIDER_SOLO";
-
-  const total = v1 + v2 + v3 + v4 + v5 + v6 + v7 + v8;
-  return total <= 20 ? "SATURADO" : "ESTANCADO";
+  return bestKey;
 }
 
 export const WA_NUMBER = "543764358152";

@@ -1,0 +1,10 @@
+{
+  "name": "MejoraApp - Comunidad de Negocios",
+  "short_name": "MejoraApp",
+  "description": "Comunidad de negocios con contenido de valor, networking y herramientas para hacer crecer tu empresa.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fafafa",
+  "theme_color": "#0505a6",
+  "orientation": "portrait-primary"
+}

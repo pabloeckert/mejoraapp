@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -16,14 +16,72 @@ import { Button } from "@/components/ui/button";
 
 type Step = "intro" | "question" | "loading" | "result";
 
+interface DiagnosticProgress {
+  shuffledQuestions: DiagnosticQuestion[];
+  currentIdx: number;
+  answers: Record<number, number>;
+  step: Step;
+}
+
+const STORAGE_KEY = "mc-diagnostic-progress";
+
+const loadProgress = (): DiagnosticProgress | null => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+};
+
+const saveProgress = (progress: DiagnosticProgress) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+  } catch {
+    // Storage full or disabled — non-critical
+  }
+};
+
+const clearProgress = () => {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // ignore
+  }
+};
+
 const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const [step, setStep] = useState<Step>("intro");
-  const [shuffledQuestions, setShuffledQuestions] = useState<DiagnosticQuestion[]>([]);
-  const [currentIdx, setCurrentIdx] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, number>>({});
+  // Try to restore progress on mount
+  const [step, setStep] = useState<Step>(() => {
+    const saved = loadProgress();
+    return saved?.step === "question" ? "question" : "intro";
+  });
+
+  const [shuffledQuestions, setShuffledQuestions] = useState<DiagnosticQuestion[]>(() => {
+    const saved = loadProgress();
+    return saved?.shuffledQuestions ?? [];
+  });
+
+  const [currentIdx, setCurrentIdx] = useState(() => {
+    const saved = loadProgress();
+    return saved?.currentIdx ?? 0;
+  });
+
+  const [answers, setAnswers] = useState<Record<number, number>>(() => {
+    const saved = loadProgress();
+    return saved?.answers ?? {};
+  });
+
+  // Persist progress whenever it changes
+  useEffect(() => {
+    if (step === "question") {
+      saveProgress({ shuffledQuestions, currentIdx, answers, step });
+    }
+  }, [step, shuffledQuestions, currentIdx, answers]);
 
   const startDiag = useCallback(() => {
     const shuffled = shuffle(BANCO_PREGUNTAS).map((q) => ({
@@ -36,22 +94,24 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
     setStep("question");
   }, []);
 
-  const selectOption = (questionId: number, score: number) => {
+  const selectOption = useCallback((questionId: number, score: number) => {
     setAnswers((prev) => ({ ...prev, [questionId]: score }));
-  };
+  }, []);
 
-  const goNext = () => {
+  const goNext = useCallback(() => {
     if (currentIdx < 7) setCurrentIdx((i) => i + 1);
     else showResult();
-  };
+  }, [currentIdx]);
 
-  const goBack = () => {
+  const goBack = useCallback(() => {
     if (currentIdx > 0) setCurrentIdx((i) => i - 1);
     else setStep("intro");
-  };
+  }, [currentIdx]);
 
-  const showResult = async () => {
+  const showResult = useCallback(async () => {
     setStep("loading");
+    clearProgress(); // Done — clear saved progress
+
     const perfil = detectarPerfil(answers);
     const puntajeTotal = Object.values(answers).reduce((a, b) => a + b, 0);
 
@@ -61,7 +121,7 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
           user_id: user.id,
           perfil,
           puntaje_total: puntajeTotal,
-          respuestas: answers as any,
+          respuestas: answers,
         });
         await supabase
           .from("profiles")
@@ -72,7 +132,7 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
       }
     }
     setTimeout(() => setStep("result"), 2200);
-  };
+  }, [answers, user]);
 
   const currentQuestion = shuffledQuestions[currentIdx];
   const perfil = step === "result" ? detectarPerfil(answers) : null;
@@ -133,7 +193,7 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
         </div>
         <div className="h-1 bg-white/25">
           <div
-            className="h-full bg-mc-diag-red transition-all duration-400"
+            className="h-full bg-mc-diag-red transition-all duration-300"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -148,7 +208,7 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
                   className={cn(
                     "flex items-start gap-3 w-full text-left p-3 rounded-xl border-2 transition-all",
                     isSelected
-                      ? "border-mc-diag-red bg-red-50"
+                      ? "border-mc-diag-red bg-red-50 dark:bg-red-950/30"
                       : "border-border hover:border-mc-diag-blue hover:bg-secondary"
                   )}
                 >

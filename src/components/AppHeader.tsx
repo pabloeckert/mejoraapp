@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
-import { LogOut, User, Shield } from "lucide-react";
+import { LogOut, User, Shield, Moon, Sun } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import logoComunidad from "@/assets/logo-comunidad.png";
 
 const AppHeader = () => {
   const { signOut, user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -21,6 +23,9 @@ const AppHeader = () => {
       <div className="flex items-center justify-between px-4 h-14 max-w-lg mx-auto">
         <img src={logoComunidad} alt="Mejora Continua - Comunidad de Negocios" className="h-8 object-contain" />
         <div className="flex items-center gap-1.5">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggleTheme}>
+            {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </Button>
           {isAdmin && (
             <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
               <a href="/admin">

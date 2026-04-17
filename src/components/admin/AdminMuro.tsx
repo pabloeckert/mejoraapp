@@ -1,23 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, XCircle, Loader2, AlertTriangle } from "lucide-react";
+import { CheckCircle, XCircle, Loader2, AlertTriangle, RefreshCw } from "lucide-react";
+import type { Tables } from "@/integrations/supabase/types";
 
-interface WallPost {
-  id: string;
-  content: string;
-  status: string;
-  likes_count: number;
-  created_at: string;
-  user_id: string;
-}
+type WallPost = Tables<"wall_posts">;
 
 const statusColors: Record<string, string> = {
-  approved: "text-green-600 bg-green-50",
-  rejected: "text-red-600 bg-red-50",
-  pending: "text-yellow-600 bg-yellow-50",
+  approved: "text-green-600 bg-green-50 dark:bg-green-950/30",
+  rejected: "text-red-600 bg-red-50 dark:bg-red-950/30",
+  pending: "text-yellow-600 bg-yellow-50 dark:bg-yellow-950/30",
 };
 
 const AdminMuro = () => {
@@ -25,20 +19,21 @@ const AdminMuro = () => {
   const [posts, setPosts] = useState<WallPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
+  const [refreshing, setRefreshing] = useState(false);
 
-  const fetchPosts = async () => {
-    const query = supabase
+  const fetchPosts = useCallback(async () => {
+    setRefreshing(true);
+    const { data } = await supabase
       .from("wall_posts")
       .select("*")
       .order("created_at", { ascending: false })
       .limit(100);
-
-    const { data } = await query;
     if (data) setPosts(data);
     setLoading(false);
-  };
+    setRefreshing(false);
+  }, []);
 
-  useEffect(() => { fetchPosts(); }, []);
+  useEffect(() => { fetchPosts(); }, [fetchPosts]);
 
   const updateStatus = async (postId: string, newStatus: string) => {
     const { error } = await supabase
@@ -69,7 +64,12 @@ const AdminMuro = () => {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-bold text-foreground">Moderación del Muro ({posts.length})</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-bold text-foreground">Moderación del Muro ({posts.length})</h2>
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={fetchPosts} disabled={refreshing}>
+          <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+        </Button>
+      </div>
 
       {/* Filters */}
       <div className="flex gap-1.5 flex-wrap">

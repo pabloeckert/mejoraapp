@@ -1,8 +1,11 @@
-import { useState, useEffect } from "react";
-import { Lightbulb, FileText, Brain, Newspaper, Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter } from "lucide-react";
+import { useState, useCallback, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Lightbulb, FileText, Brain, Newspaper, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 
 const ICON_MAP: Record<string, typeof Lightbulb> = {
   Lightbulb,
@@ -13,50 +16,77 @@ const ICON_MAP: Record<string, typeof Lightbulb> = {
 
 const POSTS_PER_PAGE = 10;
 
-interface Category {
-  id: string;
-  nombre: string;
-  slug: string;
-  icono: string;
-}
-
-interface Post {
-  id: string;
-  titulo: string;
-  contenido: string;
-  published_at: string;
-  category_id: string;
+type Category = Tables<"content_categories">;
+type Post = Tables<"content_posts"> & {
   content_categories?: { nombre: string; slug: string; icono: string } | null;
-}
+};
+
+const fetchCategories = async (): Promise<Category[]> => {
+  const { data, error } = await supabase
+    .from("content_categories")
+    .select("*")
+    .eq("activa", true)
+    .order("created_at");
+  if (error) throw error;
+  return data ?? [];
+};
+
+const fetchPosts = async (): Promise<Post[]> => {
+  const { data, error } = await supabase
+    .from("content_posts")
+    .select("*, content_categories(nombre, slug, icono)")
+    .eq("estado", "publicado")
+    .order("published_at", { ascending: false })
+    .limit(50);
+  if (error) throw error;
+  return (data as Post[]) ?? [];
+};
+
+const getCategoryColor = (slug?: string) => {
+  switch (slug) {
+    case "tip": return "bg-mc-yellow/15 text-mc-yellow";
+    case "estrategia": return "bg-mc-blue/15 text-mc-blue";
+    case "reflexion": return "bg-mc-red/15 text-mc-red";
+    case "noticia": return "bg-mc-dark-blue/15 text-mc-dark-blue";
+    default: return "bg-muted text-muted-foreground";
+  }
+};
+
+const getIcon = (iconName?: string) => ICON_MAP[iconName || ""] || Lightbulb;
+
+const PostSkeleton = () => (
+  <Card>
+    <CardContent className="p-4 space-y-2">
+      <div className="flex items-center gap-2">
+        <Skeleton className="h-4 w-16 rounded-full" />
+        <Skeleton className="h-3 w-12 ml-auto" />
+      </div>
+      <Skeleton className="h-4 w-3/4" />
+      <Skeleton className="h-12 w-full" />
+    </CardContent>
+  </Card>
+);
 
 const ContenidoDeValor = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<string>("todos");
   const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const [catRes, postRes] = await Promise.all([
-        supabase.from("content_categories").select("*").eq("activa", true).order("created_at"),
-        supabase
-          .from("content_posts")
-          .select("*, content_categories(nombre, slug, icono)")
-          .eq("estado", "publicado")
-          .order("published_at", { ascending: false })
-          .limit(50),
-      ]);
-      if (catRes.data) setCategories(catRes.data);
-      if (postRes.data) setPosts(postRes.data as any);
-      setLoading(false);
-    };
-    fetchData();
-  }, []);
+  const { data: categories = [], isLoading: categoriesLoading } = useQuery({
+    queryKey: ["content-categories"],
+    queryFn: fetchCategories,
+  });
 
-  const filtered = activeFilter !== "todos"
-    ? posts.filter((p) => p.content_categories?.slug === activeFilter)
-    : posts;
+  const { data: posts = [], isLoading: postsLoading } = useQuery({
+    queryKey: ["content-posts"],
+    queryFn: fetchPosts,
+  });
+
+  const isLoading = categoriesLoading || postsLoading;
+
+  const filtered = useMemo(() => {
+    if (activeFilter === "todos") return posts;
+    return posts.filter((p) => p.content_categories?.slug === activeFilter);
+  }, [posts, activeFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / POSTS_PER_PAGE));
   const paginatedPosts = filtered.slice(
@@ -64,24 +94,12 @@ const ContenidoDeValor = () => {
     currentPage * POSTS_PER_PAGE
   );
 
-  // Reset page when filter changes
-  useEffect(() => {
+  const handleFilterChange = useCallback((value: string) => {
+    setActiveFilter(value);
     setCurrentPage(1);
-  }, [activeFilter]);
+  }, []);
 
-  const getIcon = (iconName?: string) => ICON_MAP[iconName || ""] || Lightbulb;
-
-  const getCategoryColor = (slug?: string) => {
-    switch (slug) {
-      case "tip": return "bg-mc-yellow/15 text-mc-yellow";
-      case "estrategia": return "bg-mc-blue/15 text-mc-blue";
-      case "reflexion": return "bg-mc-red/15 text-mc-red";
-      case "noticia": return "bg-mc-dark-blue/15 text-mc-dark-blue";
-      default: return "bg-muted text-muted-foreground";
-    }
-  };
-
-  const getPageNumbers = () => {
+  const pageNumbers = useMemo(() => {
     const pages: number[] = [];
     const maxVisible = 5;
     let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
@@ -91,7 +109,7 @@ const ContenidoDeValor = () => {
     }
     for (let i = start; i <= end; i++) pages.push(i);
     return pages;
-  };
+  }, [currentPage, totalPages]);
 
   return (
     <div className="space-y-4 animate-fade-in">
@@ -103,9 +121,9 @@ const ContenidoDeValor = () => {
       </div>
 
       {/* Feed */}
-      {loading ? (
-        <div className="flex justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      {isLoading ? (
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => <PostSkeleton key={i} />)}
         </div>
       ) : filtered.length === 0 ? (
         <Card className="border-dashed border-2">
@@ -122,7 +140,7 @@ const ContenidoDeValor = () => {
           {paginatedPosts.map((post) => {
             const cat = post.content_categories;
             const Icon = getIcon(cat?.icono);
-            const date = new Date(post.published_at);
+            const date = new Date(post.published_at ?? post.created_at);
             return (
               <Card key={post.id} className="shadow-sm hover:shadow-md transition-shadow">
                 <CardContent className="p-4 space-y-2">
@@ -147,7 +165,7 @@ const ContenidoDeValor = () => {
       )}
 
       {/* Bottom bar: Pagination + Filter */}
-      {!loading && filtered.length > 0 && (
+      {!isLoading && filtered.length > 0 && (
         <div className="flex items-center justify-between gap-2 pt-2 pb-1">
           {/* Pagination */}
           <div className="flex items-center gap-1">
@@ -168,7 +186,7 @@ const ContenidoDeValor = () => {
               <ChevronLeft className="w-4 h-4" />
             </button>
 
-            {getPageNumbers().map((page) => (
+            {pageNumbers.map((page) => (
               <button
                 key={page}
                 onClick={() => setCurrentPage(page)}
@@ -200,7 +218,7 @@ const ContenidoDeValor = () => {
           </div>
 
           {/* Filter dropdown */}
-          <Select value={activeFilter} onValueChange={setActiveFilter}>
+          <Select value={activeFilter} onValueChange={handleFilterChange}>
             <SelectTrigger className="w-auto min-w-[120px] h-8 text-xs font-bold border-border gap-1.5">
               <Filter className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
               <SelectValue placeholder="Filtrar" />

@@ -1,19 +1,13 @@
-import { useState, useEffect } from "react";
-import { Bell, ExternalLink, Calendar, Loader2, MessageCircle, Users, Monitor } from "lucide-react";
+import { useState, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { ExternalLink, Calendar, Loader2, MessageCircle, Users, Monitor } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 
-interface Novedad {
-  id: string;
-  titulo: string;
-  resumen: string | null;
-  contenido: string | null;
-  imagen_url: string | null;
-  enlace_externo: string | null;
-  published_at: string | null;
-  created_at: string;
-}
+type Novedad = Tables<"novedades">;
 
 const formatDate = (date: string) => {
   return new Date(date).toLocaleDateString("es-AR", {
@@ -23,7 +17,6 @@ const formatDate = (date: string) => {
   });
 };
 
-// Static services cards shown always
 const servicios = [
   {
     icon: Users,
@@ -48,25 +41,37 @@ const servicios = [
   },
 ];
 
+const fetchNovedades = async (): Promise<Novedad[]> => {
+  const { data, error } = await supabase
+    .from("novedades")
+    .select("*")
+    .eq("publicado", true)
+    .order("published_at", { ascending: false })
+    .limit(20);
+  if (error) throw error;
+  return data ?? [];
+};
+
+const NovedadSkeleton = () => (
+  <Card>
+    <CardContent className="p-3 space-y-2">
+      <Skeleton className="h-3 w-24" />
+      <Skeleton className="h-4 w-3/4" />
+      <Skeleton className="h-10 w-full" />
+    </CardContent>
+  </Card>
+);
+
 const Novedades = () => {
-  const [novedades, setNovedades] = useState<Novedad[]>([]);
-  const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchNovedades = async () => {
-      const { data, error } = await supabase
-        .from("novedades")
-        .select("id, titulo, resumen, contenido, imagen_url, enlace_externo, published_at, created_at")
-        .eq("publicado", true)
-        .order("published_at", { ascending: false })
-        .limit(20);
+  const { data: novedades = [], isLoading } = useQuery({
+    queryKey: ["novedades"],
+    queryFn: fetchNovedades,
+  });
 
-      if (!error && data) setNovedades(data);
-      setLoading(false);
-    };
-
-    fetchNovedades();
+  const toggleExpanded = useCallback((id: string) => {
+    setExpanded((prev) => (prev === id ? null : id));
   }, []);
 
   return (
@@ -79,9 +84,9 @@ const Novedades = () => {
       </div>
 
       {/* Dynamic novedades from DB */}
-      {loading ? (
-        <div className="flex justify-center py-6">
-          <Loader2 className="w-5 h-5 animate-spin text-primary" />
+      {isLoading ? (
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => <NovedadSkeleton key={i} />)}
         </div>
       ) : novedades.length > 0 ? (
         <div className="space-y-3">
@@ -122,7 +127,7 @@ const Novedades = () => {
                         </div>
                       )}
                       <button
-                        onClick={() => setExpanded(isExpanded ? null : novedad.id)}
+                        onClick={() => toggleExpanded(novedad.id)}
                         className="text-xs font-medium text-primary hover:underline"
                       >
                         {isExpanded ? "Ver menos" : "Leer más"}

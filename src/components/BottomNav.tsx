@@ -25,7 +25,7 @@ const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
               className={cn(
-                "flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors min-w-[72px]",
+                "relative flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors min-w-[72px]",
                 isActive
                   ? "text-mc-dark-blue"
                   : "text-muted-foreground hover:text-foreground"

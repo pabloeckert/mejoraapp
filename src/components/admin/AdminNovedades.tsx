@@ -8,18 +8,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Plus, Pencil, Trash2, Loader2, Save, X } from "lucide-react";
+import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 
-interface Novedad {
-  id: string;
-  titulo: string;
-  resumen: string | null;
-  contenido: string | null;
-  imagen_url: string | null;
-  enlace_externo: string | null;
-  publicado: boolean;
-  published_at: string | null;
-  created_at: string;
-}
+type Novedad = Tables<"novedades">;
 
 const emptyForm = {
   titulo: "",
@@ -76,7 +67,7 @@ const AdminNovedades = () => {
     }
     setSaving(true);
 
-    const payload = {
+    const payload: TablesInsert<"novedades"> = {
       titulo: form.titulo.trim(),
       resumen: form.resumen.trim() || null,
       contenido: form.contenido.trim() || null,
