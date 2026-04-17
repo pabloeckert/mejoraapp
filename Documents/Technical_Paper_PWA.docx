@@ -1,0 +1,76 @@
+# Manual Técnico de la Aplicación PWA
+
+## 1. Configuración de PWA
+Una Progressive Web App (PWA) es una aplicación web que utiliza las capacidades modernas del navegador para ofrecer una experiencia similar a las de una aplicación móvil. Para configurar una PWA, siguen los siguientes pasos:
+
+### a. Configuración del proyecto
+1. Crear un archivo `index.html` base.
+2. Añadir un archivo `manifest.json` que incluya:
+   ```json
+   {
+     "short_name": "miPWA",
+     "name": "Mi Aplicación PWA",
+     "icons": [
+       {
+         "src": "icono.png",
+         "sizes": "192x192",
+         "type": "image/png"
+       }
+     ],
+     "start_url": "index.html",
+     "display": "standalone",
+     "theme_color": "#317EFB",
+     "background_color": "#FFFFFF"
+   }
+   ```
+
+### b. Configuración del Service Worker
+1. Crear un archivo `service-worker.js` que maneje las notificaciones y el almacenamiento en caché.
+   ```javascript
+   self.addEventListener('install', event => {
+       event.waitUntil(
+           caches.open('mi-cache').then(cache => {
+               return cache.addAll([
+                   '/',
+                   '/index.html',
+                   '/estilos.css',
+                   '/icono.png'
+               ]);
+           })
+       );
+   });
+   ```
+
+### c. Instalación en Hostinger
+Para instalar en Hostinger, sigue estos pasos:
+1. Subir los archivos de tu proyecto a tu servidor en Hostinger.
+2. Configurar el archivo `.htaccess` si es necesario para asegurar que todas las solicitudes se dirijan a `index.html`.
+
+## 2. Tutorial Paso a Paso para Usuarios No Técnicos
+### a. ¿Qué es una PWA?
+Explicaciones simples y visuales.
+### b. Instalación
+Pasos claros y simples sobre cómo instalar la aplicación.
+
+## 3. Objetivos y Resultados Finales
+### a. Objetivos
+- Proveer una experiencia de usuario fluida
+... (continuar explicando)
+### b. Resultados Finales
+- Capturas de pantalla de la aplicación en funcionamiento con descripciones.
+
+## 4. Proceso de Instalación para Todas las Plataformas
+### a. Android
+- Cómo instalar desde Google Play o como APK.
+### b. iOS
+- Métodos para Safari y otros navegadores.
+### c. Windows
+- Instalaciones a través de los navegadores.
+### d. macOS
+- Uso de Safari para la instalación.
+
+## 5. Guía de Troubleshooting y Mejores Prácticas
+### a. Problemas Comunes
+- Conexión a Internet, permisos, etc.
+### b. Mejores Prácticas
+- Actualizar caché, usar HTTPS, etc.
