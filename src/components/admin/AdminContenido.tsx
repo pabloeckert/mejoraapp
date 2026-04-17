@@ -75,6 +75,21 @@ const AdminContenido = () => {
 
   useEffect(() => { fetchData(); }, []);
 
+  // Ensure default content categories exist
+  useEffect(() => {
+    if (categories.length === 0 && !loading) {
+      const defaults = [
+        { nombre: "Tip", slug: "tip", icono: "Lightbulb", activa: true },
+        { nombre: "Estrategia", slug: "estrategia", icono: "Brain", activa: true },
+        { nombre: "Reflexión", slug: "reflexion", icono: "FileText", activa: true },
+        { nombre: "Noticia", slug: "noticia", icono: "Newspaper", activa: true },
+      ];
+      Promise.all(
+        defaults.map((d) => supabase.from("content_categories").insert(d))
+      ).then(() => fetchData());
+    }
+  }, [categories.length, loading]);
+
   const savePost = async (estado: string = "publicado") => {
     if (!titulo.trim() || !contenido.trim()) {
       toast({ title: "Completá título y contenido", variant: "destructive" });
@@ -305,9 +320,11 @@ const AdminContenido = () => {
             <Select value={aiCategory} onValueChange={setAiCategory}>
               <SelectTrigger><SelectValue placeholder="Categoría para generar" /></SelectTrigger>
               <SelectContent>
-                {categories.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.nombre}</SelectItem>
-                ))}
+                {categories
+                  .filter((c) => CATEGORY_PROMPTS[c.slug]) // Solo categorías con prompt
+                  .map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.nombre}</SelectItem>
+                  ))}
               </SelectContent>
             </Select>
             <Textarea
