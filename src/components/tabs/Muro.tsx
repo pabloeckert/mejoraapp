@@ -1,5 +1,5 @@
 import { useState, useCallback, memo, useRef, useEffect } from "react";
-import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { MessageSquare, Send, Heart, Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import type { Tables } from "@/integrations/supabase/types";
+import { aiService } from "@/services/ai";
 
 interface WallPost {
   id: string;
@@ -21,6 +21,27 @@ interface WallPost {
 
 const MAX_LENGTH = 500;
 const POSTS_PER_PAGE = 20;
+
+const MODERATION_PROMPT = `Sos el moderador de una comunidad de negocios argentina. Tu trabajo es decidir si un post anónimo es apropiado o no.
+
+APROBÁS si:
+- Comparte una experiencia de negocio (buena o mala)
+- Hace una pregunta genuina sobre emprendimiento
+- Expresa frustración real sobre su situación empresarial
+- Pide consejo o perspectiva sobre negocios
+- Comparte un aprendizaje o reflexión de negocio
+
+RECHAZÁS si:
+- Contiene spam, publicidad o promoción de servicios
+- Tiene insultos directos a personas o empresas con nombre
+- Incluye información personal identificable (teléfonos, direcciones, emails)
+- Contenido sexual, violento o discriminatorio
+- Es completamente irrelevante al mundo de los negocios
+- Intenta vender algo o captar clientes
+
+SÉ PERMISIVO con el tono argentino: puteadas leves, frustración genuina, ironía y sarcasmo son parte de la cultura. No censures por tono, solo por contenido dañino.
+
+Respondé ÚNICAMENTE en formato JSON: {"action": "approved" o "rejected", "reason": "razón breve en español"}`;
 
 const timeAgo = (date: string) => {
   const diff = Date.now() - new Date(date).getTime();
@@ -54,7 +75,6 @@ const fetchUserLikes = async (userId: string): Promise<Set<string>> => {
   return new Set((data ?? []).map((l) => l.post_id));
 };
 
-// Memoized post card — only re-renders when its own data changes
 const PostCard = memo(({
   post,
   isLiked,
@@ -109,7 +129,6 @@ const Muro = () => {
   const [newPost, setNewPost] = useState("");
   const [posting, setPosting] = useState(false);
 
-  // Infinite query for posts
   const {
     data,
     fetchNextPage,
@@ -126,16 +145,14 @@ const Muro = () => {
       if (lastPage.length < POSTS_PER_PAGE) return undefined;
       return pages.length;
     },
-    staleTime: 30_000, // 30s — wall is live
+    staleTime: 30_000,
   });
 
-  // Load user likes
   useEffect(() => {
     if (!user) return;
     fetchUserLikes(user.id).then(setLikedPosts);
   }, [user]);
 
-  // Realtime subscription for new posts
   useEffect(() => {
     const channel = supabase
       .channel("wall_posts_changes")
@@ -143,7 +160,6 @@ const Muro = () => {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "wall_posts", filter: "status=eq.approved" },
         () => {
-          // Invalidate to show the new post at top
           queryClient.invalidateQueries({ queryKey: ["wall-posts"] });
         }
       )
@@ -151,27 +167,91 @@ const Muro = () => {
     return () => { supabase.removeChannel(channel); };
   }, [queryClient]);
 
-  // Flatten all pages
   const allPosts = data?.pages.flat() ?? [];
 
-  // Submit post via Edge Function (moderation)
   const handlePost = useCallback(async () => {
     const content = newPost.trim();
-    if (!content || posting) return;
+    if (!content || posting || !user) return;
     setPosting(true);
+
     try {
-      const { data, error } = await supabase.functions.invoke("moderate-post", {
-        body: { content },
-      });
-      if (error) throw error;
-      if (data?.rejected) {
-        toast({ title: "Post no publicado", description: data.reason, variant: "destructive" });
-      } else if (data?.success) {
+      // 1. Moderar con IA (rotación automática entre proveedores)
+      const configured = aiService.getConfiguredProviders();
+      let modAction = "approved";
+      let modReason = "Publicado";
+
+      if (configured.length > 0) {
+        try {
+          const { content: aiResponse } = await aiService.chat(
+            MODERATION_PROMPT,
+            `Moderá este post del muro anónimo:\n\n"${content}"`
+          );
+
+          // Parse JSON response
+          const jsonMatch = aiResponse.match(/\{[\s\S]*?\}/);
+          if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0]);
+            modAction = parsed.action || "approved";
+            modReason = parsed.reason || "Moderado por IA";
+          }
+        } catch (aiErr) {
+          console.warn("AI moderation failed, approving by default:", aiErr);
+          // Fallback: approve by default if AI fails
+          modAction = "approved";
+          modReason = "Aprobado automáticamente (IA no disponible)";
+        }
+      }
+
+      // 2. Insertar en Supabase directamente
+      const { data: post, error: insertError } = await supabase
+        .from("wall_posts")
+        .insert({
+          user_id: user.id,
+          content: content,
+          status: modAction,
+        })
+        .select("id, status")
+        .single();
+
+      if (insertError) {
+        // If insert fails due to RLS, try via Edge Function as fallback
+        if (insertError.code === "42501" || insertError.message?.includes("policy")) {
+          const { data: fnData, error: fnError } = await supabase.functions.invoke("moderate-post", {
+            body: { content },
+          });
+          if (fnError) throw fnError;
+          if (fnData?.rejected) {
+            toast({ title: "Post no publicado", description: fnData.reason, variant: "destructive" });
+          } else if (fnData?.success) {
+            setNewPost("");
+            toast({ title: "¡Publicado!", description: "Tu post ya está en el muro." });
+            refetch();
+          }
+          setPosting(false);
+          return;
+        }
+        throw insertError;
+      }
+
+      // 3. Log de moderación
+      if (post) {
+        await supabase.from("moderation_log").insert({
+          post_id: post.id,
+          action: modAction,
+          reason: modReason,
+        }).catch(() => {}); // Non-critical
+      }
+
+      if (modAction === "rejected") {
+        toast({
+          title: "Post no publicado",
+          description: "Tu post no cumple con las normas de la comunidad.",
+          variant: "destructive",
+        });
+      } else {
         setNewPost("");
         toast({ title: "¡Publicado!", description: "Tu post ya está en el muro." });
         refetch();
-      } else if (data?.error) {
-        toast({ title: "Error", description: data.error, variant: "destructive" });
       }
     } catch (err) {
       console.error(err);
@@ -179,21 +259,18 @@ const Muro = () => {
     } finally {
       setPosting(false);
     }
-  }, [newPost, posting, toast, refetch]);
+  }, [newPost, posting, user, toast, refetch]);
 
-  // Optimistic like toggle
   const toggleLike = useCallback(async (postId: string) => {
     if (!user) return;
     const isLiked = likedPosts.has(postId);
 
-    // Optimistic update
     setLikedPosts((prev) => {
       const next = new Set(prev);
       isLiked ? next.delete(postId) : next.add(postId);
       return next;
     });
 
-    // Fire-and-forget DB call
     if (isLiked) {
       await supabase.from("wall_likes").delete().eq("post_id", postId).eq("user_id", user.id);
     } else {
@@ -201,7 +278,6 @@ const Muro = () => {
     }
   }, [user, likedPosts]);
 
-  // Infinite scroll sentinel
   const sentinelRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -238,7 +314,6 @@ const Muro = () => {
         </Button>
       </div>
 
-      {/* Post composer */}
       <Card>
         <CardContent className="p-3 space-y-2">
           <Textarea
@@ -262,7 +337,6 @@ const Muro = () => {
         </CardContent>
       </Card>
 
-      {/* Posts feed */}
       {isLoading ? (
         <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => <PostSkeleton key={i} />)}
@@ -289,7 +363,6 @@ const Muro = () => {
             />
           ))}
 
-          {/* Infinite scroll sentinel */}
           <div ref={sentinelRef} className="h-4" />
 
           {isFetchingNextPage && (

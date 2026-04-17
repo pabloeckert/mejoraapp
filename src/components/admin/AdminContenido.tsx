@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { aiService } from "@/services/ai";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 
 type Category = Tables<"content_categories">;
@@ -15,6 +16,24 @@ type Post = Tables<"content_posts"> & {
 };
 
 type View = "posts" | "new-post" | "ai-generate" | "categories";
+
+const CATEGORY_PROMPTS: Record<string, string> = {
+  tip: "un tip práctico y accionable que pueda aplicar hoy mismo. Que sea contundente, en 2-3 párrafos cortos. Que empiece nombrando el dolor y termine con una acción concreta",
+  estrategia: "un artículo corto (3-4 párrafos) con una estrategia concreta. Usá la estructura ESPEJO→DOLOR→SALIDA. Que el lector sienta que le están hablando a él",
+  reflexion: "una reflexión provocadora que lo haga cuestionar su forma de operar. Usá la estructura de CONFRONTACIÓN DIRECTA. Que incomode para ordenar",
+  noticia: "un análisis breve de una tendencia o situación actual relevante para negocios. Que sea concreto, útil y con una bajada práctica",
+};
+
+const SYSTEM_PROMPT = `Sos la voz de una comunidad de negocios argentina. Tu comunicación es:
+- DIRECTA: Vas al punto sin preámbulos.
+- HONESTA: No prometés lo que no podés cumplir.
+- EMOCIONAL: Conectás con lo que la persona siente.
+- ARGENTINA: Usás "vos", expresiones del contexto.
+- SIMPLE: Frases cortas, ideas claras.
+
+Generá contenido con un título corto y contundente, y contenido en párrafos separados por saltos de línea.
+
+Respondé ÚNICAMENTE en formato JSON: {"titulo": "...", "contenido": "..."}`;
 
 const AdminContenido = () => {
   const { toast } = useToast();
@@ -88,19 +107,43 @@ const AdminContenido = () => {
       toast({ title: "Elegí una categoría", variant: "destructive" });
       return;
     }
+
+    const configured = aiService.getConfiguredProviders();
+    if (configured.length === 0) {
+      toast({
+        title: "Sin proveedores de IA",
+        description: "Andá a la pestaña IA y cargá al menos una API key gratuita.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setGenerating(true);
     setAiPreview(null);
+
     try {
       const cat = categories.find((c) => c.id === aiCategory);
-      const { data, error } = await supabase.functions.invoke("generate-content", {
-        body: { category: cat?.slug || "tip", guidelines: aiGuidelines },
-      });
-      if (error) throw error;
-      if (data?.error) {
-        toast({ title: "Error", description: data.error, variant: "destructive" });
-        return;
+      const promptType = CATEGORY_PROMPTS[cat?.slug || "tip"] || CATEGORY_PROMPTS.tip;
+      const guidelinesBlock = aiGuidelines ? `\n\nLineamientos del administrador: ${aiGuidelines}` : "";
+
+      const { content: aiResponse, provider } = await aiService.chat(
+        SYSTEM_PROMPT + guidelinesBlock,
+        `Generá ${promptType}.`
+      );
+
+      // Parse JSON response
+      const jsonMatch = aiResponse.match(/\{[\s\S]*?\}/);
+      let result: { titulo: string; contenido: string };
+
+      if (jsonMatch) {
+        result = JSON.parse(jsonMatch[0]);
+      } else {
+        // Fallback: use raw text
+        result = { titulo: "Contenido generado", contenido: aiResponse };
       }
-      setAiPreview({ titulo: data.titulo, contenido: data.contenido });
+
+      setAiPreview({ titulo: result.titulo, contenido: result.contenido });
+      toast({ title: `Generado con ${provider} ✨` });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       toast({ title: "Error al generar", description: message, variant: "destructive" });
@@ -157,6 +200,8 @@ const AdminContenido = () => {
     }
   };
 
+  const configuredProviders = aiService.getConfiguredProviders();
+
   if (loading) {
     return (
       <div className="flex justify-center py-8">
@@ -167,7 +212,6 @@ const AdminContenido = () => {
 
   return (
     <div className="space-y-4">
-      {/* Action bar */}
       <div className="flex flex-wrap gap-2">
         <Button size="sm" variant={view === "posts" ? "default" : "outline"} onClick={() => setView("posts")}>
           Publicaciones
@@ -177,13 +221,13 @@ const AdminContenido = () => {
         </Button>
         <Button size="sm" variant={view === "ai-generate" ? "default" : "outline"} onClick={() => setView("ai-generate")}>
           <Sparkles className="w-3.5 h-3.5 mr-1" /> Generar con IA
+          {configuredProviders.length === 0 && <span className="text-[10px] ml-1 opacity-60">(configurar)</span>}
         </Button>
         <Button size="sm" variant={view === "categories" ? "default" : "outline"} onClick={() => setView("categories")}>
           <Settings2 className="w-3.5 h-3.5 mr-1" /> Categorías
         </Button>
       </div>
 
-      {/* Posts list */}
       {view === "posts" && (
         <div className="space-y-2">
           {posts.length === 0 ? (
@@ -222,7 +266,6 @@ const AdminContenido = () => {
         </div>
       )}
 
-      {/* New post form */}
       {view === "new-post" && (
         <Card>
           <CardHeader><CardTitle className="text-sm">Nueva publicación</CardTitle></CardHeader>
@@ -250,11 +293,15 @@ const AdminContenido = () => {
         </Card>
       )}
 
-      {/* AI Generate */}
       {view === "ai-generate" && (
         <Card>
           <CardHeader><CardTitle className="text-sm">Generar contenido con IA</CardTitle></CardHeader>
           <CardContent className="space-y-3">
+            {configuredProviders.length === 0 && (
+              <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 text-xs text-yellow-800 dark:text-yellow-200">
+                ⚠️ No hay proveedores de IA configurados. Andá a la pestaña <strong>IA</strong> y cargá al menos una API key gratuita.
+              </div>
+            )}
             <Select value={aiCategory} onValueChange={setAiCategory}>
               <SelectTrigger><SelectValue placeholder="Categoría para generar" /></SelectTrigger>
               <SelectContent>
@@ -269,7 +316,7 @@ const AdminContenido = () => {
               value={aiGuidelines}
               onChange={(e) => setAiGuidelines(e.target.value)}
             />
-            <Button onClick={generateWithAI} disabled={generating}>
+            <Button onClick={generateWithAI} disabled={generating || configuredProviders.length === 0}>
               {generating ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Sparkles className="w-4 h-4 mr-1" />}
               Generar
             </Button>
@@ -292,7 +339,6 @@ const AdminContenido = () => {
         </Card>
       )}
 
-      {/* Categories */}
       {view === "categories" && (
         <Card>
           <CardHeader><CardTitle className="text-sm">Categorías</CardTitle></CardHeader>

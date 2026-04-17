@@ -2,14 +2,15 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Navigate } from "react-router-dom";
-import { Shield, Newspaper, MessageSquare, Users, ArrowLeft, BookOpen } from "lucide-react";
+import { Shield, Newspaper, MessageSquare, Users, ArrowLeft, BookOpen, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AdminNovedades from "@/components/admin/AdminNovedades";
 import AdminMuro from "@/components/admin/AdminMuro";
 import AdminUsuarios from "@/components/admin/AdminUsuarios";
 import AdminContenido from "@/components/admin/AdminContenido";
+import AdminIA from "@/components/admin/AdminIA";
 
-type AdminTab = "contenido" | "novedades" | "muro" | "usuarios";
+type AdminTab = "contenido" | "novedades" | "muro" | "usuarios" | "ia";
 
 const Admin = () => {
   const { session, loading, user } = useAuth();
@@ -41,6 +42,7 @@ const Admin = () => {
 
   const tabs: { key: AdminTab; label: string; icon: typeof Newspaper }[] = [
     { key: "contenido", label: "Contenido", icon: BookOpen },
+    { key: "ia", label: "IA", icon: Sparkles },
     { key: "novedades", label: "Novedades", icon: Newspaper },
     { key: "muro", label: "Muro", icon: MessageSquare },
     { key: "usuarios", label: "Usuarios", icon: Users },
@@ -87,6 +89,7 @@ const Admin = () => {
       {/* Content */}
       <main className="max-w-4xl mx-auto px-4 py-4">
         {activeTab === "contenido" && <AdminContenido />}
+        {activeTab === "ia" && <AdminIA />}
         {activeTab === "novedades" && <AdminNovedades />}
         {activeTab === "muro" && <AdminMuro />}
         {activeTab === "usuarios" && <AdminUsuarios />}
