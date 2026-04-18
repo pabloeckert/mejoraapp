@@ -70,3 +70,44 @@ Unificar las carpetas `Documents/` y `documentos/` en una sola carpeta `Document
   - `Informe-Tecnico-MejoraApp.docx`
   - `Tutorial-MejoraApp-Completo.docx`
   - `MejoraApp-Completo.tar.gz`
+
+---
+
+## 4. Acceso Administrador con Contraseña Maestra
+
+### Requerimiento
+Que el admin pueda acceder al panel de administración desde cualquier perfil logueado mediante una contraseña maestra. Incluir mecanismos de recuperación si se olvida la contraseña.
+
+### Cambios realizados
+| Componente | Cambio |
+|---|---|
+| `supabase/migrations/20260418170000_add_admin_config.sql` | Tabla `admin_config` con hash SHA-256 de contraseña + preguntas de seguridad |
+| `src/components/admin/AdminGate.tsx` | Pantalla de login con contraseña maestra + recuperación por preguntas |
+| `src/components/admin/AdminSeguridad.tsx` | Panel para cambiar contraseña y preguntas de seguridad |
+| `src/pages/Admin.tsx` | Integración del gate: requiere contraseña maestra para acceder |
+| `src/integrations/supabase/types.ts` | Tipos para `admin_config` |
+
+### Flujo de acceso
+1. Usuario logueado → va a `/admin`
+2. Si no es admin → redirige a `/`
+3. Si es admin pero no ingresó contraseña → muestra **AdminGate**
+4. Ingresá la contraseña maestra → acceso al panel
+5. Sesión válida por **4 horas**, luego se bloquea automáticamente
+6. Botón "Bloquear" para cerrar sesión admin manualmente
+
+### Recuperación de contraseña
+1. "¿Olvidaste la contraseña?" → muestra opciones
+2. "Preguntas de seguridad" → responder 2 preguntas
+3. Si ambas respuestas son correctas → crear nueva contraseña
+
+### Seguridad
+- Contraseña almacenada como **SHA-256 hash** (nunca en texto plano)
+- Respuestas de seguridad también hasheadas (case-insensitive)
+- Bloqueo tras 5 intentos fallidos (30 segundos)
+- Versión de configuración se incrementa al cambiar contraseña (invalida sesiones anteriores)
+- Sesión admin expira a las 4 horas
+
+### Contraseña inicial
+- **T@beg2301**
+- Pregunta 1: "¿Cuál es el nombre de tu primera mascota?" → respuesta: `mejoraapp`
+- Pregunta 2: "¿En qué ciudad naciste?" → respuesta: `buenosaires`

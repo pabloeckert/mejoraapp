@@ -2,21 +2,26 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Navigate } from "react-router-dom";
-import { Shield, Newspaper, MessageSquare, Users, ArrowLeft, BookOpen, Sparkles } from "lucide-react";
+import { Shield, Newspaper, MessageSquare, Users, ArrowLeft, BookOpen, Sparkles, LogOut, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AdminNovedades from "@/components/admin/AdminNovedades";
 import AdminMuro from "@/components/admin/AdminMuro";
 import AdminUsuarios from "@/components/admin/AdminUsuarios";
 import AdminContenido from "@/components/admin/AdminContenido";
 import AdminIA from "@/components/admin/AdminIA";
+import AdminSeguridad from "@/components/admin/AdminSeguridad";
+import AdminGate from "@/components/admin/AdminGate";
 
-type AdminTab = "contenido" | "novedades" | "muro" | "usuarios" | "ia";
+type AdminTab = "contenido" | "ia" | "novedades" | "muro" | "usuarios" | "seguridad";
 
 const Admin = () => {
   const { session, loading, user } = useAuth();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [activeTab, setActiveTab] = useState<AdminTab>("contenido");
+  const [masterUnlocked, setMasterUnlocked] = useState(false);
+  const [checkingMaster, setCheckingMaster] = useState(true);
 
+  // Check if user has admin role
   useEffect(() => {
     if (!user) return;
     const checkAdmin = async () => {
@@ -29,7 +34,32 @@ const Admin = () => {
     checkAdmin();
   }, [user]);
 
-  if (loading || isAdmin === null) {
+  // Check if master password was already entered this session
+  useEffect(() => {
+    const unlocked = sessionStorage.getItem("admin_unlocked");
+    const unlockedAt = sessionStorage.getItem("admin_unlocked_at");
+
+    if (unlocked === "true" && unlockedAt) {
+      // Session valid for 4 hours
+      const elapsed = Date.now() - Number(unlockedAt);
+      if (elapsed < 4 * 60 * 60 * 1000) {
+        setMasterUnlocked(true);
+      } else {
+        // Expired
+        sessionStorage.removeItem("admin_unlocked");
+        sessionStorage.removeItem("admin_unlocked_at");
+      }
+    }
+    setCheckingMaster(false);
+  }, []);
+
+  const handleLock = () => {
+    sessionStorage.removeItem("admin_unlocked");
+    sessionStorage.removeItem("admin_unlocked_at");
+    setMasterUnlocked(false);
+  };
+
+  if (loading || isAdmin === null || checkingMaster) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
@@ -38,7 +68,11 @@ const Admin = () => {
   }
 
   if (!session) return <Navigate to="/auth" replace />;
-  if (!isAdmin) return <Navigate to="/" replace />;
+
+  // If user is not admin OR hasn't entered master password, show the gate
+  if (!isAdmin || !masterUnlocked) {
+    return <AdminGate onUnlock={() => setMasterUnlocked(true)} />;
+  }
 
   const tabs: { key: AdminTab; label: string; icon: typeof Newspaper }[] = [
     { key: "contenido", label: "Contenido", icon: BookOpen },
@@ -46,6 +80,7 @@ const Admin = () => {
     { key: "novedades", label: "Novedades", icon: Newspaper },
     { key: "muro", label: "Muro", icon: MessageSquare },
     { key: "usuarios", label: "Usuarios", icon: Users },
+    { key: "seguridad", label: "Seguridad", icon: Lock },
   ];
 
   return (
@@ -57,12 +92,18 @@ const Admin = () => {
             <Shield className="w-5 h-5 text-primary" />
             <h1 className="font-bold text-foreground">Panel Admin</h1>
           </div>
-          <Button variant="ghost" size="sm" asChild>
-            <a href="/">
-              <ArrowLeft className="w-4 h-4 mr-1" />
-              Volver
-            </a>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={handleLock} className="text-xs text-muted-foreground">
+              <LogOut className="w-3.5 h-3.5 mr-1" />
+              Bloquear
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <a href="/">
+                <ArrowLeft className="w-4 h-4 mr-1" />
+                Volver
+              </a>
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -93,6 +134,7 @@ const Admin = () => {
         {activeTab === "novedades" && <AdminNovedades />}
         {activeTab === "muro" && <AdminMuro />}
         {activeTab === "usuarios" && <AdminUsuarios />}
+        {activeTab === "seguridad" && <AdminSeguridad />}
       </main>
     </div>
   );
