@@ -83,35 +83,50 @@ export type Database = {
         Row: {
           category_id: string | null
           contenido: string
+          content_type: string
           created_at: string
           created_by: string | null
           estado: string
           fuente: string | null
           id: string
+          imagen_url: string | null
+          pdf_url: string | null
           published_at: string | null
+          resumen: string | null
           titulo: string
+          video_url: string | null
         }
         Insert: {
           category_id?: string | null
           contenido: string
+          content_type?: string
           created_at?: string
           created_by?: string | null
           estado?: string
           fuente?: string | null
           id?: string
+          imagen_url?: string | null
+          pdf_url?: string | null
           published_at?: string | null
+          resumen?: string | null
           titulo: string
+          video_url?: string | null
         }
         Update: {
           category_id?: string | null
           contenido?: string
+          content_type?: string
           created_at?: string
           created_by?: string | null
           estado?: string
           fuente?: string | null
           id?: string
+          imagen_url?: string | null
+          pdf_url?: string | null
           published_at?: string | null
+          resumen?: string | null
           titulo?: string
+          video_url?: string | null
         }
         Relationships: [
           {

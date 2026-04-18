@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Sparkles, Loader2, Trash2, Eye, EyeOff, Settings2 } from "lucide-react";
+import { Plus, Sparkles, Loader2, Trash2, Eye, EyeOff, Settings2, Play, Image as ImageIcon, Download, BookOpen, FileText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,13 @@ type Post = Tables<"content_posts"> & {
 
 type View = "posts" | "new-post" | "ai-generate" | "categories";
 
+const CONTENT_TYPES = [
+  { value: "article", label: "Artículo", icon: FileText },
+  { value: "video", label: "Video", icon: Play },
+  { value: "infographic", label: "Infografía", icon: ImageIcon },
+  { value: "book", label: "Libro PDF", icon: BookOpen },
+];
+
 const CATEGORY_PROMPTS: Record<string, string> = {
   tip: "un tip práctico y accionable que pueda aplicar hoy mismo. Que sea contundente, en 2-3 párrafos cortos. Que empiece nombrando el dolor y termine con una acción concreta",
   estrategia: "un artículo corto (3-4 párrafos) con una estrategia concreta. Usá la estructura ESPEJO→DOLOR→SALIDA. Que el lector sienta que le están hablando a él",
@@ -33,7 +40,12 @@ const SYSTEM_PROMPT = `Sos la voz de una comunidad de negocios argentina. Tu com
 
 Generá contenido con un título corto y contundente, y contenido en párrafos separados por saltos de línea.
 
-Respondé ÚNICAMENTE en formato JSON: {"titulo": "...", "contenido": "..."}`;
+Respondé ÚNICAMENTE en formato JSON: {"titulo": "...", "contenido": "...", "resumen": "..."}`;
+
+const getTypeBadge = (type: string) => {
+  const t = CONTENT_TYPES.find((c) => c.value === type);
+  return t || CONTENT_TYPES[0];
+};
 
 const AdminContenido = () => {
   const { toast } = useToast();
@@ -45,14 +57,19 @@ const AdminContenido = () => {
   // New post form
   const [titulo, setTitulo] = useState("");
   const [contenido, setContenido] = useState("");
+  const [resumen, setResumen] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  const [contentType, setContentType] = useState("article");
+  const [imagenUrl, setImagenUrl] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
+  const [pdfUrl, setPdfUrl] = useState("");
   const [saving, setSaving] = useState(false);
 
   // AI generate
   const [aiCategory, setAiCategory] = useState("");
   const [aiGuidelines, setAiGuidelines] = useState("");
   const [generating, setGenerating] = useState(false);
-  const [aiPreview, setAiPreview] = useState<{ titulo: string; contenido: string } | null>(null);
+  const [aiPreview, setAiPreview] = useState<{ titulo: string; contenido: string; resumen: string } | null>(null);
 
   // New category
   const [newCatName, setNewCatName] = useState("");
@@ -90,6 +107,17 @@ const AdminContenido = () => {
     }
   }, [categories.length, loading]);
 
+  const resetForm = () => {
+    setTitulo("");
+    setContenido("");
+    setResumen("");
+    setCategoryId("");
+    setContentType("article");
+    setImagenUrl("");
+    setVideoUrl("");
+    setPdfUrl("");
+  };
+
   const savePost = async (estado: string = "publicado") => {
     if (!titulo.trim() || !contenido.trim()) {
       toast({ title: "Completá título y contenido", variant: "destructive" });
@@ -99,7 +127,12 @@ const AdminContenido = () => {
     const payload: TablesInsert<"content_posts"> = {
       titulo: titulo.trim(),
       contenido: contenido.trim(),
+      resumen: resumen.trim() || null,
       category_id: categoryId || null,
+      content_type: contentType,
+      imagen_url: imagenUrl.trim() || null,
+      video_url: videoUrl.trim() || null,
+      pdf_url: pdfUrl.trim() || null,
       estado,
       fuente: "admin",
     };
@@ -109,9 +142,7 @@ const AdminContenido = () => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       toast({ title: estado === "publicado" ? "Publicado" : "Guardado como borrador" });
-      setTitulo("");
-      setContenido("");
-      setCategoryId("");
+      resetForm();
       setView("posts");
       fetchData();
     }
@@ -146,18 +177,16 @@ const AdminContenido = () => {
         `Generá ${promptType}.`
       );
 
-      // Parse JSON response
       const jsonMatch = aiResponse.match(/\{[\s\S]*?\}/);
-      let result: { titulo: string; contenido: string };
+      let result: { titulo: string; contenido: string; resumen: string };
 
       if (jsonMatch) {
         result = JSON.parse(jsonMatch[0]);
       } else {
-        // Fallback: use raw text
-        result = { titulo: "Contenido generado", contenido: aiResponse };
+        result = { titulo: "Contenido generado", contenido: aiResponse, resumen: aiResponse.slice(0, 120) };
       }
 
-      setAiPreview({ titulo: result.titulo, contenido: result.contenido });
+      setAiPreview({ titulo: result.titulo, contenido: result.contenido, resumen: result.resumen || result.contenido.slice(0, 120) });
       toast({ title: `Generado con ${provider} ✨` });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
@@ -173,7 +202,9 @@ const AdminContenido = () => {
     const payload: TablesInsert<"content_posts"> = {
       titulo: aiPreview.titulo,
       contenido: aiPreview.contenido,
+      resumen: aiPreview.resumen || null,
       category_id: aiCategory || null,
+      content_type: "article",
       estado: "publicado",
       fuente: "ia",
     };
@@ -248,35 +279,43 @@ const AdminContenido = () => {
           {posts.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-6">No hay publicaciones aún</p>
           ) : (
-            posts.map((post) => (
-              <Card key={post.id} className={post.estado !== "publicado" ? "opacity-60" : ""}>
-                <CardContent className="p-3 flex items-start gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
-                        {post.content_categories?.nombre || "Sin categoría"}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground">
-                        {post.fuente === "ia" ? "🤖 IA" : "✍️ Manual"}
-                      </span>
-                      {post.estado !== "publicado" && (
-                        <span className="text-[10px] text-orange-500 font-bold">Borrador</span>
-                      )}
+            posts.map((post) => {
+              const badge = getTypeBadge(post.content_type);
+              const BadgeIcon = badge.icon;
+              return (
+                <Card key={post.id} className={post.estado !== "publicado" ? "opacity-60" : ""}>
+                  <CardContent className="p-3 flex items-start gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                          {post.content_categories?.nombre || "Sin cat."}
+                        </span>
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded inline-flex items-center gap-0.5 ${badge.value === "video" ? "bg-red-500/10 text-red-600" : badge.value === "infographic" ? "bg-purple-500/10 text-purple-600" : badge.value === "book" ? "bg-emerald-500/10 text-emerald-600" : "bg-blue-500/10 text-blue-600"}`}>
+                          <BadgeIcon className="w-2.5 h-2.5" />
+                          {badge.label}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">
+                          {post.fuente === "ia" ? "🤖" : "✍️"}
+                        </span>
+                        {post.estado !== "publicado" && (
+                          <span className="text-[10px] text-orange-500 font-bold">Borrador</span>
+                        )}
+                      </div>
+                      <h4 className="text-sm font-bold text-foreground truncate">{post.titulo}</h4>
+                      <p className="text-xs text-muted-foreground line-clamp-2">{post.contenido}</p>
                     </div>
-                    <h4 className="text-sm font-bold text-foreground truncate">{post.titulo}</h4>
-                    <p className="text-xs text-muted-foreground line-clamp-2">{post.contenido}</p>
-                  </div>
-                  <div className="flex gap-1 shrink-0">
-                    <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => togglePostEstado(post)}>
-                      {post.estado === "publicado" ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                    </Button>
-                    <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => deletePost(post.id)}>
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
+                    <div className="flex gap-1 shrink-0">
+                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => togglePostEstado(post)}>
+                        {post.estado === "publicado" ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </Button>
+                      <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => deletePost(post.id)}>
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })
           )}
         </div>
       )}
@@ -285,6 +324,26 @@ const AdminContenido = () => {
         <Card>
           <CardHeader><CardTitle className="text-sm">Nueva publicación</CardTitle></CardHeader>
           <CardContent className="space-y-3">
+            {/* Content type selector */}
+            <div className="flex gap-2 flex-wrap">
+              {CONTENT_TYPES.map((t) => {
+                const TIcon = t.icon;
+                return (
+                  <button
+                    key={t.value}
+                    onClick={() => setContentType(t.value)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors
+                      ${contentType === t.value
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary text-muted-foreground hover:text-foreground"}`}
+                  >
+                    <TIcon className="w-3.5 h-3.5" />
+                    {t.label}
+                  </button>
+                );
+              })}
+            </div>
+
             <Select value={categoryId} onValueChange={setCategoryId}>
               <SelectTrigger><SelectValue placeholder="Categoría" /></SelectTrigger>
               <SelectContent>
@@ -293,8 +352,27 @@ const AdminContenido = () => {
                 ))}
               </SelectContent>
             </Select>
+
             <Input placeholder="Título contundente" value={titulo} onChange={(e) => setTitulo(e.target.value)} />
-            <Textarea placeholder="Contenido..." rows={6} value={contenido} onChange={(e) => setContenido(e.target.value)} />
+
+            <Textarea placeholder="Resumen corto (se ve en la tarjeta colapsada)..." rows={2} value={resumen} onChange={(e) => setResumen(e.target.value)} />
+
+            <Textarea placeholder="Contenido completo (se ve al expandir)..." rows={6} value={contenido} onChange={(e) => setContenido(e.target.value)} />
+
+            {/* Media URL fields based on content type */}
+            {(contentType === "video") && (
+              <Input placeholder="URL del video (YouTube embed o watch)" value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} />
+            )}
+            {(contentType === "infographic" || contentType === "article") && (
+              <Input placeholder="URL de la imagen" value={imagenUrl} onChange={(e) => setImagenUrl(e.target.value)} />
+            )}
+            {contentType === "book" && (
+              <>
+                <Input placeholder="URL del PDF descargable" value={pdfUrl} onChange={(e) => setPdfUrl(e.target.value)} />
+                <Input placeholder="URL de la portada (imagen)" value={imagenUrl} onChange={(e) => setImagenUrl(e.target.value)} />
+              </>
+            )}
+
             <div className="flex gap-2">
               <Button onClick={() => savePost("publicado")} disabled={saving}>
                 {saving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
@@ -321,7 +399,7 @@ const AdminContenido = () => {
               <SelectTrigger><SelectValue placeholder="Categoría para generar" /></SelectTrigger>
               <SelectContent>
                 {categories
-                  .filter((c) => CATEGORY_PROMPTS[c.slug]) // Solo categorías con prompt
+                  .filter((c) => CATEGORY_PROMPTS[c.slug])
                   .map((c) => (
                     <SelectItem key={c.id} value={c.id}>{c.nombre}</SelectItem>
                   ))}
@@ -341,6 +419,9 @@ const AdminContenido = () => {
             {aiPreview && (
               <div className="border rounded-lg p-4 space-y-2 bg-muted/30">
                 <h4 className="font-bold text-foreground text-sm">{aiPreview.titulo}</h4>
+                {aiPreview.resumen && (
+                  <p className="text-xs text-muted-foreground">{aiPreview.resumen}</p>
+                )}
                 <p className="text-sm text-foreground/85 whitespace-pre-line">{aiPreview.contenido}</p>
                 <div className="flex gap-2 pt-2">
                   <Button size="sm" onClick={publishAiContent} disabled={saving}>
