@@ -306,6 +306,7 @@ export type Database = {
       }
       wall_posts: {
         Row: {
+          comments_count: number
           content: string
           created_at: string
           id: string
@@ -314,6 +315,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          comments_count?: number
           content: string
           created_at?: string
           id?: string
@@ -322,6 +324,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          comments_count?: number
           content?: string
           created_at?: string
           id?: string
@@ -330,6 +333,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      wall_comments: {
+        Row: {
+          id: string
+          post_id: string
+          user_id: string
+          content: string
+          status: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          post_id: string
+          user_id: string
+          content: string
+          status?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          post_id?: string
+          user_id?: string
+          content?: string
+          status?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wall_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "wall_posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

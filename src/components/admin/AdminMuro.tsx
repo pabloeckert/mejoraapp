@@ -3,10 +3,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, XCircle, Loader2, AlertTriangle, RefreshCw } from "lucide-react";
+import { CheckCircle, XCircle, Loader2, AlertTriangle, RefreshCw, MessageSquare, ChevronDown, ChevronUp, CornerDownRight } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
 type WallPost = Tables<"wall_posts">;
+
+interface WallComment {
+  id: string;
+  post_id: string;
+  content: string;
+  created_at: string;
+  user_id: string;
+  status: string;
+}
 
 const statusColors: Record<string, string> = {
   approved: "text-green-600 bg-green-50 dark:bg-green-950/30",
@@ -20,6 +29,9 @@ const AdminMuro = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
   const [refreshing, setRefreshing] = useState(false);
+  const [expandedPosts, setExpandedPosts] = useState<Set<string>>(new Set());
+  const [commentsMap, setCommentsMap] = useState<Record<string, WallComment[]>>({});
+  const [loadingComments, setLoadingComments] = useState<Set<string>>(new Set());
 
   const fetchPosts = useCallback(async () => {
     setRefreshing(true);
@@ -49,6 +61,46 @@ const AdminMuro = () => {
     }
   };
 
+  const toggleExpand = async (postId: string) => {
+    setExpandedPosts((prev) => {
+      const next = new Set(prev);
+      if (next.has(postId)) next.delete(postId);
+      else next.add(postId);
+      return next;
+    });
+
+    if (!expandedPosts.has(postId) && !commentsMap[postId]) {
+      setLoadingComments((prev) => new Set(prev).add(postId));
+      const { data } = await supabase
+        .from("wall_comments")
+        .select("id, post_id, content, created_at, user_id, status")
+        .eq("post_id", postId)
+        .order("created_at", { ascending: true });
+      setCommentsMap((prev) => ({ ...prev, [postId]: (data as WallComment[]) || [] }));
+      setLoadingComments((prev) => {
+        const next = new Set(prev);
+        next.delete(postId);
+        return next;
+      });
+    }
+  };
+
+  const updateCommentStatus = async (commentId: string, postId: string, newStatus: string) => {
+    const { error } = await supabase
+      .from("wall_comments")
+      .update({ status: newStatus })
+      .eq("id", commentId);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: `Comentario ${newStatus === "approved" ? "aprobado" : "rechazado"}` });
+      setCommentsMap((prev) => ({
+        ...prev,
+        [postId]: (prev[postId] || []).map((c) => (c.id === commentId ? { ...c, status: newStatus } : c)),
+      }));
+    }
+  };
+
   const filtered = filter === "all" ? posts : posts.filter((p) => p.status === filter);
 
   const counts = {
@@ -71,7 +123,6 @@ const AdminMuro = () => {
         </Button>
       </div>
 
-      {/* Filters */}
       <div className="flex gap-1.5 flex-wrap">
         {(["all", "approved", "rejected", "pending"] as const).map((f) => (
           <button
@@ -94,11 +145,11 @@ const AdminMuro = () => {
                   {post.status}
                 </span>
                 <span className="text-[10px] text-muted-foreground">
-                  ❤ {post.likes_count} · {new Date(post.created_at).toLocaleDateString("es-AR")}
+                  ❤ {post.likes_count} · 💬 {post.comments_count} · {new Date(post.created_at).toLocaleDateString("es-AR")}
                 </span>
               </div>
               <p className="text-sm text-foreground whitespace-pre-line mb-2">{post.content}</p>
-              <div className="flex gap-1.5">
+              <div className="flex gap-1.5 flex-wrap">
                 {post.status !== "approved" && (
                   <Button size="sm" variant="outline" className="h-7 text-xs gap-1 text-green-600" onClick={() => updateStatus(post.id, "approved")}>
                     <CheckCircle className="w-3.5 h-3.5" /> Aprobar
@@ -109,7 +160,58 @@ const AdminMuro = () => {
                     <XCircle className="w-3.5 h-3.5" /> Rechazar
                   </Button>
                 )}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 text-xs gap-1"
+                  onClick={() => toggleExpand(post.id)}
+                >
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  Comentarios ({post.comments_count})
+                  {expandedPosts.has(post.id) ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                </Button>
               </div>
+
+              {expandedPosts.has(post.id) && (
+                <div className="mt-3 pt-3 border-t border-border/50 space-y-2">
+                  {loadingComments.has(post.id) ? (
+                    <div className="flex justify-center py-2">
+                      <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : (commentsMap[post.id] || []).length === 0 ? (
+                    <p className="text-xs text-muted-foreground text-center py-2">Sin comentarios.</p>
+                  ) : (
+                    (commentsMap[post.id] || []).map((c) => (
+                      <div key={c.id} className="flex gap-2 items-start py-1.5">
+                        <CornerDownRight className="w-3 h-3 text-muted-foreground/50 mt-1 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded-full ${statusColors[c.status] || ""}`}>
+                              {c.status}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground">
+                              {new Date(c.created_at).toLocaleDateString("es-AR")}
+                            </span>
+                          </div>
+                          <p className="text-xs text-foreground/80 whitespace-pre-line">{c.content}</p>
+                          <div className="flex gap-1 mt-1">
+                            {c.status !== "approved" && (
+                              <Button size="sm" variant="outline" className="h-6 text-[10px] gap-1 text-green-600 px-2" onClick={() => updateCommentStatus(c.id, post.id, "approved")}>
+                                <CheckCircle className="w-3 h-3" /> OK
+                              </Button>
+                            )}
+                            {c.status !== "rejected" && (
+                              <Button size="sm" variant="outline" className="h-6 text-[10px] gap-1 text-red-600 px-2" onClick={() => updateCommentStatus(c.id, post.id, "rejected")}>
+                                <XCircle className="w-3 h-3" /> Rechazar
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}
