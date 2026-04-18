@@ -98,7 +98,16 @@ const Auth = () => {
       <div className="w-full max-w-md space-y-6">
         {/* Logo */}
         <div className="flex justify-center">
-          <img src={logoComunidad} alt="Mejora Continua - Comunidad de Negocios" className="h-14 object-contain" />
+          <div className="relative">
+            <img src={logoComunidad} alt="Mejora Continua - Comunidad de Negocios" className="h-14 object-contain" />
+            {/* Hidden admin access — only visible on hover, only on login screen */}
+            <a
+              href="/admin"
+              aria-label="Acceso administración"
+              title="Admin"
+              className="absolute -bottom-1 -right-2 w-2.5 h-2.5 rounded-full bg-muted-foreground/10 hover:bg-primary transition-colors"
+            />
+          </div>
         </div>
 
         <Card className="border-0 shadow-lg">
