@@ -4,73 +4,125 @@
 
 ---
 
-## Estado Actual
+## Situación
+
+| Item | Detalle |
+|---|---|
+| **Dominio principal** | `mejoraok.com` — sitio WordPress en Hostinger |
+| **App MejoraApp** | React 18 + Vite + Supabase (PWA) |
+| **Hosting** | Hostinger (hPanel) |
+| **Objetivo** | Publicar la MejoraApp accesible desde la web |
+
+---
+
+## Decisión: Subdominio `app.mejoraok.com`
+
+Se eligió **subdominio** en vez de subcarpeta por estas razones:
+
+| Factor | `app.mejoraok.com` ✅ | `mejoraok.com/app` ❌ |
+|---|---|---|
+| Separación de WordPress | Totalmente aparte | Mezclado con WordPress |
+| Routing SPA | Sin conflictos | .htaccess de WordPress puede romper routing |
+| Caché | Sin interferencia | LiteSpeed de WordPress puede dar problemas |
+| SSL | Automático | Compartido con WordPress |
+| Setup | 1 click en hPanel | Arrastrar archivos dentro de WordPress |
+
+---
+
+## Estado del Deploy
 
 | Item | Estado |
 |---|---|
-| **App en producción** | ✅ https://pabloeckert.github.io/mejoraapp/ |
-| **Deploy automático** | ✅ GitHub Actions (cada push a `main`) |
-| **SSL/HTTPS** | ✅ Incluido (GitHub Pages) |
-| **CDN** | ✅ Global (GitHub Pages) |
-| **Dominio personalizado** | ⏳ Pendiente configurar DNS |
+| **Build de producción** | ✅ `npm run build` genera `dist/` correctamente |
+| **Tests** | ✅ 24/24 pasan |
+| **GitHub repo** | ✅ https://github.com/pabloeckert/mejoraapp |
+| **GitHub Pages** | ✅ Backup live en https://pabloeckert.github.io/mejoraapp/ |
+| **GitHub Actions** | ✅ Workflow configurado para auto-deploy |
+| **Hostinger FTP** | ❌ Canal de datos bloqueado desde servidores remotos |
+| **Deploy en Hostinger** | ⏳ Pendiente — requiere subir por File Manager de hPanel |
 
 ---
 
-## Cómo Funciona el Deploy
+## Pasos para Deploy en Hostinger
 
-### Flujo automático
-```
-git push → GitHub Actions → npm ci → npm run build → deploy a GitHub Pages
-```
+### Paso 1: Crear subdominio en hPanel
 
-### Archivo de workflow
-`.github/workflows/deploy.yml` — configura el pipeline de CI/CD.
+1. Entrar a **hPanel → Dominios → Subdominios**
+2. Crear subdominio:
+   - **Nombre del subdominio:** `app`
+   - **Dominio:** `mejoraok.com`
+   - **Carpeta:** se crea automáticamente (`public_html/app` o similar)
+3. Verificar que el SSL se genere automáticamente (Hostinger lo hace)
 
-### Para deployar manualmente
-1. Ir a GitHub → Actions → "Deploy MejoraApp" → Run workflow
+### Paso 2: Generar zip del build
 
----
-
-## Configurar Dominio Personalizado (mejoraok.com)
-
-### Paso 1: Configurar DNS en Hostinger
-
-Entrar a **hPanel → Dominios → mejoraok.com → DNS / Zona DNS**
-
-Agregar estos registros:
-
-| Tipo | Nombre | Valor | TTL |
-|---|---|---|---|
-| `A` | `@` | `185.199.108.153` | 3600 |
-| `A` | `@` | `185.199.109.153` | 3600 |
-| `A` | `@` | `185.199.110.153` | 3600 |
-| `A` | `@` | `185.199.111.153` | 3600 |
-| `CNAME` | `www` | `pabloeckert.github.io` | 3600 |
-
-> **Nota:** Las 4 IPs `A` son los servidores de GitHub Pages.
-
-### Paso 2: Verificar en GitHub
-
-1. Ir a **GitHub → mejoraapp → Settings → Pages**
-2. En "Custom domain" debería aparecer `mejoraok.com` (detectado del CNAME)
-3. Esperar a que se genere el certificado SSL (puede tardar hasta 24h, normalmente 15 min)
-4. Marcar "Enforce HTTPS"
-
-### Paso 3: Verificar
-
+Desde el repo local o desde GitHub Actions:
 ```bash
-# Verificar DNS
-dig mejoraok.com +short
-# Debería mostrar: 185.199.108.153 (o una de las 4 IPs)
-
-# Verificar HTTPS
-curl -I https://mejoraok.com
-# Debería mostrar: HTTP/2 200
+cd mejoraapp
+npm run build
+cd dist && zip -r ../mejoraapp-dist.zip . && cd ..
 ```
+
+### Paso 3: Subir por File Manager
+
+1. Entrar a **hPanel → Archivos → Administrador de archivos**
+2. Navegar a la carpeta del subdominio `app.mejoraok.com`
+3. Subir `mejoraapp-dist.zip`
+4. Clic derecho → **Extraer**
+5. Verificar que `index.html` esté en la raíz de la carpeta
+
+### Paso 4: Configurar .htaccess
+
+Crear archivo `.htaccess` en la raíz de la carpeta del subdominio:
+```apache
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
+```
+
+Esto permite que el SPA routing funcione correctamente (todas las rutas redirigen a `index.html`).
+
+### Paso 5: Verificar
+
+- Abrir `https://app.mejoraok.com` en el navegador
+- Verificar que la app carga correctamente
+- Probar navegación entre secciones
+- Verificar que el Service Worker funciona (PWA)
 
 ---
 
-## Archivos de Documentación
+## URLs Finales
+
+| Entorno | URL |
+|---|---|
+| **Producción** | `https://app.mejoraok.com` (cuando se complete el deploy) |
+| **Backup GitHub Pages** | `https://pabloeckert.github.io/mejoraapp/` |
+| **Sitio principal** | `https://mejoraok.com` (WordPress) |
+
+---
+
+## Problema Técnico: FTP Bloqueado
+
+El FTP de Hostinger bloquea el canal de datos (puertos PASV) desde servidores remotos. Esto impide el deploy automático por FTP desde GitHub Actions o desde este servidor.
+
+**Pruebas realizadas:**
+- FTP pasivo (Python ftplib) → timeout en canal de datos
+- FTP activo → timeout
+- FTPS (TLS) → timeout
+- curl con --ftp-skip-pasv-ip → timeout
+- Puertos de datos 2299 y 2396 → bloqueados
+- GitHub Actions con FTP-Deploy-Action → mismo error
+
+**Solución:** Subir manualmente por el File Manager de hPanel, que usa HTTP y no tiene este problema.
+
+---
+
+## Archivos de Documentación del Proyecto
 
 | Archivo | Contenido |
 |---|---|
@@ -81,33 +133,6 @@ curl -I https://mejoraok.com
 | `CHANGELOG.md` | Historial de cambios |
 | `DEPLOY-Guia.md` | Este archivo (guía de deploy) |
 | `MejoraApp-Completo.tar.gz` | Código fuente completo |
-
----
-
-## Resolución de Problemas
-
-### La página muestra 404
-- Verificar que `public/CNAME` contiene `mejoraok.com`
-- Verificar que el deploy de GitHub Actions terminó con éxito
-
-### El certificado SSL no se genera
-- Verificar que los registros DNS apuntan correctamente a GitHub Pages
-- Esperar hasta 24 horas
-- Ir a Settings → Pages → Save (re-dispara la verificación)
-
-### Cambios no aparecen en producción
-- Verificar que el push se hizo a la rama `main`
-- Revisar GitHub → Actions para ver si el deploy falló
-- Limpiar caché del navegador (Ctrl+Shift+R)
-
----
-
-## Cambiar a Hostinger en el Futuro
-
-Si querés volver a Hostinger más adelante:
-1. Subir el contenido de `dist/` por el File Manager de hPanel
-2. Cambiar los DNS de vuelta a Hostinger
-3. El workflow de GitHub Actions se puede eliminar del archivo `.github/workflows/deploy.yml`
 
 ---
 
