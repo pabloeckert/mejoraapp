@@ -111,3 +111,25 @@ Que el admin pueda acceder al panel de administración desde cualquier perfil lo
 - **T@beg2301**
 - Pregunta 1: "¿Cuál es el nombre de tu primera mascota?" → respuesta: `mejoraapp`
 - Pregunta 2: "¿En qué ciudad naciste?" → respuesta: `buenosaires`
+
+---
+
+## 5. Gestión de Usuarios desde Admin
+
+### Requerimiento
+Que el administrador pueda ver todos los usuarios registrados con sus datos (Nombre, Apellido, Empresa, Cargo, Email) y editar perfiles protegido por contraseña maestra.
+
+### Cambios realizados
+| Componente | Cambio |
+|---|---|
+| `supabase/migrations/20260418180000_add_profile_fields.sql` | Nuevos campos: `nombre`, `apellido`, `cargo`, `email` + RLS update para admin |
+| `supabase/migrations/20260418180100_update_profile_trigger.sql` | Trigger actualizado para guardar email al signup + RLS select para admin |
+| `src/components/admin/AdminUsuarios.tsx` | Tabla completa (desktop) + cards (mobile), búsqueda, edición con contraseña |
+| `src/integrations/supabase/types.ts` | Tipos actualizados con nuevos campos de perfil |
+
+### Funcionalidades
+- **Tabla desktop:** Nombre, Apellido, Empresa, Cargo, Email, Teléfono, Diagnóstico
+- **Cards mobile:** Expandible con todos los detalles
+- **Búsqueda:** Filtra por cualquier campo
+- **Edición protegida:** Al hacer clic en editar, pide contraseña maestra (SHA-256 verificación)
+- **Auto-llenado:** Email se guarda automáticamente al registrarse
