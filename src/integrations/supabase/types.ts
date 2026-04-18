@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_config: {
+        Row: {
+          id: string
+          key: string
+          updated_at: string
+          value: string | null
+        }
+        Insert: {
+          id?: string
+          key: string
+          updated_at?: string
+          value?: string | null
+        }
+        Update: {
+          id?: string
+          key?: string
+          updated_at?: string
+          value?: string | null
+        }
+        Relationships: []
+      }
       content_categories: {
         Row: {
           activa: boolean
@@ -83,35 +104,50 @@ export type Database = {
         Row: {
           category_id: string | null
           contenido: string
+          content_type: string
           created_at: string
           created_by: string | null
           estado: string
           fuente: string | null
           id: string
+          imagen_url: string | null
+          pdf_url: string | null
           published_at: string | null
+          resumen: string | null
           titulo: string
+          video_url: string | null
         }
         Insert: {
           category_id?: string | null
           contenido: string
+          content_type?: string
           created_at?: string
           created_by?: string | null
           estado?: string
           fuente?: string | null
           id?: string
+          imagen_url?: string | null
+          pdf_url?: string | null
           published_at?: string | null
+          resumen?: string | null
           titulo: string
+          video_url?: string | null
         }
         Update: {
           category_id?: string | null
           contenido?: string
+          content_type?: string
           created_at?: string
           created_by?: string | null
           estado?: string
           fuente?: string | null
           id?: string
+          imagen_url?: string | null
+          pdf_url?: string | null
           published_at?: string | null
+          resumen?: string | null
           titulo?: string
+          video_url?: string | null
         }
         Relationships: [
           {
@@ -223,34 +259,46 @@ export type Database = {
       }
       profiles: {
         Row: {
+          apellido: string | null
           avatar_url: string | null
+          cargo: string | null
           created_at: string
           display_name: string | null
+          email: string | null
           empresa: string | null
           has_completed_diagnostic: boolean
           id: string
+          nombre: string | null
           phone: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          apellido?: string | null
           avatar_url?: string | null
+          cargo?: string | null
           created_at?: string
           display_name?: string | null
+          email?: string | null
           empresa?: string | null
           has_completed_diagnostic?: boolean
           id?: string
+          nombre?: string | null
           phone?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          apellido?: string | null
           avatar_url?: string | null
+          cargo?: string | null
           created_at?: string
           display_name?: string | null
+          email?: string | null
           empresa?: string | null
           has_completed_diagnostic?: boolean
           id?: string
+          nombre?: string | null
           phone?: string | null
           updated_at?: string
           user_id?: string
@@ -274,6 +322,51 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      wall_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          parent_id: string | null
+          post_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          parent_id?: string | null
+          post_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          parent_id?: string | null
+          post_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wall_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "wall_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wall_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "wall_posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wall_likes: {
         Row: {
@@ -306,6 +399,7 @@ export type Database = {
       }
       wall_posts: {
         Row: {
+          comments_count: number
           content: string
           created_at: string
           id: string
@@ -314,6 +408,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          comments_count?: number
           content: string
           created_at?: string
           id?: string
@@ -322,6 +417,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          comments_count?: number
           content?: string
           created_at?: string
           id?: string
