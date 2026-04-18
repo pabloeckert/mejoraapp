@@ -233,13 +233,17 @@ const Muro = () => {
         throw insertError;
       }
 
-      // 3. Log de moderación
+      // 3. Log de moderación (best-effort, non-critical)
       if (post) {
-        await supabase.from("moderation_log").insert({
-          post_id: post.id,
-          action: modAction,
-          reason: modReason,
-        }).catch(() => {}); // Non-critical
+        try {
+          await supabase.from("moderation_log").insert({
+            post_id: post.id,
+            action: modAction,
+            reason: modReason,
+          });
+        } catch {
+          // Non-critical — log de moderación es best-effort
+        }
       }
 
       if (modAction === "rejected") {
