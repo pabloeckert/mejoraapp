@@ -21,18 +21,21 @@ const AppHeader = () => {
   return (
     <header className="sticky top-0 z-50 bg-card/95 backdrop-blur border-b border-border">
       <div className="flex items-center justify-between px-4 h-14 max-w-lg mx-auto">
-        <img src={logoComunidad} alt="Mejora Continua - Comunidad de Negocios" className="h-8 object-contain" />
+        <div className="relative">
+          <img src={logoComunidad} alt="Mejora Continua - Comunidad de Negocios" className="h-8 object-contain" />
+          {isAdmin && (
+            <a
+              href="/admin"
+              aria-label="Panel de administración"
+              title="Admin"
+              className="absolute -bottom-0.5 -right-1 w-2 h-2 rounded-full bg-primary/30 hover:bg-primary transition-colors"
+            />
+          )}
+        </div>
         <div className="flex items-center gap-1.5">
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggleTheme}>
             {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </Button>
-          {isAdmin && (
-            <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-              <a href="/admin">
-                <Shield className="w-4 h-4 text-primary" />
-              </a>
-            </Button>
-          )}
           <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
             <User className="w-4 h-4 text-primary-foreground" />
           </div>
