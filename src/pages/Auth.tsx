@@ -15,6 +15,8 @@ import logoComunidad from "@/assets/logo-comunidad.png";
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [nombre, setNombre] = useState("");
+  const [apellido, setApellido] = useState("");
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const { toast } = useToast();
@@ -38,10 +40,20 @@ const Auth = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    const fullName = `${nombre.trim()} ${apellido.trim()}`.trim();
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: window.location.origin },
+      options: {
+        emailRedirectTo: window.location.origin,
+        data: {
+          full_name: fullName || email.split("@")[0],
+          nombre: nombre.trim(),
+          apellido: apellido.trim(),
+        },
+      },
     });
     if (error) {
       toast({ title: "Error al registrarse", description: error.message, variant: "destructive" });
@@ -178,6 +190,30 @@ const Auth = () => {
 
               <TabsContent value="register">
                 <form onSubmit={handleSignUp} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="reg-nombre">Nombre</Label>
+                      <Input
+                        id="reg-nombre"
+                        type="text"
+                        placeholder="Tu nombre"
+                        value={nombre}
+                        onChange={(e) => setNombre(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="reg-apellido">Apellido</Label>
+                      <Input
+                        id="reg-apellido"
+                        type="text"
+                        placeholder="Tu apellido"
+                        value={apellido}
+                        onChange={(e) => setApellido(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="reg-email">Email</Label>
                     <Input

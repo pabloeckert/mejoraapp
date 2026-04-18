@@ -133,3 +133,25 @@ Que el administrador pueda ver todos los usuarios registrados con sus datos (Nom
 - **Búsqueda:** Filtra por cualquier campo
 - **Edición protegida:** Al hacer clic en editar, pide contraseña maestra (SHA-256 verificación)
 - **Auto-llenado:** Email se guarda automáticamente al registrarse
+
+---
+
+## 6. Registro con Nombre/Apellido + Modal Completar Perfil
+
+### Requerimiento
+Que al darse de alta (email o Google) se capture Nombre y Apellido de entrada. Después del primer login, ofrecer cargar Empresa, Cargo y WhatsApp.
+
+### Cambios realizados
+| Componente | Cambio |
+|---|---|
+| `supabase/migrations/20260418190000_update_name_split.sql` | Trigger `handle_new_user` divide `full_name` en nombre + apellido |
+| `src/pages/Auth.tsx` | Formulario de registro con campos Nombre y Apellido + metadata |
+| `src/components/ProfileCompleteModal.tsx` | Modal para completar Empresa, Cargo, WhatsApp |
+| `src/pages/Index.tsx` | Verifica si perfil está completo, muestra modal si falta |
+
+### Flujo completo
+1. **Registro por email:** Campos Nombre + Apellido + Email + Password → se guarda en metadata
+2. **Registro por Google:** `full_name` de Google se divide automáticamente en nombre y apellido
+3. **Primer login:** Verifica si tiene empresa/cargo → si no, muestra modal deslizable
+4. **Modal:** Empresa, Cargo, WhatsApp + botón "Completar después"
+5. **Admin:** Ve todos los datos en la tabla de usuarios
