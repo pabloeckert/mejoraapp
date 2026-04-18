@@ -1,6 +1,6 @@
 # MejoraApp — Requerimientos y Cambios
 
-**Última actualización:** 18 Abril 2026
+**Última actualización:** 19 Abril 2026
 
 ---
 
@@ -155,3 +155,24 @@ Que al darse de alta (email o Google) se capture Nombre y Apellido de entrada. D
 3. **Primer login:** Verifica si tiene empresa/cargo → si no, muestra modal deslizable
 4. **Modal:** Empresa, Cargo, WhatsApp + botón "Completar después"
 5. **Admin:** Ve todos los datos en la tabla de usuarios
+
+---
+
+## 7. Reparación de Documentación (19 Abril 2026)
+
+### Problema detectado
+- `Documents/Technical_Paper_PWA.docx` era en realidad un archivo markdown con extensión .docx (no era un documento Word válido)
+- El .tar.gz de distribución estaba desactualizado
+
+### Cambios realizados
+| Archivo | Cambio |
+|---|---|
+| `Documents/Technical_Paper_PWA.docx` | Regenerado como .docx válido (Microsoft Word 2007+) con contenido actualizado |
+| `Documents/MejoraApp-Completo.tar.gz` | Regenerado con código fuente actualizado |
+| `Documents/CHANGELOG.md` | Actualizado con esta entrada |
+
+### Verificaciones
+- ✅ Build de producción exitoso (vite build, 3.9s)
+- ✅ 24 tests unitarios pasan (100%)
+- ✅ Carpeta `documentos/` confirmada como unificada en `Documents/` (404 en GitHub)
+- ✅ 6 archivos en `Documents/` verificados y actualizados

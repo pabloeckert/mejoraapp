@@ -38,25 +38,42 @@ Publicaciones anónimas moderadas por IA con sistema de:
 Espacio para interacción entre miembros de la comunidad.
 
 ### 3.5 Panel de Administración
+Acceso protegido por contraseña maestra (SHA-256 hash) con recuperación por preguntas de seguridad.
 - Moderación del muro (posts y comentarios)
 - Gestión de contenido (crear, editar, generar con IA)
-- Gestión de usuarios y roles
+- Gestión de usuarios y roles (tabla completa con búsqueda y edición)
 - Configuración de proveedores de IA
+- Configuración de seguridad (cambiar contraseña y preguntas)
 
-## 4. Base de Datos (Principales Tablas)
+**Flujo de acceso admin:**
+1. Usuario logueado → `/admin`
+2. Si no es admin → redirige a `/`
+3. Si es admin → pide contraseña maestra (AdminGate)
+4. Sesión válida por 4 horas, luego se bloquea automáticamente
+5. Recuperación por preguntas de seguridad si se olvida la contraseña
+
+## 4. Registro y Perfil de Usuario
+
+- **Registro por email:** Campos Nombre + Apellido + Email + Password
+- **Registro por Google:** `full_name` se divide automáticamente en nombre y apellido
+- **Primer login:** Modal para completar Empresa, Cargo, WhatsApp
+- **Admin:** Ve todos los datos en la tabla de usuarios con búsqueda y edición
+
+## 5. Base de Datos (Principales Tablas)
 
 | Tabla | Descripción |
 |---|---|
-| `profiles` | Perfiles de usuario |
-| `wall_posts` | Publicaciones del muro anónimo |
+| `profiles` | Perfiles de usuario (nombre, apellido, empresa, cargo, email, teléfono) |
+| `admin_config` | Configuración admin (hash SHA-256, preguntas de seguridad) |
+| `wall_posts` | Publicaciones del muro anónimo (likes_count, comments_count) |
 | `wall_comments` | Respuestas a publicaciones del muro |
 | `wall_likes` | Likes en publicaciones |
-| `content_posts` | Contenido de valor |
+| `content_posts` | Contenido de valor (article, video, infographic, book) |
 | `content_categories` | Categorías de contenido |
-| `moderation_log` | Log de moderación |
+| `moderation_log` | Log de moderación automática por IA |
 | `user_roles` | Roles de usuario (admin, moderator, user) |
 
-## 5. Configuración de IA
+## 6. Configuración de IA
 
 La app soporta múltiples proveedores de IA para generación de contenido y moderación:
 - Google Gemini (recomendado, con API key gratuita)
@@ -66,7 +83,7 @@ La app soporta múltiples proveedores de IA para generación de contenido y mode
 
 La moderación del muro usa IA para filtrar contenido inapropiado automáticamente.
 
-## 6. Instalación como PWA
+## 7. Instalación como PWA
 
 El usuario puede instalar la app desde el navegador:
 1. Abrir la URL de la app
@@ -74,7 +91,7 @@ El usuario puede instalar la app desde el navegador:
 3. Confirmar la instalación
 4. La app funciona offline parcialmente
 
-## 7. Estructura de Archivos
+## 8. Estructura de Archivos
 
 ```
 mejoraapp/
@@ -97,4 +114,4 @@ mejoraapp/
 
 ---
 
-*Documento actualizado: 18 Abril 2026*
+*Documento actualizado: 19 Abril 2026*
