@@ -1,38 +1,39 @@
-import { useState, useEffect } from "react";
-import { LogOut, User, Shield, Moon, Sun } from "lucide-react";
+import { useEffect, useState } from "react";
+import { LogOut, User, Moon, Sun, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import logoComunidad from "@/assets/logo-comunidad.png";
 
 const AppHeader = () => {
-  const { signOut, user } = useAuth();
+  const { signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [showAdminReturn, setShowAdminReturn] = useState(false);
 
+  // Show "back to admin" only if user already unlocked admin in this session
   useEffect(() => {
-    if (!user) return;
-    supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }).then(({ data }) => {
-      setIsAdmin(!!data);
-    });
-  }, [user]);
+    const unlocked = sessionStorage.getItem("admin_unlocked");
+    setShowAdminReturn(unlocked === "true");
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 bg-card/95 backdrop-blur border-b border-border">
       <div className="flex items-center justify-between px-4 h-14 max-w-lg mx-auto">
-        <div className="relative">
-          <img src={logoComunidad} alt="Mejora Continua - Comunidad de Negocios" className="h-8 object-contain" />
-          {isAdmin && (
-            <a
-              href="/admin"
-              aria-label="Panel de administración"
-              title="Admin"
-              className="absolute -bottom-0.5 -right-1 w-2 h-2 rounded-full bg-primary/30 hover:bg-primary transition-colors"
-            />
-          )}
-        </div>
+        <img src={logoComunidad} alt="Mejora Continua - Comunidad de Negocios" className="h-8 object-contain" />
         <div className="flex items-center gap-1.5">
+          {showAdminReturn && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              asChild
+              title="Volver al panel admin"
+            >
+              <a href="/admin" aria-label="Volver al panel admin">
+                <Shield className="w-4 h-4 text-primary" />
+              </a>
+            </Button>
+          )}
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggleTheme}>
             {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </Button>
