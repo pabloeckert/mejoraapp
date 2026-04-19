@@ -16,7 +16,10 @@ const Index = () => {
   const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setProfileComplete(false);
+      return;
+    }
 
     const checkProfile = async () => {
       const { data } = await supabase
@@ -33,7 +36,7 @@ const Index = () => {
     checkProfile();
   }, [user]);
 
-  if (loading || profileComplete === null) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="w-8 h-8 border-3 border-mc-dark-blue border-t-transparent rounded-full animate-spin" />
@@ -43,6 +46,14 @@ const Index = () => {
 
   if (!session) {
     return <Navigate to="/auth" replace />;
+  }
+
+  if (profileComplete === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-8 h-8 border-3 border-mc-dark-blue border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
 
   return (
