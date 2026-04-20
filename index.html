@@ -2,6 +2,17 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
+  <script>
+    // GitHub Pages SPA redirect handler
+    (function() {
+      var redirect = sessionStorage.redirect;
+      delete sessionStorage.redirect;
+      if (redirect && redirect !== location.href) {
+        history.replaceState(null, null, redirect);
+      }
+    })();
+  </script>
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0505a6" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
