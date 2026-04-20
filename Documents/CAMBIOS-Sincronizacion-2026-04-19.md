@@ -40,7 +40,7 @@
 - Comunidad MejoraApp llegó a 1000 miembros
 
 ### Configuración Admin (`admin_config`)
-- `master_password_hash`: hash SHA-256 de `admin1234`
+- `master_password_hash`: hash SHA-256 de la contraseña maestra
 - `admin_version`: `1`
 - `recovery_question_1`, `recovery_question_2`, `recovery_email`
 
@@ -84,7 +84,7 @@ useEffect(() => {
 | Muro | Crear post anónimo `Test E2E…` | ✅ aprobado por IA |
 | Novedades | Lista con 4 publicaciones y CTA externo | ✅ |
 | Logout | Vuelve a `/auth` | ✅ |
-| AdminGate | Master password `admin1234` aceptada | ✅ |
+| AdminGate | Master password aceptada correctamente | ✅ |
 | Admin → Contenido | Lista, crear, IA, categorías | ✅ |
 | Admin → Muro | 8 posts (todos/aprobados/rechazados/pendientes) | ✅ |
 | Admin → Usuarios | 4 usuarios con datos | ✅ |
@@ -119,12 +119,9 @@ useEffect(() => {
 
 ---
 
-## 8. Credenciales de testing (entorno preview)
+## 8. Credenciales de testing
 
-```
-Usuario regular: test@mejoraapp.com / Test1234!
-Master password admin: admin1234
-Email recovery: admin@mejoraapp.com
-```
+Las credenciales de testing se gestionan de forma segura. No documentar contraseñas en archivos del repositorio.
+Contactar al administrador para obtener credenciales de entorno de pruebas.
 
-⚠️ **Cambiar la master password antes de producción real.**
+⚠️ **Nunca commitear contraseñas en texto plano.**

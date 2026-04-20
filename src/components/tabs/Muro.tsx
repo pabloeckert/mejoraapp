@@ -42,6 +42,9 @@ interface WallComment {
 const MAX_LENGTH = 500;
 const COMMENT_MAX_LENGTH = 300;
 const POSTS_PER_PAGE = 20;
+const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
+const MAX_POSTS_PER_WINDOW = 3;
+const MAX_COMMENTS_PER_WINDOW = 10;
 
 const MODERATION_PROMPT = `Sos el moderador de una comunidad de negocios argentina. Tu trabajo es decidir si un post anónimo es apropiado o no.
 
@@ -269,6 +272,10 @@ const Muro = () => {
   const [newPost, setNewPost] = useState("");
   const [posting, setPosting] = useState(false);
 
+  // Rate limiting timestamps
+  const postTimestamps = useRef<number[]>([]);
+  const commentTimestamps = useRef<number[]>([]);
+
   // Expanded posts (comments visible)
   const [expandedPosts, setExpandedPosts] = useState<Set<string>>(new Set());
   const [commentsMap, setCommentsMap] = useState<Record<string, WallComment[]>>({});
@@ -367,16 +374,44 @@ const Muro = () => {
       const content = (commentTexts[postId] || "").trim();
       if (!content || !user || submittingComment.has(postId)) return;
 
+      // Rate limit check
+      const now = Date.now();
+      commentTimestamps.current = commentTimestamps.current.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+      if (commentTimestamps.current.length >= MAX_COMMENTS_PER_WINDOW) {
+        toast({ title: "Esperá un momento", description: "Máximo 10 comentarios por minuto.", variant: "destructive" });
+        return;
+      }
+      commentTimestamps.current.push(now);
+
       setSubmittingComment((prev) => new Set(prev).add(postId));
 
       try {
+        // Moderate comment with IA
+        let commentStatus = "approved";
+        const configured = aiService.getConfiguredProviders();
+        if (configured.length > 0) {
+          try {
+            const { content: aiResponse } = await aiService.chat(
+              MODERATION_PROMPT,
+              `Moderá este comentario en un post anónimo de comunidad de negocios:\n\n"${content}"`
+            );
+            const jsonMatch = aiResponse.match(/\{[\s\S]*?\}/);
+            if (jsonMatch) {
+              const parsed = JSON.parse(jsonMatch[0]);
+              commentStatus = parsed.action || "approved";
+            }
+          } catch (aiErr) {
+            console.warn("AI moderation for comment failed, approving by default:", aiErr);
+          }
+        }
+
         const { data: comment, error } = await supabase
           .from("wall_comments")
           .insert({
             post_id: postId,
             user_id: user.id,
             content,
-            status: "approved",
+            status: commentStatus,
           })
           .select("id, post_id, content, created_at, user_id, status")
           .single();
@@ -385,6 +420,11 @@ const Muro = () => {
 
         // Clear input
         setCommentTexts((prev) => ({ ...prev, [postId]: "" }));
+
+        if (commentStatus === "rejected") {
+          toast({ title: "Comentario no publicado", description: "Tu comentario no cumple con las normas.", variant: "destructive" });
+          return;
+        }
 
         // Optimistically add comment
         if (comment) {
@@ -412,6 +452,16 @@ const Muro = () => {
   const handlePost = useCallback(async () => {
     const content = newPost.trim();
     if (!content || posting || !user) return;
+
+    // Rate limit check
+    const now = Date.now();
+    postTimestamps.current = postTimestamps.current.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+    if (postTimestamps.current.length >= MAX_POSTS_PER_WINDOW) {
+      toast({ title: "Esperá un momento", description: "Máximo 3 posts por minuto.", variant: "destructive" });
+      return;
+    }
+    postTimestamps.current.push(now);
+
     setPosting(true);
 
     try {

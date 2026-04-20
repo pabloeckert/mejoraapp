@@ -14,12 +14,32 @@ interface AdminGateProps {
   onUnlock: () => void;
 }
 
-// SHA-256 hash using Web Crypto API
-async function sha256(message: string): Promise<string> {
+// Salted SHA-256 hash using Web Crypto API
+// Salt is stored alongside the hash in admin_config
+async function sha256Salted(message: string, salt?: string): Promise<{ hash: string; salt: string }> {
+  const usedSalt = salt || crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+  const saltedMessage = `${usedSalt}:${message}:${usedSalt.split("").reverse().join("")}`;
+  const msgBuffer = new TextEncoder().encode(saltedMessage);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hash = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  return { hash, salt: usedSalt };
+}
+
+// Legacy unsalted hash for migration
+async function sha256Legacy(message: string): Promise<string> {
   const msgBuffer = new TextEncoder().encode(message);
   const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+// Password strength validation
+function validatePasswordStrength(password: string): { valid: boolean; message: string } {
+  if (password.length < 8) return { valid: false, message: "Mínimo 8 caracteres" };
+  if (!/[a-zA-Z]/.test(password)) return { valid: false, message: "Debe contener al menos una letra" };
+  if (!/[0-9]/.test(password)) return { valid: false, message: "Debe contener al menos un número" };
+  return { valid: true, message: "" };
 }
 
 const AdminGate = ({ onUnlock }: AdminGateProps) => {
@@ -53,7 +73,7 @@ const AdminGate = ({ onUnlock }: AdminGateProps) => {
     await supabase.from("admin_config").upsert({ key, value }, { onConflict: "key" });
   }, []);
 
-  // Verify master password
+  // Verify master password (supports both salted and legacy unsalted)
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!password.trim() || loading) return;
@@ -67,8 +87,28 @@ const AdminGate = ({ onUnlock }: AdminGateProps) => {
         return;
       }
 
-      const inputHash = await sha256(password);
+      const storedSalt = await getConfig("master_password_salt");
+      let inputHash: string;
+
+      if (storedSalt) {
+        // Salted verification
+        const result = await sha256Salted(password, storedSalt);
+        inputHash = result.hash;
+      } else {
+        // Legacy unsalted verification (for migration)
+        inputHash = await sha256Legacy(password);
+      }
+
       if (inputHash === storedHash) {
+        // If using legacy hash, migrate to salted
+        if (!storedSalt) {
+          const { hash, salt } = await sha256Salted(password);
+          await Promise.all([
+            setConfig("master_password_hash", hash),
+            setConfig("master_password_salt", salt),
+          ]);
+        }
+
         sessionStorage.setItem("admin_unlocked", "true");
         sessionStorage.setItem("admin_unlocked_at", Date.now().toString());
         toast({ title: "Acceso concedido", description: "Bienvenido al panel de administración." });
@@ -112,22 +152,32 @@ const AdminGate = ({ onUnlock }: AdminGateProps) => {
     setLoading(false);
   };
 
-  // Verify security answers
+  // Verify security answers (salted)
   const handleVerifyAnswers = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!answer1.trim() || !answer2.trim() || loading) return;
 
     setLoading(true);
     try {
-      const [storedHash1, storedHash2] = await Promise.all([
+      const [storedHash1, storedHash2, salt1, salt2] = await Promise.all([
         getConfig("recovery_answer_1_hash"),
         getConfig("recovery_answer_2_hash"),
+        getConfig("recovery_answer_1_salt"),
+        getConfig("recovery_answer_2_salt"),
       ]);
 
-      const [inputHash1, inputHash2] = await Promise.all([
-        sha256(answer1.toLowerCase().trim()),
-        sha256(answer2.toLowerCase().trim()),
-      ]);
+      let inputHash1: string, inputHash2: string;
+
+      if (salt1 && salt2) {
+        const r1 = await sha256Salted(answer1.toLowerCase().trim(), salt1);
+        const r2 = await sha256Salted(answer2.toLowerCase().trim(), salt2);
+        inputHash1 = r1.hash;
+        inputHash2 = r2.hash;
+      } else {
+        // Legacy
+        inputHash1 = await sha256Legacy(answer1.toLowerCase().trim());
+        inputHash2 = await sha256Legacy(answer2.toLowerCase().trim());
+      }
 
       if (inputHash1 === storedHash1 && inputHash2 === storedHash2) {
         setMode("reset");
@@ -141,13 +191,14 @@ const AdminGate = ({ onUnlock }: AdminGateProps) => {
     setLoading(false);
   };
 
-  // Reset password
+  // Reset password (salted)
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPassword.trim() || loading) return;
 
-    if (newPassword.length < 8) {
-      toast({ title: "Contraseña muy corta", description: "Mínimo 8 caracteres.", variant: "destructive" });
+    const validation = validatePasswordStrength(newPassword);
+    if (!validation.valid) {
+      toast({ title: "Contraseña débil", description: validation.message, variant: "destructive" });
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -157,8 +208,11 @@ const AdminGate = ({ onUnlock }: AdminGateProps) => {
 
     setLoading(true);
     try {
-      const newHash = await sha256(newPassword);
-      await setConfig("master_password_hash", newHash);
+      const { hash, salt } = await sha256Salted(newPassword);
+      await Promise.all([
+        setConfig("master_password_hash", hash),
+        setConfig("master_password_salt", salt),
+      ]);
       // Increment version to invalidate old sessions
       const version = await getConfig("admin_version");
       await setConfig("admin_version", String(Number(version || "0") + 1));
@@ -347,7 +401,7 @@ const AdminGate = ({ onUnlock }: AdminGateProps) => {
                   <Input
                     id="new-pass"
                     type="password"
-                    placeholder="Mínimo 8 caracteres"
+                    placeholder="Mínimo 8 caracteres, letras y números"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     autoFocus

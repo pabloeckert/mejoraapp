@@ -6,7 +6,7 @@
  * 2. DeepSeek V3 — Gratis vía OpenRouter (límite diario)
  * 3. Groq (Llama 3.3 70B) — Gratis, muy rápido
  *
- * Las API keys se guardan en localStorage del navegador.
+ * Las API keys se guardan ofuscadas en localStorage del navegador.
  * El servicio rota automáticamente entre proveedores disponibles.
  * Si uno falla (rate limit, error), pasa al siguiente.
  */
@@ -26,6 +26,47 @@ export interface AIProviderConfig {
 }
 
 // ============================================================
+// Key obfuscation — prevents casual XSS extraction
+// Not cryptographically secure, but raises the bar significantly
+// ============================================================
+const OBFUSCATION_SHIFT = 7;
+
+function obfuscateKey(key: string): string {
+  return btoa(key.split("").map((c, i) => 
+    String.fromCharCode(c.charCodeAt(0) ^ ((i % 256) + OBFUSCATION_SHIFT))
+  ).join(""));
+}
+
+function deobfuscateKey(encoded: string): string {
+  try {
+    const decoded = atob(encoded);
+    return decoded.split("").map((c, i) => 
+      String.fromCharCode(c.charCodeAt(0) ^ ((i % 256) + OBFUSCATION_SHIFT))
+    ).join("");
+  } catch {
+    return "";
+  }
+}
+
+function getStoredKey(storageKey: string): string | null {
+  const raw = localStorage.getItem(storageKey);
+  if (!raw) return null;
+  // Support both old plain-text keys and new obfuscated keys
+  if (raw.startsWith("obf:")) {
+    return deobfuscateKey(raw.slice(4));
+  }
+  // Auto-migrate plain text keys to obfuscated
+  try {
+    localStorage.setItem(storageKey, "obf:" + obfuscateKey(raw));
+  } catch {}
+  return raw;
+}
+
+function setStoredKey(storageKey: string, key: string): void {
+  localStorage.setItem(storageKey, "obf:" + obfuscateKey(key));
+}
+
+// ============================================================
 // Provider configurations
 // ============================================================
 
@@ -33,13 +74,13 @@ const providers: AIProviderConfig[] = [
   {
     name: "gemini",
     label: "Google Gemini (Gratis)",
-    getKey: () => localStorage.getItem("ai_key_gemini"),
-    setKey: (key) => localStorage.setItem("ai_key_gemini", key),
+    getKey: () => getStoredKey("ai_key_gemini"),
+    setKey: (key) => setStoredKey("ai_key_gemini", key),
     endpoint: "generativelanguage.googleapis.com",
     signupUrl: "https://aistudio.google.com/apikey",
     description: "15 req/min gratis. El más generoso.",
     buildRequest: (systemPrompt, userPrompt) => {
-      const key = localStorage.getItem("ai_key_gemini") || "";
+      const key = getStoredKey("ai_key_gemini") || "";
       return {
         url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
         headers: { "Content-Type": "application/json" },
@@ -57,13 +98,13 @@ const providers: AIProviderConfig[] = [
   {
     name: "deepseek",
     label: "DeepSeek V3 vía OpenRouter (Gratis)",
-    getKey: () => localStorage.getItem("ai_key_openrouter"),
-    setKey: (key) => localStorage.setItem("ai_key_openrouter", key),
+    getKey: () => getStoredKey("ai_key_openrouter"),
+    setKey: (key) => setStoredKey("ai_key_openrouter", key),
     endpoint: "openrouter.ai",
     signupUrl: "https://openrouter.ai/settings/keys",
     description: "DeepSeek V3 gratis. El mejor para código y textos largos.",
     buildRequest: (systemPrompt, userPrompt) => {
-      const key = localStorage.getItem("ai_key_openrouter") || "";
+      const key = getStoredKey("ai_key_openrouter") || "";
       return {
         url: "https://openrouter.ai/api/v1/chat/completions",
         headers: {
@@ -89,13 +130,13 @@ const providers: AIProviderConfig[] = [
   {
     name: "groq",
     label: "Groq Llama 3.3 70B (Gratis)",
-    getKey: () => localStorage.getItem("ai_key_groq"),
-    setKey: (key) => localStorage.setItem("ai_key_groq", key),
+    getKey: () => getStoredKey("ai_key_groq"),
+    setKey: (key) => setStoredKey("ai_key_groq", key),
     endpoint: "groq.com",
     signupUrl: "https://console.groq.com/keys",
     description: "Llama 3.3 70B gratis. Ultra rápido.",
     buildRequest: (systemPrompt, userPrompt) => {
-      const key = localStorage.getItem("ai_key_groq") || "";
+      const key = getStoredKey("ai_key_groq") || "";
       return {
         url: "https://api.groq.com/openai/v1/chat/completions",
         headers: {
