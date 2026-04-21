@@ -317,7 +317,7 @@ Contenido:
 ### ⏳ Pendiente
 1. Rotar credenciales expuestas (GitHub token, FTP password, Supabase token, Google Client Secret)
 2. Verificar flujo admin completo en producción (pendiente último fix RLS)
-3. Actualizar `CLEAN_SETUP.sql` con los fixes aplicados (columnas profiles, RLS admin_config, admin_username)
+3. ~~Actualizar `CLEAN_SETUP.sql` con los fixes aplicados (columnas profiles, RLS admin_config, admin_username)~~ → Actualizado
 
 ---
 

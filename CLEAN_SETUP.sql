@@ -327,7 +327,7 @@ CREATE TABLE public.admin_config (
 
 ALTER TABLE public.admin_config ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Only admins can read admin config" ON public.admin_config FOR SELECT TO authenticated USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY "Anyone can read admin config" ON public.admin_config FOR SELECT USING (true);
 CREATE POLICY "Only admins can write admin config" ON public.admin_config FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'admin'));
 
 -- ============================================
@@ -341,6 +341,7 @@ INSERT INTO public.content_categories (nombre, slug, descripcion, icono) VALUES
   ('Noticia', 'noticia', 'Lo que está pasando', 'Newspaper');
 
 INSERT INTO public.admin_config (key, value) VALUES
+  ('admin_username', 'admin'),
   ('master_password_hash', encode(digest('T@beg2301', 'sha256'), 'hex')),
   ('recovery_question_1', '¿Cuál es el nombre de tu primera mascota?'),
   ('recovery_answer_1_hash', encode(digest('mejoraapp', 'sha256'), 'hex')),
