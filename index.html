@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <script>
+    // GitHub Pages SPA redirect handler
+    (function() {
+      var redirect = sessionStorage.redirect;
+      delete sessionStorage.redirect;
+      if (redirect && redirect !== location.href) {
+        history.replaceState(null, null, redirect);
+      }
+    })();
+  </script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0505a6" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="MejoraApp" />
+  <title>MejoraApp - Comunidad de Negocios</title>
+  <meta name="description" content="Comunidad de negocios con contenido de valor, networking y herramientas para hacer crecer tu empresa.">
+  <meta name="author" content="Mejora Continua" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" href="/favicon.png" type="image/png" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/favicon.png" />
+
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@mejoraok" />
+  <meta property="og:title" content="MejoraApp - Comunidad de Negocios" />
+  <meta name="twitter:title" content="MejoraApp - Comunidad de Negocios" />
+  <meta property="og:description" content="Comunidad de negocios con contenido de valor, networking y herramientas para hacer crecer tu empresa." />
+  <meta name="twitter:description" content="Comunidad de negocios con contenido de valor, networking y herramientas para hacer crecer tu empresa." />
+  <script type="module" crossorigin src="/assets/index-DxKi4Bi6.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/vendor-react-CWF2ur3V.js">
+  <link rel="modulepreload" crossorigin href="/assets/vendor-ui-DhkCSCvf.js">
+  <link rel="modulepreload" crossorigin href="/assets/vendor-query-DagxdQV4.js">
+  <link rel="modulepreload" crossorigin href="/assets/vendor-supabase-CnEjUEOo.js">
+  <link rel="stylesheet" crossorigin href="/assets/index-9GhOpMXO.css">
+</head>
+<body>
+  <div id="root"></div>
+</body>
+</html>
