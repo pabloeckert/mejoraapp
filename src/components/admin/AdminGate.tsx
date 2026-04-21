@@ -1,21 +1,20 @@
-import { useState, useCallback } from "react";
-import { Shield, Lock, Eye, EyeOff, KeyRound, Mail, HelpCircle, ArrowLeft, Loader2, AlertTriangle } from "lucide-react";
+import { useState, useCallback, useEffect } from "react";
+import { Shield, Lock, Eye, EyeOff, KeyRound, Mail, HelpCircle, ArrowLeft, Loader2, AlertTriangle, User } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import logoHorizontal from "@/assets/logo-horizontal.png";
+import logoComunidad from "@/assets/logo-comunidad.png";
 
-type Mode = "password" | "forgot" | "questions" | "reset";
+type Mode = "login" | "forgot" | "questions" | "reset";
 
 interface AdminGateProps {
   onUnlock: () => void;
 }
 
 // Salted SHA-256 hash using Web Crypto API
-// Salt is stored alongside the hash in admin_config
 async function sha256Salted(message: string, salt?: string): Promise<{ hash: string; salt: string }> {
   const usedSalt = salt || crypto.randomUUID().replace(/-/g, "").slice(0, 16);
   const saltedMessage = `${usedSalt}:${message}:${usedSalt.split("").reverse().join("")}`;
@@ -26,7 +25,7 @@ async function sha256Salted(message: string, salt?: string): Promise<{ hash: str
   return { hash, salt: usedSalt };
 }
 
-// Legacy unsalted hash for migration
+// Legacy unsalted hash for backwards-compat migration
 async function sha256Legacy(message: string): Promise<string> {
   const msgBuffer = new TextEncoder().encode(message);
   const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
@@ -34,7 +33,6 @@ async function sha256Legacy(message: string): Promise<string> {
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-// Password strength validation
 function validatePasswordStrength(password: string): { valid: boolean; message: string } {
   if (password.length < 8) return { valid: false, message: "Mínimo 8 caracteres" };
   if (!/[a-zA-Z]/.test(password)) return { valid: false, message: "Debe contener al menos una letra" };
@@ -44,7 +42,8 @@ function validatePasswordStrength(password: string): { valid: boolean; message: 
 
 const AdminGate = ({ onUnlock }: AdminGateProps) => {
   const { toast } = useToast();
-  const [mode, setMode] = useState<Mode>("password");
+  const [mode, setMode] = useState<Mode>("login");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -58,7 +57,6 @@ const AdminGate = ({ onUnlock }: AdminGateProps) => {
   const [answer2, setAnswer2] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [recoveryStep, setRecoveryStep] = useState(0);
 
   const getConfig = useCallback(async (key: string): Promise<string | null> => {
     const { data } = await supabase
@@ -73,34 +71,43 @@ const AdminGate = ({ onUnlock }: AdminGateProps) => {
     await supabase.from("admin_config").upsert({ key, value }, { onConflict: "key" });
   }, []);
 
-  // Verify master password (supports both salted and legacy unsalted)
-  const handlePasswordSubmit = async (e: React.FormEvent) => {
+  // Verify username + master password
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!password.trim() || loading) return;
+    if (!username.trim() || !password.trim() || loading) return;
 
     setLoading(true);
     try {
-      const storedHash = await getConfig("master_password_hash");
-      if (!storedHash) {
-        toast({ title: "Error de configuración", description: "No se encontró la contraseña admin.", variant: "destructive" });
+      const [storedUsername, storedHash, storedSalt] = await Promise.all([
+        getConfig("admin_username"),
+        getConfig("master_password_hash"),
+        getConfig("master_password_salt"),
+      ]);
+
+      if (!storedHash || !storedUsername) {
+        toast({
+          title: "Error de configuración",
+          description: "El admin no está configurado. Contactá al desarrollador.",
+          variant: "destructive",
+        });
         setLoading(false);
         return;
       }
 
-      const storedSalt = await getConfig("master_password_salt");
-      let inputHash: string;
+      // Username check (case-insensitive, trimmed)
+      const usernameMatches = username.trim().toLowerCase() === storedUsername.toLowerCase();
 
+      let inputHash: string;
       if (storedSalt) {
-        // Salted verification
         const result = await sha256Salted(password, storedSalt);
         inputHash = result.hash;
       } else {
-        // Legacy unsalted verification (for migration)
         inputHash = await sha256Legacy(password);
       }
+      const passwordMatches = inputHash === storedHash;
 
-      if (inputHash === storedHash) {
-        // If using legacy hash, migrate to salted
+      if (usernameMatches && passwordMatches) {
+        // Migrate legacy unsalted hash to salted on successful login
         if (!storedSalt) {
           const { hash, salt } = await sha256Salted(password);
           await Promise.all([
@@ -111,29 +118,35 @@ const AdminGate = ({ onUnlock }: AdminGateProps) => {
 
         sessionStorage.setItem("admin_unlocked", "true");
         sessionStorage.setItem("admin_unlocked_at", Date.now().toString());
-        toast({ title: "Acceso concedido", description: "Bienvenido al panel de administración." });
+        toast({ title: "Acceso concedido", description: "Bienvenido al panel." });
         onUnlock();
       } else {
         setAttempts((a) => a + 1);
         toast({
-          title: "Contraseña incorrecta",
-          description: attempts >= 2 ? "¿Olvidaste tu contraseña? Usá la opción de recuperación." : `Intento ${attempts + 1} de 5`,
+          title: "Credenciales incorrectas",
+          description:
+            attempts >= 2
+              ? "¿Olvidaste la contraseña? Usá la opción de recuperación."
+              : `Intento ${attempts + 1} de 5`,
           variant: "destructive",
         });
         if (attempts >= 4) {
-          toast({ title: "Demasiados intentos", description: "Esperá 30 segundos antes de volver a intentar.", variant: "destructive" });
+          toast({
+            title: "Demasiados intentos",
+            description: "Esperá 30 segundos antes de volver a intentar.",
+            variant: "destructive",
+          });
           setTimeout(() => setAttempts(0), 30000);
         }
       }
     } catch (err) {
       console.error(err);
-      toast({ title: "Error", description: "No se pudo verificar la contraseña.", variant: "destructive" });
+      toast({ title: "Error", description: "No se pudo verificar el acceso.", variant: "destructive" });
     }
     setLoading(false);
     setPassword("");
   };
 
-  // Load recovery questions
   const handleForgotPassword = async () => {
     setLoading(true);
     try {
@@ -152,7 +165,6 @@ const AdminGate = ({ onUnlock }: AdminGateProps) => {
     setLoading(false);
   };
 
-  // Verify security answers (salted)
   const handleVerifyAnswers = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!answer1.trim() || !answer2.trim() || loading) return;
@@ -167,14 +179,12 @@ const AdminGate = ({ onUnlock }: AdminGateProps) => {
       ]);
 
       let inputHash1: string, inputHash2: string;
-
       if (salt1 && salt2) {
         const r1 = await sha256Salted(answer1.toLowerCase().trim(), salt1);
         const r2 = await sha256Salted(answer2.toLowerCase().trim(), salt2);
         inputHash1 = r1.hash;
         inputHash2 = r2.hash;
       } else {
-        // Legacy
         inputHash1 = await sha256Legacy(answer1.toLowerCase().trim());
         inputHash2 = await sha256Legacy(answer2.toLowerCase().trim());
       }
@@ -191,7 +201,6 @@ const AdminGate = ({ onUnlock }: AdminGateProps) => {
     setLoading(false);
   };
 
-  // Reset password (salted)
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPassword.trim() || loading) return;
@@ -213,7 +222,6 @@ const AdminGate = ({ onUnlock }: AdminGateProps) => {
         setConfig("master_password_hash", hash),
         setConfig("master_password_salt", salt),
       ]);
-      // Increment version to invalidate old sessions
       const version = await getConfig("admin_version");
       await setConfig("admin_version", String(Number(version || "0") + 1));
 
@@ -227,21 +235,19 @@ const AdminGate = ({ onUnlock }: AdminGateProps) => {
     setLoading(false);
   };
 
-  // Lockout state
   const isLocked = attempts >= 5;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md space-y-6">
-        {/* Logo */}
         <div className="flex justify-center">
-          <img src={logoHorizontal} alt="MejoraApp" className="h-12 object-contain" />
+          <img src={logoComunidad} alt="Mejora Continua" className="h-12 object-contain" />
         </div>
 
         <Card className="border-0 shadow-lg">
           <CardHeader className="text-center pb-2">
             <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-              {mode === "password" ? (
+              {mode === "login" ? (
                 <Shield className="w-6 h-6 text-primary" />
               ) : mode === "reset" ? (
                 <KeyRound className="w-6 h-6 text-primary" />
@@ -250,13 +256,13 @@ const AdminGate = ({ onUnlock }: AdminGateProps) => {
               )}
             </div>
             <CardTitle className="text-xl font-bold">
-              {mode === "password" && "Acceso Administrador"}
+              {mode === "login" && "Acceso Administrador"}
               {mode === "forgot" && "Recuperar Acceso"}
               {mode === "questions" && "Verificar Identidad"}
               {mode === "reset" && "Nueva Contraseña"}
             </CardTitle>
             <CardDescription>
-              {mode === "password" && "Ingresá la contraseña maestra para acceder al panel"}
+              {mode === "login" && "Ingresá tu usuario y contraseña de administrador"}
               {mode === "forgot" && "Elegí un método de recuperación"}
               {mode === "questions" && "Respondé las preguntas de seguridad"}
               {mode === "reset" && "Creá una nueva contraseña maestra"}
@@ -264,11 +270,29 @@ const AdminGate = ({ onUnlock }: AdminGateProps) => {
           </CardHeader>
 
           <CardContent>
-            {/* PASSWORD MODE */}
-            {mode === "password" && (
-              <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            {/* LOGIN MODE: usuario + contraseña */}
+            {mode === "login" && (
+              <form onSubmit={handleLoginSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="admin-password">Contraseña maestra</Label>
+                  <Label htmlFor="admin-username">Usuario</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="admin-username"
+                      type="text"
+                      placeholder="admin"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="pl-10"
+                      disabled={isLocked}
+                      autoComplete="username"
+                      autoFocus
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="admin-password">Contraseña</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
@@ -279,12 +303,13 @@ const AdminGate = ({ onUnlock }: AdminGateProps) => {
                       onChange={(e) => setPassword(e.target.value)}
                       className="pl-10 pr-10"
                       disabled={isLocked}
-                      autoFocus
+                      autoComplete="current-password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -298,9 +323,13 @@ const AdminGate = ({ onUnlock }: AdminGateProps) => {
                   </div>
                 )}
 
-                <Button type="submit" className="w-full h-11" disabled={loading || isLocked || !password.trim()}>
+                <Button
+                  type="submit"
+                  className="w-full h-11"
+                  disabled={loading || isLocked || !username.trim() || !password.trim()}
+                >
                   {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Shield className="w-4 h-4 mr-2" />}
-                  Verificar
+                  Ingresar
                 </Button>
 
                 <button
@@ -310,6 +339,14 @@ const AdminGate = ({ onUnlock }: AdminGateProps) => {
                 >
                   ¿Olvidaste la contraseña?
                 </button>
+
+                <a
+                  href="/"
+                  className="w-full flex items-center justify-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors py-1"
+                >
+                  <ArrowLeft className="w-3 h-3" />
+                  Volver a la app
+                </a>
               </form>
             )}
 
@@ -344,7 +381,7 @@ const AdminGate = ({ onUnlock }: AdminGateProps) => {
 
                 <button
                   type="button"
-                  onClick={() => setMode("password")}
+                  onClick={() => setMode("login")}
                   className="w-full flex items-center justify-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors py-2"
                 >
                   <ArrowLeft className="w-3 h-3" />
@@ -377,7 +414,11 @@ const AdminGate = ({ onUnlock }: AdminGateProps) => {
                   />
                 </div>
 
-                <Button type="submit" className="w-full h-11" disabled={loading || !answer1.trim() || !answer2.trim()}>
+                <Button
+                  type="submit"
+                  className="w-full h-11"
+                  disabled={loading || !answer1.trim() || !answer2.trim()}
+                >
                   {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <KeyRound className="w-4 h-4 mr-2" />}
                   Verificar
                 </Button>
@@ -419,7 +460,6 @@ const AdminGate = ({ onUnlock }: AdminGateProps) => {
                   />
                 </div>
 
-                {/* Password strength indicator */}
                 {newPassword.length > 0 && (
                   <div className="space-y-1">
                     <div className="flex gap-1">
@@ -439,7 +479,13 @@ const AdminGate = ({ onUnlock }: AdminGateProps) => {
                       ))}
                     </div>
                     <p className="text-[10px] text-muted-foreground">
-                      {newPassword.length < 6 ? "Muy débil" : newPassword.length < 9 ? "Aceptable" : newPassword.length < 12 ? "Buena" : "Fuerte"}
+                      {newPassword.length < 6
+                        ? "Muy débil"
+                        : newPassword.length < 9
+                        ? "Aceptable"
+                        : newPassword.length < 12
+                        ? "Buena"
+                        : "Fuerte"}
                     </p>
                   </div>
                 )}
@@ -458,7 +504,7 @@ const AdminGate = ({ onUnlock }: AdminGateProps) => {
         </Card>
 
         <p className="text-center text-xs text-muted-foreground">
-          🔒 Panel de administración seguro
+          Panel de administración seguro
         </p>
       </div>
     </div>
