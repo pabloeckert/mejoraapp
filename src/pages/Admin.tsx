@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Shield, Newspaper, MessageSquare, Users, ArrowLeft, BookOpen, Sparkles, LogOut, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AdminNovedades from "@/components/admin/AdminNovedades";
@@ -10,59 +8,40 @@ import AdminUsuarios from "@/components/admin/AdminUsuarios";
 import AdminContenido from "@/components/admin/AdminContenido";
 import AdminIA from "@/components/admin/AdminIA";
 import AdminSeguridad from "@/components/admin/AdminSeguridad";
-import AdminGate from "@/components/admin/AdminGate";
 
 type AdminTab = "contenido" | "ia" | "novedades" | "muro" | "usuarios" | "seguridad";
 
 const Admin = () => {
-  const { session, loading, user } = useAuth();
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<AdminTab>("contenido");
-  const [masterUnlocked, setMasterUnlocked] = useState(false);
-  const [checkingMaster, setCheckingMaster] = useState(true);
-
-  // Check if user has admin role
-  useEffect(() => {
-    if (!user) {
-      setIsAdmin(false);
-      return;
-    }
-    const checkAdmin = async () => {
-      const { data } = await supabase.rpc("has_role", {
-        _user_id: user.id,
-        _role: "admin",
-      });
-      setIsAdmin(!!data);
-    };
-    checkAdmin();
-  }, [user]);
+  const [unlocked, setUnlocked] = useState(false);
+  const [checking, setChecking] = useState(true);
 
   // Check if master password was already entered this session
   useEffect(() => {
-    const unlocked = sessionStorage.getItem("admin_unlocked");
+    const flag = sessionStorage.getItem("admin_unlocked");
     const unlockedAt = sessionStorage.getItem("admin_unlocked_at");
 
-    if (unlocked === "true" && unlockedAt) {
-      // Session valid for 4 hours
+    if (flag === "true" && unlockedAt) {
       const elapsed = Date.now() - Number(unlockedAt);
       if (elapsed < 4 * 60 * 60 * 1000) {
-        setMasterUnlocked(true);
+        setUnlocked(true);
       } else {
         // Expired
         sessionStorage.removeItem("admin_unlocked");
         sessionStorage.removeItem("admin_unlocked_at");
       }
     }
-    setCheckingMaster(false);
+    setChecking(false);
   }, []);
 
   const handleLock = () => {
     sessionStorage.removeItem("admin_unlocked");
     sessionStorage.removeItem("admin_unlocked_at");
-    setMasterUnlocked(false);
+    navigate("/auth");
   };
 
-  if (loading || isAdmin === null || checkingMaster) {
+  if (checking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
@@ -70,11 +49,10 @@ const Admin = () => {
     );
   }
 
-  if (!session) return <Navigate to="/auth" replace />;
-
-  // If user is not admin OR hasn't entered master password, show the gate
-  if (!isAdmin || !masterUnlocked) {
-    return <AdminGate onUnlock={() => setMasterUnlocked(true)} />;
+  // Not unlocked — redirect to auth for admin login
+  if (!unlocked) {
+    navigate("/auth");
+    return null;
   }
 
   const tabs: { key: AdminTab; label: string; icon: typeof Newspaper }[] = [

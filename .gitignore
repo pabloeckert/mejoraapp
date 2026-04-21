@@ -32,3 +32,4 @@ dist-ssr
 **/secrets*
 *.pem
 *.key
+dist.tar.gz
