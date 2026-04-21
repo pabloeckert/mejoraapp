@@ -271,6 +271,9 @@ Contenido:
 | 404 al refrescar | `.htaccess` no llegó | Confirmar que está en la raíz del hosting |
 | Google OAuth da 404 | Redirect URL no configurada | Agregar `https://app.mejoraok.com` en Supabase → Auth → URL Configuration |
 | Admin no acepta credenciales | BD no inicializada | Ejecutar `CLEAN_SETUP.sql` en Supabase |
+| "El admin no está configurado" | Falta `admin_username` en admin_config o RLS bloquea lectura | Insertar `admin_username` + crear policy pública de lectura en admin_config |
+| "No se pudieron guardar los datos" al completar perfil | Columnas faltantes en tabla profiles | Agregar columnas: `email`, `nombre`, `apellido`, `cargo` |
+| Login Google da error | Provider no configurado en Supabase | Configurar Google provider via Management API o Dashboard |
 | Cambios no aparecen | Cache | Hard refresh: `Ctrl+Shift+R` |
 | Deploy no funciona | Secrets faltantes | Verificar los 6 secrets en GitHub → Settings → Secrets |
 
@@ -303,11 +306,18 @@ Contenido:
 3. ~~Admin config~~ → Tabla creada, master password `T@beg2301` hasheada, recovery questions configuradas
 4. ~~Realtime~~ → Activado en wall_posts y wall_comments
 
-### ⏳ En progreso
-1. **Google OAuth** — ✅ Credenciales obtenidas (Client ID + Secret de Google Cloud Console). Pendiente: configurar provider en Supabase (requiere Access Token de Supabase o hacerlo manualmente en el Dashboard).
-2. Rotar credenciales expuestas en sesiones (GitHub token, FTP password, Google Client Secret)
-3. Asignar rol de admin a primer usuario registrado
-4. Verificar flujo completo en producción
+### ✅ Completado (22 abril 2026 — sesión con asistente)
+1. ~~Google OAuth provider en Supabase~~ → Configurado via Management API (Client ID + Secret)
+2. ~~Columnas faltantes en profiles~~ → Agregadas: `email`, `nombre`, `apellido`, `cargo`
+3. ~~admin_username en admin_config~~ → Insertado: `admin`
+4. ~~RLS policy admin_config~~ → Cambiada a lectura pública (fix círculo vicioso)
+5. ~~Rol admin asignado~~ → User `f387499e` (Pablo Eckert) → rol `admin`
+6. ~~Google OAuth login funcional~~ → Login con Google funciona, perfil se crea automáticamente
+
+### ⏳ Pendiente
+1. Rotar credenciales expuestas (GitHub token, FTP password, Supabase token, Google Client Secret)
+2. Verificar flujo admin completo en producción (pendiente último fix RLS)
+3. Actualizar `CLEAN_SETUP.sql` con los fixes aplicados (columnas profiles, RLS admin_config, admin_username)
 
 ---
 
@@ -332,6 +342,62 @@ Contenido:
 - Se emitieron advertencias de seguridad por credenciales compartidas en texto plano
 - Se recomienda rotar: GitHub token, FTP password y Google Client Secret una vez completada la configuración
 
+## 14. Sesión 22 abril 2026 (04:26–04:41) — Fixes y configuración final
+
+### Problemas encontrados y resueltos
+
+#### 1. Columnas faltantes en tabla `profiles`
+- **Error:** "No se pudieron guardar los datos" al completar perfil después de login con Google
+- **Causa:** CLEAN_SETUP.sql no se aplicó completo. Faltaban columnas: `email`, `nombre`, `apellido`, `cargo`
+- **Fix:** `ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS email TEXT, ADD COLUMN IF NOT EXISTS nombre TEXT, ADD COLUMN IF NOT EXISTS apellido TEXT, ADD COLUMN IF NOT EXISTS cargo TEXT;`
+
+#### 2. Google OAuth provider no configurado
+- **Estado:** Client ID + Secret generados en Google Cloud Console, pero provider no activado en Supabase
+- **Fix:** PATCH a `api.supabase.com/v1/projects/pwiduojwgkaoxxuautkp/config/auth` con `external_google_enabled: true`, Client ID y Secret
+- **Redirect URI:** `https://pwiduojwgkaoxxuautkp.supabase.co/auth/v1/callback`
+
+#### 3. Login admin falla — "El admin no está configurado"
+- **Causa 1:** Falta entrada `admin_username` en tabla `admin_config`
+- **Fix 1:** `INSERT INTO admin_config (key, value) VALUES ('admin_username', 'admin')`
+- **Causa 2:** RLS policy requería usuario autenticado para leer `admin_config`, pero el login admin necesita leerlo **antes** de autenticar (círculo vicioso)
+- **Fix 2:** Policy cambiada de `TO authenticated USING (true)` a `USING (true)` (lectura pública). Escritura sigue restringida a admins.
+
+#### 4. Rol admin no asignado
+- **Fix:** `INSERT INTO user_roles (user_id, role) VALUES ('<user-id>', 'admin')`
+
+### SQL fixes consolidados (aplicados via Management API)
+
+```sql
+-- 1. Columnas faltantes en profiles
+ALTER TABLE public.profiles 
+  ADD COLUMN IF NOT EXISTS email TEXT,
+  ADD COLUMN IF NOT EXISTS nombre TEXT,
+  ADD COLUMN IF NOT EXISTS apellido TEXT,
+  ADD COLUMN IF NOT EXISTS cargo TEXT;
+
+-- 2. RLS fix para admin_config (lectura pública)
+DROP POLICY IF EXISTS "Only admins can read admin config" ON public.admin_config;
+CREATE POLICY "Anyone can read admin config" ON public.admin_config FOR SELECT USING (true);
+
+-- 3. admin_username
+INSERT INTO public.admin_config (key, value) 
+  VALUES ('admin_username', 'admin') 
+  ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+```
+
+### Estado al cierre de sesión
+- ✅ Login con Google funcional
+- ✅ Perfil se guarda correctamente
+- ✅ Rol admin asignado a Pablo Eckert
+- ✅ admin_username configurado
+- ✅ RLS admin_config corregida (lectura pública)
+- ⏳ Verificar login admin completo (pendiente probar con último fix RLS)
+
+### ⚠️ Acciones pendientes importantes
+1. **Rotar credenciales expuestas** — GitHub token, FTP password, Supabase token y Google Client Secret compartidos en texto plano durante la sesión
+2. **Actualizar CLEAN_SETUP.sql** — Incorporar los fixes (columnas profiles, RLS admin_config, admin_username)
+3. **Commit y push** de cambios al repo
+
 ---
 
-*Documento unificado — última actualización: 22 de abril 2026, 04:15 GMT+8*
+*Documento unificado — última actualización: 22 de abril 2026, 04:41 GMT+8*
