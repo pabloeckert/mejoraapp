@@ -1,11 +1,11 @@
 # MejoraApp — Evolución Completa
-## Desde el minuto cero hasta 21 de abril 2026
+## Desde el minuto cero hasta 22 de abril 2026
 
 **Repositorio:** https://github.com/pabloeckert/mejoraapp  
 **Producción:** https://app.mejoraok.com  
 **Hosting:** Hostinger (185.212.70.250)  
+**Supabase:** pwiduojwgkaoxxuautkp  
 **Stack:** React 18 + TypeScript + Vite 5 + Supabase + Tailwind CSS  
-**Último commit:** `eaf374c` — fix: critical Supabase env var mismatch + unified admin login flow
 
 ---
 
@@ -83,7 +83,6 @@ MejoraApp es la aplicación digital del ecosistema **Mejora Continua** — una c
 - App generada como proyecto Vite + React + shadcn/ui en Lovable.dev
 - Stack base: React 18, TypeScript, Vite 5, Tailwind CSS
 - Backend: Supabase (Auth + PostgreSQL + Edge Functions)
-- Integración con Lovable auth wrapper (`@lovable.dev/cloud-auth-js`)
 - 30+ componentes UI de shadcn/ui
 - Sistema de tabs con lazy loading
 
@@ -102,20 +101,16 @@ MejoraApp es la aplicación digital del ecosistema **Mejora Continua** — una c
 - Eliminación de redundancias en pantalla de login
 - Botón admin reemplazado por icono Shield discreto
 - Toggle de visibilidad de contraseña
-- Footer simplificado
-- Dark mode toggle mejorado (colores distintivos por modo)
+- Dark mode toggle mejorado
 - Favicon personalizado (logo MejoraOK)
 
 ### Fase 4: Fix Google OAuth
-- **Problema:** Error 404 al clickear "Continuar con Google"
-- **Causa:** Se usaba `lovable.auth.signInWithOAuth()` que depende del servicio de Lovable
-- **Solución:** Cambiado a `supabase.auth.signInWithOAuth()` nativo
+- Cambiado de `lovable.auth.signInWithOAuth()` a `supabase.auth.signInWithOAuth()` nativo
 - Requisito: agregar `https://app.mejoraok.com` en Redirect URLs de Supabase
 
 ### Fase 5: SPA Routing y Deploy
 - Creado `.htaccess` con RewriteRule para SPA fallback
-- Cache de assets estáticos (1 año)
-- Compresión gzip
+- Cache de assets estáticos (1 año) + compresión gzip
 - GitHub Actions workflow configurado (`deploy.yml`)
 - Deploy automático: push a main → build → FTP a Hostinger
 
@@ -128,53 +123,46 @@ MejoraApp es la aplicación digital del ecosistema **Mejora Continua** — una c
 - Roles granulares (admin/moderator/user)
 - RLS habilitado en Supabase
 - `.env` removido del repositorio
-- Preguntas de seguridad para recuperación de admin
-- Email de respaldo para recuperación
 
-### Fase 7: Documentación
-- Informe integral de la aplicación (`mejoraapp+2026-04-20.docx`)
-- Arquitectura de despliegue (`Como_Funciona_MejoraApp.docx`)
-- Instructivo de deploy paso a paso
-- Instructivo de despliegue sin conocimientos técnicos
+### Fase 7: Última sesión anterior (21 abril)
+- Fix crítico: Supabase env var mismatch (`VITE_SUPABASE_ANON_KEY` → `VITE_SUPABASE_PUBLISHABLE_KEY`)
+- Login unificado con admin integrado (puntito secreto)
+- Panel admin simplificado (solo master password)
+- Limpieza de meta tags y referencias obsoletas
 
-### Fase 8: Última sesión (21 abril 2026 — noche) ⭐
+### Fase 8: Deploy completo y nueva infraestructura (22 abril) ⭐
 
-#### 8.1 Fix crítico: Error de Supabase
-- **Error:** `{"code":400,"error_code":"validation_failed","msg":"Unsupported provider: missing OAuth secret"}`
-- **Síntoma en browser:** `Missing required Supabase environment variables`
-- **Causa raíz:** El `.env` tenía `VITE_SUPABASE_ANON_KEY` pero el código buscaba `VITE_SUPABASE_PUBLISHABLE_KEY` — nombres diferentes, Supabase recibía `undefined`
-- **Solución:** Corregido el nombre de variable + mejor manejo en `client.ts` (ya no crashea si falta, loggea cuál falta)
+#### 8.1 Nuevo proyecto Supabase
+- **Motivo:** Se eliminó el proyecto anterior y se creó uno nuevo desde cero
+- **Proyecto:** `pwiduojwgkaoxxuautkp`
+- **URL:** `https://pwiduojwgkaoxxuautkp.supabase.co`
+- Se consolidaron las 12 migraciones SQL originales en un único script limpio (`CLEAN_SETUP.sql`)
+- Se resolvieron conflictos de tablas duplicadas (admin_config, wall_comments)
+- Se reordenaron las dependencias (has_role antes de las policies que lo referencian)
 
-#### 8.2 Login unificado con admin integrado
-- **ANTES:** Botón "Admin Login" grande + ruta `/admin-login` separada + 3 pantallas
-- **AHORA:** Un solo flujo en `/auth`:
-  - Login normal: email + contraseña + Google OAuth
-  - El puntito debajo del logo (ya existía como link a `/admin`) ahora es interactivo:
-    - Click → el MISMO form cambia a modo admin (usuario + contraseña de admin)
-    - Click otra vez → vuelve al login normal
-    - Visual: puntito se pone rojo y crece (`scale-150`) cuando está en modo admin
-  - Componente nuevo: `AdminLoginForm.tsx`
-  - Ya no existe ruta `/admin-login`
+#### 8.2 GitHub Secrets configurados (6/6)
+| Secret | Valor |
+|--------|-------|
+| `VITE_SUPABASE_URL` | `https://pwiduojwgkaoxxuautkp.supabase.co` |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | (anon key del proyecto) |
+| `VITE_SUPABASE_PROJECT_ID` | `pwiduojwgkaoxxuautkp` |
+| `FTP_HOST` | `185.212.70.250` |
+| `FTP_USERNAME` | `u846064658.mejoraok.com` |
+| `FTP_PASSWORD` | (password FTP) |
 
-#### 8.3 Admin panel simplificado
-- **ANTES:** Necesitabas auth Supabase + rol admin + master password (3 capas)
-- **AHORA:** Solo verificación de master password (usuario + contraseña de admin_config)
-  - El AdminLoginForm verifica contra la tabla `admin_config` en Supabase
-  - Hash salted SHA-256 con migración automática de legacy unsalted
-  - Session válida por 4 horas en sessionStorage
-  - Si no está desbloqueado, redirige a `/auth`
-- `AdminGate.tsx` queda como código legacy (no se usa más)
+Configurados vía GitHub API con encriptación NaCl (libsodium sealed box).
 
-#### 8.4 Limpieza
-- Eliminada referencia a `@Lovable` en meta tags de Twitter
-- Supabase client con manejo graceful (no crashea si faltan env vars)
-- `.htaccess` optimizado (SPA routing + cache + gzip)
+#### 8.3 Deploy a producción
+- Build exitoso: 1785 módulos, ~3.66 segundos
+- Deploy ejecutado via GitHub Actions (workflow_dispatch)
+- **Resultado:** ✅ https://app.mejoraok.com → HTTP 200
+- Deploy automático activado: cada push a `main` ejecuta build + FTP
 
-#### 8.5 Deploy
-- Build exitoso: 35 archivos, ~900KB total
-- Build time: ~4 segundos
-- Código commiteado y pusheado a GitHub (`eaf374c`)
-- **Pendiente:** Subir a Hostinger via SmartFTP (instructivo preparado)
+#### 8.4 Base de datos preparada
+- Script `CLEAN_SETUP.sql` generado (15 secciones, ~500 líneas)
+- Incluye: 12 tablas, RLS, triggers, 4 categorías, 6 artículos de ejemplo
+- Master password: `T@beg2301` (hasheada SHA-256)
+- **Pendiente:** Ejecutar SQL en Supabase Dashboard → SQL Editor
 
 ---
 
@@ -186,9 +174,9 @@ MejoraApp es la aplicación digital del ecosistema **Mejora Continua** — una c
 | **Líneas de código** | ~11,400 |
 | **Tests** | 24 (100% passing) |
 | **Bundle gzipped** | ~350KB |
-| **Build time** | ~4 segundos |
+| **Build time** | ~3.66 segundos |
 | **Componentes UI** | 30+ (shadcn/ui) |
-| **Total commits** | 117 |
+| **Total commits** | 117+ |
 | **Tablas DB** | 12 |
 | **Páginas** | 5 (lazy-loaded) |
 | **Módulos admin** | 6 |
@@ -197,7 +185,7 @@ MejoraApp es la aplicación digital del ecosistema **Mejora Continua** — una c
 
 ## 6. Seguridad Implementada
 
-- ✅ ErrorBoundary global (no crashea la app entera)
+- ✅ ErrorBoundary global
 - ✅ Contraseñas hasheadas con salt (SHA-256)
 - ✅ Moderación de comentarios con IA
 - ✅ Rate limiting
@@ -209,6 +197,7 @@ MejoraApp es la aplicación digital del ecosistema **Mejora Continua** — una c
 - ✅ Preguntas de seguridad para recuperación
 - ✅ Bloqueo temporal tras 5 intentos fallidos (30s)
 - ✅ Hash migration automática (unsalted → salted)
+- ✅ GitHub Secrets encriptados (NaCl)
 
 ---
 
@@ -219,6 +208,11 @@ MejoraApp es la aplicación digital del ecosistema **Mejora Continua** — una c
 Push a main → npm ci → npm run build (con secrets) → FTP a public_html/app/
 ```
 
+### Manual (GitHub Actions - workflow_dispatch)
+```
+GitHub → Actions → Build & Deploy → Run workflow
+```
+
 ### Manual (SmartFTP)
 1. Conectar a `185.212.70.250:21` con credenciales FTP
 2. Navegar a `/public_html/app`
@@ -227,54 +221,58 @@ Push a main → npm ci → npm run build (con secrets) → FTP a public_html/app
 5. Verificar en https://app.mejoraok.com
 
 ### Secrets requeridos (GitHub)
-| Secret | Valor |
-|--------|-------|
-| `VITE_SUPABASE_URL` | `https://7uqmgyuhqfurvirmcqnj.supabase.co` |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | (anon key de Supabase) |
-| `FTP_HOST` | `185.212.70.250` |
-| `FTP_USERNAME` | `u846064658.mejoraok.com` |
-| `FTP_PASSWORD` | (password FTP) |
+| Secret | Descripción |
+|--------|-------------|
+| `VITE_SUPABASE_URL` | URL del proyecto Supabase |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Anon key de Supabase |
+| `VITE_SUPABASE_PROJECT_ID` | Project ID |
+| `FTP_HOST` | IP del servidor Hostinger |
+| `FTP_USERNAME` | Usuario FTP |
+| `FTP_PASSWORD` | Password FTP |
 
 ---
 
 ## 8. Acceso Admin
 
 1. Ir a https://app.mejoraok.com (redirige a `/auth`)
-2. Debajo del logo de "Mejora Continua — Comunidad de Negocios" hay un **puntito pequeño**
-3. Click en el puntito → se pone rojo y crece → el form cambia a "Acceso Administrador"
+2. Debajo del logo hay un **puntito pequeño**
+3. Click → se pone rojo y crece → form cambia a "Acceso Administrador"
 4. Ingresar usuario y contraseña de admin
-5. Click en el puntito otra vez → vuelve al login normal de usuario
+5. Click otra vez → vuelve al login normal
 
 ---
 
-## 9. Troubleshooting
+## 9. Setup de Base de Datos
+
+### Archivo: `CLEAN_SETUP.sql`
+Script consolidado que crea toda la estructura de BD de cero. Ejecutar una vez en:
+**Supabase Dashboard → SQL Editor → New Query → Pegar → Run**
+
+Contenido:
+1. Funciones base (update_updated_at_column)
+2. Roles (app_role enum + has_role function)
+3. Profiles (con auto-creación en signup)
+4. Diagnostic results
+5. Wall posts + likes + comments (con counters automáticos)
+6. Moderation log
+7. Novedades
+8. Content categories + posts + guidelines
+9. Admin config
+10. Datos iniciales (4 categorías + 6 artículos + master password)
+11. Realtime subscriptions
+
+---
+
+## 10. Troubleshooting
 
 | Síntoma | Causa probable | Solución |
 |---------|---------------|----------|
-| Pantalla en blanco + error Supabase en consola | Env vars no inyectadas | Verificar `.env` tiene `VITE_SUPABASE_PUBLISHABLE_KEY` (no `ANON_KEY`) |
-| 404 al refrescar `/auth` o `/admin` | `.htaccess` no llegó | Confirmar que `.htaccess` está en la raíz del hosting |
+| Pantalla en blanco | Env vars no inyectadas | Verificar GitHub Secrets configurados |
+| 404 al refrescar | `.htaccess` no llegó | Confirmar que está en la raíz del hosting |
 | Google OAuth da 404 | Redirect URL no configurada | Agregar `https://app.mejoraok.com` en Supabase → Auth → URL Configuration |
-| Puntito admin no hace nada | JS no cargó | Hard refresh `Ctrl+Shift+R`, verificar consola del navegador |
-| Admin no acepta credenciales | Master password no configurada | Configurar desde Seguridad del panel admin |
-| Cambios no aparecen | Cache | Hard refresh: `Ctrl+Shift+R` (Win) / `Cmd+Shift+R` (Mac) |
-
----
-
-## 10. Commits Significativos
-
-| Hash | Fecha | Descripción |
-|------|-------|-------------|
-| `eaf374c` | 21/04 | fix: Supabase env var mismatch + unified admin login |
-| `7d28d1d` | 21/04 | fix: regenera package-lock.json para CI |
-| `7918607` | 21/04 | deploy: Configurar dominio app.mejoraok.com |
-| `5d0033b` | 21/04 | security: Remove .env from git tracking |
-| `0f5f250` | 20/04 | security+feat: ErrorBoundary, salted passwords, moderación |
-| `826427f` | 20/04 | fix: Corrigió spinner infinito en `/index` |
-| `f432641` | 20/04 | feat: Punto secreto en login para admin |
-| `866a482` | 19/04 | feat: fix Google OAuth, custom favicon, dark mode |
-| `addc479` | 19/04 | feat: optimize login screen, .htaccess |
-| `49eaec2` | 19/04 | feat: Registration con nombre/apellido + profile modal |
-| `c54528a` | 19/04 | feat: Admin user management |
+| Admin no acepta credenciales | BD no inicializada | Ejecutar `CLEAN_SETUP.sql` en Supabase |
+| Cambios no aparecen | Cache | Hard refresh: `Ctrl+Shift+R` |
+| Deploy no funciona | Secrets faltantes | Verificar los 6 secrets en GitHub → Settings → Secrets |
 
 ---
 
@@ -284,18 +282,28 @@ Push a main → npm ci → npm run build (con secrets) → FTP a public_html/app
 |---------|-------------|
 | `mejoraapp+2026-04-20.docx` | Informe integral de la aplicación |
 | `Como_Funciona_MejoraApp.docx` | Arquitectura de despliegue |
+| `CLEAN_SETUP.sql` | Script SQL consolidado para setup de BD |
+| `.github/workflows/deploy.yml` | Workflow de deploy automático |
 
 ---
 
-## 12. Pendientes / Próximos Pasos
+## 12. Estado Actual (22 abril 2026)
 
-1. **Subir build a Hostinger** via SmartFTP (instructivo preparado)
-2. **Rotar GitHub token** (fue usado en esta sesión)
-3. **Verificar** que app.mejoraok.com carga correctamente
-4. **Probar** flujo completo: login usuario + login admin + panel admin
-5. **Evaluar** si AdminGate.tsx se puede eliminar (código huérfano)
+### ✅ Completado
+- App construida y funcional (11,400 líneas, 93 archivos)
+- Nuevo proyecto Supabase creado (`pwiduojwgkaoxxuautkp`)
+- GitHub Secrets configurados (6/6)
+- Deploy automático activado (GitHub Actions → FTP)
+- Sitio online: https://app.mejoraok.com (HTTP 200)
+- Script de BD preparado (`CLEAN_SETUP.sql`)
+
+### ⏳ Pendiente
+1. Ejecutar `CLEAN_SETUP.sql` en Supabase Dashboard
+2. Configurar Google OAuth redirect URL en nuevo proyecto Supabase
+3. Verificar flujo completo: registro → login → muro → contenido → admin
+4. Rotar GitHub token (fue usado en sesión)
+5. Asignar rol de admin a usuario (INSERT en user_roles)
 
 ---
 
-*Documento unificado — generado 21 de abril 2026*  
-*Reemplaza: INFORME_ESTADO_2026-04-21.md, CAMBIOS-Optimizacion-2026-04-21.md*
+*Documento unificado — última actualización: 22 de abril 2026*

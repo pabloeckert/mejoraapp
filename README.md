@@ -20,7 +20,7 @@ MejoraApp es la aplicación digital del ecosistema Mejora Continua — una comun
 
 ## Documentación
 
-- **Evolución completa:** [`Documents/MEJORAAPP-EVOLUCION-COMPLETA-2026-04-21.md`](Documents/MEJORAAPP-EVOLUCION-COMPLETA-2026-04-21.md)
+- **Evolución completa:** [`Documents/MEJORAAPP-EVOLUCION-COMPLETA.md`](Documents/MEJORAAPP-EVOLUCION-COMPLETA.md)
 - **Informe integral:** [`Documents/mejoraapp+2026-04-20.docx`](Documents/mejoraapp+2026-04-20.docx)
 - **Arquitectura:** [`Documents/Como_Funciona_MejoraApp.docx`](Documents/Como_Funciona_MejoraApp.docx)
 
@@ -42,7 +42,7 @@ Push a `main` → build automático → deploy a Hostinger via FTP.
 1. `npm run build`
 2. Subir contenido de `dist/` a `/public_html/app/` en Hostinger
 
-Ver [`Documents/MEJORAAPP-EVOLUCION-COMPLETA-2026-04-21.md`](Documents/MEJORAAPP-EVOLUCION-COMPLETA-2026-04-21.md) sección 7 para instructivo completo.
+Ver [`Documents/MEJORAAPP-EVOLUCION-COMPLETA.md`](Documents/MEJORAAPP-EVOLUCION-COMPLETA.md) sección 7 para instructivo completo.
 
 ## Stack
 
