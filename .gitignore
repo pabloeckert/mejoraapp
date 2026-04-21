@@ -33,3 +33,19 @@ dist-ssr
 *.pem
 *.key
 dist.tar.gz
+
+# Build artifacts
+*.zip
+*.tar.gz
+
+# Lockfiles — keep only package-lock.json (npm)
+bun.lock
+bun.lockb
+yarn.lock
+pnpm-lock.yaml
+
+# Lovable internal
+.lovable/
+
+# Document files — use Documents/ folder, not root
+/*.docx
