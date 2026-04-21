@@ -20,9 +20,9 @@ MejoraApp es la aplicación digital del ecosistema Mejora Continua — una comun
 
 ## Documentación
 
+- **Evolución completa:** [`Documents/MEJORAAPP-EVOLUCION-COMPLETA-2026-04-21.md`](Documents/MEJORAAPP-EVOLUCION-COMPLETA-2026-04-21.md)
 - **Informe integral:** [`Documents/mejoraapp+2026-04-20.docx`](Documents/mejoraapp+2026-04-20.docx)
-- **Instructivo de despliegue:** [`INSTRUCTIVO_DESPLIEGUE.md`](INSTRUCTIVO_DESPLIEGUE.md)
-- **Build de producción:** [`mejoraapp-dist.zip`](mejoraapp-dist.zip)
+- **Arquitectura:** [`Documents/Como_Funciona_MejoraApp.docx`](Documents/Como_Funciona_MejoraApp.docx)
 
 ## Desarrollo Local
 
@@ -35,9 +35,14 @@ npm run test     # Tests (24 passing)
 
 ## Despliegue
 
-Ver [INSTRUCTIVO_DESPLIEGUE.md](INSTRUCTIVO_DESPLIEGUE.md) para instrucciones paso a paso sin conocimientos técnicos.
+### Automático (GitHub Actions)
+Push a `main` → build automático → deploy a Hostinger via FTP.
 
-Resumen rápido: ejecutar `npm run build` y subir el contenido de `dist/` a `public_html` por FTP.
+### Manual (SmartFTP)
+1. `npm run build`
+2. Subir contenido de `dist/` a `/public_html/app/` en Hostinger
+
+Ver [`Documents/MEJORAAPP-EVOLUCION-COMPLETA-2026-04-21.md`](Documents/MEJORAAPP-EVOLUCION-COMPLETA-2026-04-21.md) sección 7 para instructivo completo.
 
 ## Stack
 
@@ -58,6 +63,7 @@ src/
 ├── pages/           # 5 páginas lazy-loaded
 ├── components/      # Componentes principales + ErrorBoundary
 │   ├── admin/       # 6 módulos admin
+│   ├── auth/        # Login, Signup, Google, AdminLogin
 │   ├── tabs/        # Muro, Novedades, Contenido
 │   └── ui/          # 30+ componentes shadcn/ui
 ├── contexts/        # AuthContext, ThemeContext
@@ -66,10 +72,14 @@ src/
 └── integrations/    # Supabase client + tipos
 ```
 
+## Acceso Admin
+
+En la pantalla de login (`/auth`) hay un **puntito pequeño debajo del logo**. Click → modo admin (usuario + contraseña). Click otra vez → login normal.
+
 ## Métricas
 
-- **Líneas de código:** ~10,774
-- **Archivos TS/TSX:** 88
+- **Líneas de código:** ~11,400
+- **Archivos TS/TSX:** 93
 - **Tests:** 24 (100% passing)
 - **Bundle gzipped:** ~350KB
-- **Build time:** ~4-6 segundos
+- **Build time:** ~4 segundos
