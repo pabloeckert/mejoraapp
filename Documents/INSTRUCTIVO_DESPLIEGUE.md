@@ -1,131 +1,97 @@
-# 🚀 Instructivo de Despliegue — MejoraApp
-## Guía paso a paso sin conocimientos técnicos
+# 🚀 Despliegue MejoraApp → app.mejoraok.com
 
-**Dominio de producción:** https://app.mejoraok.com  
-**Hosting:** Hostinger (185.212.70.250)  
-**Última actualización:** 21 de abril de 2026
+**Última actualización:** 21 abril 2026  
+**Modo:** Deploy automático vía GitHub Actions + FTP
 
 ---
 
-## 📋 Qué necesitás
+## 1️⃣ Configurar GitHub Secrets (una sola vez)
 
-- Una computadora con internet
-- FileZilla (programa FTP gratuito)
-- 15 minutos
+Andá a tu repo en GitHub → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**.
 
----
+Cargá estos 6 secrets:
 
-## Paso 1 — Descargar el build
+| Nombre | Valor | Dónde sacarlo |
+|---|---|---|
+| `FTP_HOST` | `185.212.70.250` | Hostinger → Files → FTP Accounts |
+| `FTP_USERNAME` | `u846064658.mejoraok.com` | Hostinger → Files → FTP Accounts |
+| `FTP_PASSWORD` | (nueva password FTP) | Hostinger → Files → FTP → Change password |
+| `VITE_SUPABASE_URL` | `https://bjapgdlsqhmwspavwrke.supabase.co` | Lovable → archivo `.env` |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | `eyJhbGc...` | Lovable → archivo `.env` |
+| `VITE_SUPABASE_PROJECT_ID` | `bjapgdlsqhmwspavwrke` | Lovable → archivo `.env` |
 
-1. Ir a: **https://github.com/pabloeckert/mejoraapp**
-2. Buscar el archivo **`mejoraapp-dist.zip`** en la raíz del repositorio
-3. Hacer clic → **Download**
-4. **Descomprimir** el ZIP:
-   - Windows: Clic derecho → "Extraer todo"
-   - Mac: Doble clic
-5. Se crea una carpeta **`dist`** con los archivos de la app
-
----
-
-## Paso 2 — Instalar FileZilla
-
-1. Ir a: **https://filezilla-project.org/download.php**
-2. Descargar e instalar
+> ⚠️ **CRÍTICO**: Si la password FTP fue compartida en chat alguna vez (incluido este chat), **cambiala antes** desde el panel de Hostinger. Subí solo la nueva.
 
 ---
 
-## Paso 3 — Conectar al servidor
+## 2️⃣ ¿Cómo se dispara el deploy?
 
-Datos de conexión:
+El workflow `.github/workflows/deploy.yml` corre automáticamente cuando:
 
-| Campo      | Valor                            |
-|------------|----------------------------------|
-| **Host**   | `185.212.70.250`                 |
-| **Usuario**| `u846064658.mejoraok.com`        |
-| **Contraseña** | `T@beg2301`                  |
-| **Puerto** | `21`                             |
+- **Hacés `push` a la rama `main`** (Lovable hace push automático cada vez que guardás cambios desde el editor).
+- O lo disparás **manualmente** desde **Actions** → "Build & Deploy to Hostinger (FTP)" → **Run workflow**.
 
-1. Abrir FileZilla
-2. Ingresar los datos arriba
-3. Clic en **"Conectar"**
-4. Si aparece aviso de certificado → aceptar
+Tiempo total: ~2-4 minutos por deploy.
 
 ---
 
-## Paso 4 — Subir archivos
+## 3️⃣ Qué hace el workflow paso a paso
 
-1. **Panel derecho** (servidor): navegar a la carpeta **`public_html`**
-2. **Panel izquierdo** (tu PC): navegar a la carpeta **`dist`**
-3. Seleccionar **TODOS** los archivos dentro de `dist` (Ctrl+A / Cmd+A)
-4. **Arrastrar** al panel derecho
-5. Si pide sobreescribir → **Sí a todo**
-6. Esperar 1-3 minutos
-
-> ⚠️ **IMPORTANTE:** Subir el CONTENIDO de `dist`, NO la carpeta `dist` entera.
+1. Clona el repo desde GitHub.
+2. Instala Node 22 + dependencias (`npm ci`).
+3. Compila la app de producción (`npm run build`) inyectando los `VITE_*`.
+4. Verifica que `dist/index.html` exista y reporta el tamaño del build.
+5. Sube `dist/` por FTP a `/public_html/app/` en Hostinger.
+6. Imprime un resumen con commit, branch y status.
 
 ---
 
-## Paso 5 — Crear/verificar `.htaccess`
+## 4️⃣ Verificar después del deploy
 
-Si al navegar a `/admin` o `/auth` aparece Error 404:
-
-1. Abrir el Bloc de Notas
-2. Pegar este contenido:
-
-```apache
-RewriteEngine On
-RewriteBase /
-RewriteRule ^index\.html$ - [L]
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule . /index.html [L]
-```
-
-3. Guardar como **`.htaccess`** (con el punto, SIN extensión .txt)
-4. Subir a `public_html` por FileZilla
+1. Andá a **https://app.mejoraok.com** → debería abrir tu app, no la página por defecto de Hostinger.
+2. Probá refrescar `https://app.mejoraok.com/auth` y `/admin` → no deberían dar 404 (gracias al `.htaccess` en `public/`).
+3. Si los assets cargan mal, revisá que el `<base href>` de `index.html` sea `/`.
 
 ---
 
-## Paso 6 — Verificar
+## 5️⃣ Acceso al panel admin
 
-1. Abrir navegador
-2. Ir a: **https://app.mejoraok.com**
-3. Verificar que:
-   - ✅ Carga la app (no la página por defecto de Hostinger)
-   - ✅ Se ve el logo y navegación
-   - ✅ Los 4 tabs funcionan (Contenido, Diagnóstico, Muro, Novedades)
-4. Probar en celular y tablet
-
----
-
-## Paso 7 — Acceder al Admin
-
-1. Ir a: **https://app.mejoraok.com/auth**
-2. Hacer clic en el **punto secreto** (punto pequeño en la pantalla de login)
-3. Ingresar la contraseña maestra del admin
-4. Verificar los 6 módulos: Contenido, IA, Novedades, Muro, Usuarios, Seguridad
+- En la pantalla de login (`/auth`) hay un **punto azul pequeño justo debajo del logo "Comunidad de Negocios"**. Es discreto pero visible. Tocalo.
+- Te lleva a `/admin` donde te pide **usuario + contraseña**.
+- **Credenciales por defecto:**
+  - Usuario: `admin`
+  - Contraseña: `T@beg2301`
+- **Cambialas inmediatamente** desde la pestaña **Seguridad** del panel.
 
 ---
 
-## 🔧 Solución de Problemas
+## 6️⃣ Troubleshooting
 
-| Problema | Causa | Solución |
-|----------|-------|----------|
-| Página en blanco | Archivos mal subidos | Verificar que `index.html` está en `public_html` |
-| Error 404 en rutas | Falta `.htaccess` | Crear y subir `.htaccess` (Paso 5) |
-| CSS roto | Carpeta `assets/` no subida | Verificar que `dist/assets/` se subió completa |
-| No conecta a Supabase | Build sin env vars | Hacer build con las variables correctas |
-
----
-
-## 📌 Resumen rápido
-
-1. 📥 Descargar `mejoraapp-dist.zip` de GitHub
-2. 📂 Descomprimir
-3. 🔌 Conectar FileZilla
-4. 📤 Subir contenido de `dist` a `public_html`
-5. ✅ Verificar en app.mejoraok.com
+| Síntoma | Causa probable | Solución |
+|---|---|---|
+| Workflow falla con `530 login authentication failed` | Password FTP cambió o secret mal cargado | Verificar `FTP_PASSWORD` en GitHub Secrets |
+| Workflow falla en `npm run build` | Falta env var `VITE_*` | Verificar los 3 secrets `VITE_*` |
+| Workflow OK pero 404 al refrescar `/auth` | `.htaccess` no llegó | Confirmar que `public/.htaccess` existe en repo y se subió |
+| Dominio sigue mostrando default Hostinger | DNS o folder vacío | En Hostinger verificar que `app.` apunte a `/public_html/app` |
+| Cambios no aparecen | Cache navegador | Hard refresh: `Ctrl+Shift+R` (Win) / `Cmd+Shift+R` (Mac) |
+| Olvidaste contraseña admin | — | Usar "¿Olvidaste la contraseña?" en `/admin` con preguntas de seguridad |
 
 ---
 
-*Documento generado automáticamente — MejoraApp 2026*
+## 7️⃣ Rotación de credenciales (cuando se filtran)
+
+1. Hostinger → Files → FTP Accounts → **Change password**
+2. GitHub repo → Settings → Secrets → Actions → **Update** `FTP_PASSWORD`
+3. Disparar workflow manualmente para verificar.
+
+---
+
+## 8️⃣ Plan B: Deploy manual (si Actions falla)
+
+Si por alguna razón no podés usar Actions:
+
+1. En tu compu local: clonar repo, `npm install`, `npm run build`.
+2. Abrir FileZilla, conectar con los datos FTP.
+3. Subir el contenido de `dist/` a `/public_html/app/` (sobrescribir).
+
+> Esto es más lento y propenso a errores; usalo solo como respaldo.
