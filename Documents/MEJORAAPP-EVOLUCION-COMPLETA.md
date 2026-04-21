@@ -297,12 +297,17 @@ Contenido:
 - Sitio online: https://app.mejoraok.com (HTTP 200)
 - Script de BD preparado (`CLEAN_SETUP.sql`)
 
+### ✅ Completado (22 abril 2026 — sesión automatizada)
+1. ~~Ejecutar `CLEAN_SETUP.sql` en Supabase Dashboard~~ → Ejecutado via Management API
+2. ~~Configurar Google OAuth redirect URL~~ → Site URL + URI allow list configurados
+3. ~~Admin config~~ → Tabla creada, master password `T@beg2301` hasheada, recovery questions configuradas
+4. ~~Realtime~~ → Activado en wall_posts y wall_comments
+
 ### ⏳ Pendiente
-1. Ejecutar `CLEAN_SETUP.sql` en Supabase Dashboard
-2. Configurar Google OAuth redirect URL en nuevo proyecto Supabase
-3. Verificar flujo completo: registro → login → muro → contenido → admin
-4. Rotar GitHub token (fue usado en sesión)
-5. Asignar rol de admin a usuario (INSERT en user_roles)
+1. **Google OAuth** — Requiere Client ID + Secret de Google Cloud Console (no se puede automatizar sin credenciales del usuario)
+2. Rotar GitHub token (fue expuesto en sesión)
+3. Asignar rol de admin a primer usuario registrado
+4. Verificar flujo completo en producción
 
 ---
 

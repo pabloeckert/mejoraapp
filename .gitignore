@@ -49,3 +49,4 @@ pnpm-lock.yaml
 
 # Document files — use Documents/ folder, not root
 /*.docx
+supabase/.temp/
