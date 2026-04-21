@@ -303,12 +303,35 @@ Contenido:
 3. ~~Admin config~~ → Tabla creada, master password `T@beg2301` hasheada, recovery questions configuradas
 4. ~~Realtime~~ → Activado en wall_posts y wall_comments
 
-### ⏳ Pendiente
-1. **Google OAuth** — Requiere Client ID + Secret de Google Cloud Console (no se puede automatizar sin credenciales del usuario)
-2. Rotar GitHub token (fue expuesto en sesión)
+### ⏳ En progreso
+1. **Google OAuth** — ✅ Credenciales obtenidas (Client ID + Secret de Google Cloud Console). Pendiente: configurar provider en Supabase (requiere Access Token de Supabase o hacerlo manualmente en el Dashboard).
+2. Rotar credenciales expuestas en sesiones (GitHub token, FTP password, Google Client Secret)
 3. Asignar rol de admin a primer usuario registrado
 4. Verificar flujo completo en producción
 
 ---
 
-*Documento unificado — última actualización: 22 de abril 2026*
+## 13. Sesión 22 abril 2026 — Configuración Google OAuth
+
+### Credenciales obtenidas
+- **Google Cloud Console** — Client ID y Client Secret generados para el proyecto
+- **Subdominio** — `app.mejoraok.com` creado y funcionando
+- **Infraestructura FTP** — Hostinger confirmada:
+  - IP: `185.212.70.250`
+  - Usuario: `u846064658.mejoraok.com`
+  - Puerto: 21
+  - Carpeta: `/home/u846064658/domains/mejoraok.com/public_html/app`
+
+### Siguiente paso
+- Configurar Google provider en Supabase (`pwiduojwgkaoxxuautkp`) con el Client ID y Secret
+- Opciones:
+  1. Vía Supabase Management API (requiere Access Token)
+  2. Manual: Supabase Dashboard → Authentication → Providers → Google → pegar Client ID + Secret
+
+### ⚠️ Seguridad
+- Se emitieron advertencias de seguridad por credenciales compartidas en texto plano
+- Se recomienda rotar: GitHub token, FTP password y Google Client Secret una vez completada la configuración
+
+---
+
+*Documento unificado — última actualización: 22 de abril 2026, 04:15 GMT+8*
