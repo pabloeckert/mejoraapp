@@ -198,44 +198,26 @@ const PostCard = ({
   isExpanded: boolean;
   onToggle: (id: string) => void;
 }) => {
-  const cat = post.content_categories;
-  const Icon = getIcon(cat?.icono);
-  const date = new Date(post.published_at ?? post.created_at);
-  const typeBadge = getTypeBadge(post.content_type);
-  const TypeIcon = typeBadge.icon;
+  // Truncate summary to 2 lines consistently
+  const summary = (post.resumen || post.contenido || "").split("\n")[0].slice(0, 150);
 
   return (
     <Card className="shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={() => onToggle(post.id)}>
-      <CardContent className="p-4 space-y-2">
-        {/* Top row: category + type + date */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${getCategoryColor(cat?.slug)}`}>
-            <Icon className="w-3 h-3" />
-            {cat?.nombre || "General"}
-          </span>
-          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${typeBadge.color}`}>
-            <TypeIcon className="w-3 h-3" />
-            {typeBadge.label}
-          </span>
-          <span className="text-[10px] text-muted-foreground ml-auto">
-            {date.toLocaleDateString("es-AR", { day: "numeric", month: "short" })}
-          </span>
-        </div>
-
-        {/* Title */}
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="font-bold text-foreground text-sm leading-snug flex-1">{post.titulo}</h3>
+      <CardContent className="p-4">
+        {/* Title + chevron */}
+        <div className="flex items-start gap-2">
+          <h3 className="font-bold text-[15px] text-foreground leading-snug flex-1">{post.titulo}</h3>
           {isExpanded ? (
-            <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+            <ChevronUp className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+            <ChevronDown className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
           )}
         </div>
 
-        {/* Summary (always visible when collapsed) */}
+        {/* Summary — always visible, uniform */}
         {!isExpanded && (
-          <p className="text-xs text-muted-foreground line-clamp-2">
-            {post.resumen || post.contenido}
+          <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed line-clamp-2">
+            {summary}
           </p>
         )}
 
