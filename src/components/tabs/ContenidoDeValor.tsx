@@ -141,7 +141,7 @@ const ExpandedContent = ({ post, onClose }: { post: Post; onClose: () => void })
   const typeBadge = getTypeBadge(post.content_type);
 
   return (
-    <div className="mt-3 pt-3 border-t border-border/50 space-y-4 animate-in slide-in-from-top-2 duration-200">
+    <div className="mt-3 pt-3 border-t border-border/50 space-y-4 animate-in slide-in-from-top-2 duration-200" onClick={(e) => e.stopPropagation()}>
       {/* Media section */}
       {post.content_type === "video" && post.video_url && (
         <VideoEmbed url={post.video_url} />
@@ -205,7 +205,7 @@ const PostCard = ({
   const TypeIcon = typeBadge.icon;
 
   return (
-    <Card className="shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={() => !isExpanded && onToggle(post.id)}>
+    <Card className="shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={() => onToggle(post.id)}>
       <CardContent className="p-4 space-y-2">
         {/* Top row: category + type + date */}
         <div className="flex items-center gap-2 flex-wrap">
