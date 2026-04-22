@@ -233,34 +233,10 @@ const PostCard = ({
         </div>
 
         {/* Summary (always visible when collapsed) */}
-        {!isExpanded && post.resumen && (
-          <p className="text-xs text-muted-foreground line-clamp-2">{post.resumen}</p>
-        )}
-        {!isExpanded && !post.resumen && (
-          <p className="text-xs text-muted-foreground line-clamp-2">{post.contenido}</p>
-        )}
-
-        {/* Thumbnail preview for infographics */}
-        {!isExpanded && post.content_type === "infographic" && post.imagen_url && (
-          <div className="rounded-md overflow-hidden h-20 bg-muted">
-            <img src={post.imagen_url} alt="" className="w-full h-full object-cover opacity-70" loading="lazy" />
-          </div>
-        )}
-
-        {/* Video thumbnail hint */}
-        {!isExpanded && post.content_type === "video" && (
-          <div className="flex items-center gap-1.5 text-xs text-red-500 dark:text-red-400">
-            <Play className="w-3.5 h-3.5" />
-            Tocá para ver el video
-          </div>
-        )}
-
-        {/* Book download hint */}
-        {!isExpanded && post.content_type === "book" && (
-          <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
-            <Download className="w-3.5 h-3.5" />
-            Tocá para descargar el PDF
-          </div>
+        {!isExpanded && (
+          <p className="text-xs text-muted-foreground line-clamp-2">
+            {post.resumen || post.contenido}
+          </p>
         )}
 
         {/* Expanded content */}
