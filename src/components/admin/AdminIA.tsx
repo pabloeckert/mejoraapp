@@ -1,67 +1,38 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { aiService } from "@/services/ai";
-import type { AIProviderConfig } from "@/services/ai";
-import { CheckCircle, XCircle, ExternalLink, Loader2, Sparkles, Key } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { CheckCircle, XCircle, ExternalLink, Loader2, Sparkles, Server } from "lucide-react";
 
 const AdminIA = () => {
   const { toast } = useToast();
-  const [providers, setProviders] = useState<AIProviderConfig[]>([]);
-  const [keys, setKeys] = useState<Record<string, string>>({});
-  const [testing, setTesting] = useState<string | null>(null);
+  const [testing, setTesting] = useState(false);
 
-  useEffect(() => {
-    const all = aiService.getProviders();
-    setProviders(all);
-    const savedKeys: Record<string, string> = {};
-    all.forEach((p) => {
-      const key = p.getKey();
-      if (key) savedKeys[p.name] = key;
-    });
-    setKeys(savedKeys);
-  }, []);
-
-  const handleSaveKey = (provider: AIProviderConfig) => {
-    const key = keys[provider.name]?.trim();
-    if (!key) {
-      toast({ title: "Ingresá una API key", variant: "destructive" });
-      return;
-    }
-    provider.setKey(key);
-    toast({ title: `${provider.label} configurado ✅` });
-  };
-
-  const handleTest = async (provider: AIProviderConfig) => {
-    setTesting(provider.name);
+  const handleTest = async () => {
+    setTesting(true);
     try {
-      // Temporarily set this as the only configured provider for the test
-      const { content } = await aiService.chat(
-        "Respondé en una sola oración corta.",
-        "Decí 'Funcionando correctamente' en español."
-      );
-      toast({ title: `${provider.label}`, description: `Respuesta: ${content.slice(0, 80)}...` });
-    } catch (err) {
-      toast({
-        title: `Error con ${provider.label}`,
-        description: err instanceof Error ? err.message : String(err),
-        variant: "destructive",
+      const { data, error } = await supabase.functions.invoke("generate-content", {
+        body: { category: "tip" },
       });
+
+      if (error) throw error;
+
+      if (data?.titulo) {
+        toast({
+          title: "IA funcionando ✅",
+          description: `Generó: "${data.titulo.slice(0, 50)}..."`,
+        });
+      } else if (data?.error) {
+        toast({ title: "Error de IA", description: data.error, variant: "destructive" });
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast({ title: "Error", description: msg, variant: "destructive" });
     } finally {
-      setTesting(null);
+      setTesting(false);
     }
   };
-
-  const handleClearKey = (provider: AIProviderConfig) => {
-    provider.setKey("");
-    setKeys((prev) => ({ ...prev, [provider.name]: "" }));
-    toast({ title: `${provider.label} eliminado` });
-  };
-
-  const configured = aiService.getConfiguredProviders();
 
   return (
     <div className="space-y-4">
@@ -73,90 +44,70 @@ const AdminIA = () => {
       <Card className="border-primary/20 bg-primary/5">
         <CardContent className="p-4">
           <p className="text-sm text-foreground leading-relaxed">
-            <strong>¿Cómo funciona?</strong> Cargá al menos una API key gratuita. La app rota automáticamente entre los proveedores disponibles.
-            Si uno falla (rate limit), pasa al siguiente.
-          </p>
-          <p className="text-xs text-muted-foreground mt-2">
-            {configured.length > 0
-              ? `${configured.length} proveedor(es) configurado(s): ${configured.map((p) => p.label).join(", ")}`
-              : "⚠️ Ningún proveedor configurado. La generación de contenido y moderación no funcionarán."}
+            <strong>¿Cómo funciona?</strong> La IA se ejecuta 100% server-side (Edge Functions de Supabase).
+            Las API keys se configuran como secrets en Supabase, nunca en el navegador.
           </p>
         </CardContent>
       </Card>
 
-      {providers.map((provider) => {
-        const isConfigured = !!keys[provider.name];
-        return (
-          <Card key={provider.name}>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  {isConfigured ? (
-                    <CheckCircle className="w-4 h-4 text-green-500" />
-                  ) : (
-                    <XCircle className="w-4 h-4 text-muted-foreground" />
-                  )}
-                  {provider.label}
-                </CardTitle>
-                <a
-                  href={provider.signupUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-primary hover:underline flex items-center gap-1"
-                >
-                  Obtener key <ExternalLink className="w-3 h-3" />
-                </a>
-              </div>
-              <p className="text-xs text-muted-foreground">{provider.description}</p>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <Label className="text-xs sr-only">API Key</Label>
-                  <Input
-                    type="password"
-                    placeholder={`Pegá tu API key de ${provider.label.split("(")[0].trim()}...`}
-                    value={keys[provider.name] || ""}
-                    onChange={(e) => setKeys((prev) => ({ ...prev, [provider.name]: e.target.value }))}
-                    className="font-mono text-xs"
-                  />
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Button size="sm" onClick={() => handleSaveKey(provider)} disabled={!keys[provider.name]?.trim()}>
-                  <Key className="w-3 h-3 mr-1" />
-                  Guardar
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleTest(provider)}
-                  disabled={!isConfigured || testing === provider.name}
-                >
-                  {testing === provider.name ? (
-                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                  ) : (
-                    <Sparkles className="w-3 h-3 mr-1" />
-                  )}
-                  Test
-                </Button>
-                {isConfigured && (
-                  <Button size="sm" variant="ghost" className="text-destructive" onClick={() => handleClearKey(provider)}>
-                    Quitar
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        );
-      })}
+      {/* Server-side status */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Server className="w-4 h-4" />
+            Proveedores server-side
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-xs text-muted-foreground">
+            Los proveedores se configuran como secrets en tu proyecto de Supabase.
+            Las Edge Functions los usan automáticamente en este orden de prioridad:
+          </p>
 
-      <Card className="border-dashed">
-        <CardContent className="p-4 text-xs text-muted-foreground space-y-1">
-          <p><strong>¿Cómo obtener las keys?</strong></p>
-          <p>• <strong>Gemini:</strong> aistudio.google.com/apikey → Create API Key → Gratis, sin tarjeta</p>
-          <p>• <strong>OpenRouter:</strong> openrouter.ai/settings/keys → Create Key → Gratis con límite diario</p>
-          <p>• <strong>Groq:</strong> console.groq.com/keys → Create API Key → Gratis, ultra rápido</p>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 py-1.5">
+              <div className="w-2 h-2 rounded-full bg-yellow-400" />
+              <span className="text-sm font-medium">Gemini (Google)</span>
+              <span className="text-[10px] text-muted-foreground ml-auto">GEMINI_API_KEY</span>
+            </div>
+            <div className="flex items-center gap-2 py-1.5">
+              <div className="w-2 h-2 rounded-full bg-orange-400" />
+              <span className="text-sm font-medium">Groq (Llama 3.3)</span>
+              <span className="text-[10px] text-muted-foreground ml-auto">GROQ_API_KEY</span>
+            </div>
+            <div className="flex items-center gap-2 py-1.5">
+              <div className="w-2 h-2 rounded-full bg-blue-400" />
+              <span className="text-sm font-medium">OpenRouter (DeepSeek)</span>
+              <span className="text-[10px] text-muted-foreground ml-auto">OPENROUTER_API_KEY</span>
+            </div>
+          </div>
+
+          <Button onClick={handleTest} disabled={testing} className="w-full gap-2">
+            {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+            Probar IA
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Instructions */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm">Cómo configurar los secrets</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-xs text-muted-foreground">
+          <ol className="space-y-2 list-decimal list-inside">
+            <li>Andá a <a href="https://supabase.com/dashboard/project/pwiduojwgkaoxxuautkp/settings/functions" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">Supabase → Edge Functions Secrets <ExternalLink className="w-3 h-3" /></a></li>
+            <li>Agregá al menos un secret: <code className="bg-muted px-1 rounded text-[10px]">GEMINI_API_KEY</code></li>
+            <li>Obtené tu key gratis en <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">aistudio.google.com</a></li>
+            <li>Guardá y probá con el botón de arriba</li>
+          </ol>
+
+          <div className="bg-muted/50 rounded-lg p-3 mt-2">
+            <p className="font-medium text-foreground text-xs mb-1">¿Qué hace cada secret?</p>
+            <p><code className="text-[10px]">GEMINI_API_KEY</code> — Moderación + generación de contenido (gratis, 15 req/min)</p>
+            <p><code className="text-[10px]">GROQ_API_KEY</code> — Fallback ultra-rápido (gratis)</p>
+            <p><code className="text-[10px]">OPENROUTER_API_KEY</code> — Fallback con DeepSeek (gratis con límite)</p>
+          </div>
         </CardContent>
       </Card>
     </div>

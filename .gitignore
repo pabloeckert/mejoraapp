@@ -24,10 +24,10 @@ dist-ssr
 *.sw?
 
 # Security — never commit credentials
-*.env
-*.env.local
-*.env.production
-.env*
+.env
+.env.local
+.env.production
+!.env.example
 **/credentials*
 **/secrets*
 *.pem

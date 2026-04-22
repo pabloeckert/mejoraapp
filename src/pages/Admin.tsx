@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Shield, Newspaper, MessageSquare, Users, ArrowLeft, BookOpen, Sparkles, LogOut, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import AdminNovedades from "@/components/admin/AdminNovedades";
 import AdminMuro from "@/components/admin/AdminMuro";
 import AdminUsuarios from "@/components/admin/AdminUsuarios";
@@ -13,27 +15,45 @@ type AdminTab = "contenido" | "ia" | "novedades" | "muro" | "usuarios" | "seguri
 
 const Admin = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<AdminTab>("contenido");
   const [unlocked, setUnlocked] = useState(false);
   const [checking, setChecking] = useState(true);
 
-  // Check if master password was already entered this session
   useEffect(() => {
-    const flag = sessionStorage.getItem("admin_unlocked");
-    const unlockedAt = sessionStorage.getItem("admin_unlocked_at");
+    const verifyAdmin = async () => {
+      // Check session flag first
+      const flag = sessionStorage.getItem("admin_unlocked");
+      const unlockedAt = sessionStorage.getItem("admin_unlocked_at");
 
-    if (flag === "true" && unlockedAt) {
-      const elapsed = Date.now() - Number(unlockedAt);
-      if (elapsed < 4 * 60 * 60 * 1000) {
-        setUnlocked(true);
-      } else {
-        // Expired
-        sessionStorage.removeItem("admin_unlocked");
-        sessionStorage.removeItem("admin_unlocked_at");
+      if (flag === "true" && unlockedAt) {
+        const elapsed = Date.now() - Number(unlockedAt);
+        if (elapsed < 4 * 60 * 60 * 1000) {
+          // Verify role is still valid (in case it was revoked)
+          if (user) {
+            const { data } = await supabase
+              .from("user_roles")
+              .select("role")
+              .eq("user_id", user.id)
+              .eq("role", "admin")
+              .maybeSingle();
+            if (data) {
+              setUnlocked(true);
+            } else {
+              // Role revoked
+              sessionStorage.removeItem("admin_unlocked");
+              sessionStorage.removeItem("admin_unlocked_at");
+            }
+          }
+        } else {
+          sessionStorage.removeItem("admin_unlocked");
+          sessionStorage.removeItem("admin_unlocked_at");
+        }
       }
-    }
-    setChecking(false);
-  }, []);
+      setChecking(false);
+    };
+    verifyAdmin();
+  }, [user]);
 
   const handleLock = () => {
     sessionStorage.removeItem("admin_unlocked");
@@ -49,7 +69,6 @@ const Admin = () => {
     );
   }
 
-  // Not unlocked — redirect to auth for admin login
   if (!unlocked) {
     navigate("/auth");
     return null;
@@ -66,7 +85,6 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="sticky top-0 z-30 bg-card border-b px-4 py-3">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -88,7 +106,6 @@ const Admin = () => {
         </div>
       </header>
 
-      {/* Tab bar */}
       <div className="sticky top-[53px] z-20 bg-card border-b">
         <div className="max-w-4xl mx-auto flex">
           {tabs.map(({ key, label, icon: Icon }) => (
@@ -108,7 +125,6 @@ const Admin = () => {
         </div>
       </div>
 
-      {/* Content */}
       <main className="max-w-4xl mx-auto px-4 py-4">
         {activeTab === "contenido" && <AdminContenido />}
         {activeTab === "ia" && <AdminIA />}

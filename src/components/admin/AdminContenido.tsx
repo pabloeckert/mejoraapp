@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { aiService } from "@/services/ai";
+// AI is server-side via Edge Functions — no client-side AI service needed
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 
 type Category = Tables<"content_categories">;
@@ -31,16 +31,7 @@ const CATEGORY_PROMPTS: Record<string, string> = {
   noticia: "un análisis breve de una tendencia o situación actual relevante para negocios. Que sea concreto, útil y con una bajada práctica",
 };
 
-const SYSTEM_PROMPT = `Sos la voz de una comunidad de negocios argentina. Tu comunicación es:
-- DIRECTA: Vas al punto sin preámbulos.
-- HONESTA: No prometés lo que no podés cumplir.
-- EMOCIONAL: Conectás con lo que la persona siente.
-- ARGENTINA: Usás "vos", expresiones del contexto.
-- SIMPLE: Frases cortas, ideas claras.
-
-Generá contenido con un título corto y contundente, y contenido en párrafos separados por saltos de línea.
-
-Respondé ÚNICAMENTE en formato JSON: {"titulo": "...", "contenido": "...", "resumen": "..."}`;
+// AI generation is now server-side via Edge Functions
 
 const getTypeBadge = (type: string) => {
   const t = CONTENT_TYPES.find((c) => c.value === type);
@@ -154,40 +145,28 @@ const AdminContenido = () => {
       return;
     }
 
-    const configured = aiService.getConfiguredProviders();
-    if (configured.length === 0) {
-      toast({
-        title: "Sin proveedores de IA",
-        description: "Andá a la pestaña IA y cargá al menos una API key gratuita.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setGenerating(true);
     setAiPreview(null);
 
     try {
       const cat = categories.find((c) => c.id === aiCategory);
-      const promptType = CATEGORY_PROMPTS[cat?.slug || "tip"] || CATEGORY_PROMPTS.tip;
-      const guidelinesBlock = aiGuidelines ? `\n\nLineamientos del administrador: ${aiGuidelines}` : "";
 
-      const { content: aiResponse, provider } = await aiService.chat(
-        SYSTEM_PROMPT + guidelinesBlock,
-        `Generá ${promptType}.`
-      );
+      const { data, error } = await supabase.functions.invoke("generate-content", {
+        body: {
+          category: cat?.slug || "tip",
+          guidelines: aiGuidelines || undefined,
+        },
+      });
 
-      const jsonMatch = aiResponse.match(/\{[\s\S]*?\}/);
-      let result: { titulo: string; contenido: string; resumen: string };
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
-      if (jsonMatch) {
-        result = JSON.parse(jsonMatch[0]);
-      } else {
-        result = { titulo: "Contenido generado", contenido: aiResponse, resumen: aiResponse.slice(0, 120) };
-      }
-
-      setAiPreview({ titulo: result.titulo, contenido: result.contenido, resumen: result.resumen || result.contenido.slice(0, 120) });
-      toast({ title: `Generado con ${provider} ✨` });
+      setAiPreview({
+        titulo: data.titulo || "Contenido generado",
+        contenido: data.contenido || "",
+        resumen: data.resumen || (data.contenido || "").slice(0, 120),
+      });
+      toast({ title: "Contenido generado ✨" });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       toast({ title: "Error al generar", description: message, variant: "destructive" });
@@ -246,7 +225,7 @@ const AdminContenido = () => {
     }
   };
 
-  const configuredProviders = aiService.getConfiguredProviders();
+  // AI is server-side — always available if Edge Function secrets are configured
 
   if (loading) {
     return (
@@ -267,7 +246,7 @@ const AdminContenido = () => {
         </Button>
         <Button size="sm" variant={view === "ai-generate" ? "default" : "outline"} onClick={() => setView("ai-generate")}>
           <Sparkles className="w-3.5 h-3.5 mr-1" /> Generar con IA
-          {configuredProviders.length === 0 && <span className="text-[10px] ml-1 opacity-60">(configurar)</span>}
+          
         </Button>
         <Button size="sm" variant={view === "categories" ? "default" : "outline"} onClick={() => setView("categories")}>
           <Settings2 className="w-3.5 h-3.5 mr-1" /> Categorías
@@ -390,11 +369,6 @@ const AdminContenido = () => {
         <Card>
           <CardHeader><CardTitle className="text-sm">Generar contenido con IA</CardTitle></CardHeader>
           <CardContent className="space-y-3">
-            {configuredProviders.length === 0 && (
-              <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 text-xs text-yellow-800 dark:text-yellow-200">
-                ⚠️ No hay proveedores de IA configurados. Andá a la pestaña <strong>IA</strong> y cargá al menos una API key gratuita.
-              </div>
-            )}
             <Select value={aiCategory} onValueChange={setAiCategory}>
               <SelectTrigger><SelectValue placeholder="Categoría para generar" /></SelectTrigger>
               <SelectContent>
@@ -411,7 +385,7 @@ const AdminContenido = () => {
               value={aiGuidelines}
               onChange={(e) => setAiGuidelines(e.target.value)}
             />
-            <Button onClick={generateWithAI} disabled={generating || configuredProviders.length === 0}>
+            <Button onClick={generateWithAI} disabled={generating}>
               {generating ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Sparkles className="w-4 h-4 mr-1" />}
               Generar
             </Button>

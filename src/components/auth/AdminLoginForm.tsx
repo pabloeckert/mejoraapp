@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { Shield, Lock, Eye, EyeOff, User, Loader2, AlertTriangle, ArrowLeft } from "lucide-react";
+import { useState } from "react";
+import { Shield, Lock, Eye, EyeOff, Mail, Loader2, AlertTriangle, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,98 +11,31 @@ interface AdminLoginFormProps {
   onSuccess: () => void;
 }
 
-// Salted SHA-256 hash using Web Crypto API
-async function sha256Salted(message: string, salt?: string): Promise<{ hash: string; salt: string }> {
-  const usedSalt = salt || crypto.randomUUID().replace(/-/g, "").slice(0, 16);
-  const saltedMessage = `${usedSalt}:${message}:${usedSalt.split("").reverse().join("")}`;
-  const msgBuffer = new TextEncoder().encode(saltedMessage);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hash = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-  return { hash, salt: usedSalt };
-}
-
-// Legacy unsalted hash for backwards-compat
-async function sha256Legacy(message: string): Promise<string> {
-  const msgBuffer = new TextEncoder().encode(message);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
 const AdminLoginForm = ({ onBack, onSuccess }: AdminLoginFormProps) => {
   const { toast } = useToast();
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [attempts, setAttempts] = useState(0);
 
-  const getConfig = useCallback(async (key: string): Promise<string | null> => {
-    const { data } = await supabase
-      .from("admin_config")
-      .select("value")
-      .eq("key", key)
-      .maybeSingle();
-    return data?.value ?? null;
-  }, []);
-
-  const setConfig = useCallback(async (key: string, value: string) => {
-    await supabase.from("admin_config").upsert({ key, value }, { onConflict: "key" });
-  }, []);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username.trim() || !password.trim() || loading) return;
+    if (!email.trim() || !password.trim() || loading) return;
 
     setLoading(true);
     try {
-      const [storedUsername, storedHash, storedSalt] = await Promise.all([
-        getConfig("admin_username"),
-        getConfig("master_password_hash"),
-        getConfig("master_password_salt"),
-      ]);
+      // 1. Sign in with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
 
-      if (!storedHash || !storedUsername) {
-        toast({
-          title: "Error de configuración",
-          description: "El admin no está configurado. Contactá al desarrollador.",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
-
-      const usernameMatches = username.trim().toLowerCase() === storedUsername.toLowerCase();
-
-      let inputHash: string;
-      if (storedSalt) {
-        const result = await sha256Salted(password, storedSalt);
-        inputHash = result.hash;
-      } else {
-        inputHash = await sha256Legacy(password);
-      }
-      const passwordMatches = inputHash === storedHash;
-
-      if (usernameMatches && passwordMatches) {
-        // Migrate legacy unsalted hash to salted
-        if (!storedSalt) {
-          const { hash, salt } = await sha256Salted(password);
-          await Promise.all([
-            setConfig("master_password_hash", hash),
-            setConfig("master_password_salt", salt),
-          ]);
-        }
-
-        sessionStorage.setItem("admin_unlocked", "true");
-        sessionStorage.setItem("admin_unlocked_at", Date.now().toString());
-        toast({ title: "Acceso concedido", description: "Bienvenido al panel de administración." });
-        onSuccess();
-      } else {
+      if (authError || !authData.user) {
         setAttempts((a) => a + 1);
         toast({
           title: "Credenciales incorrectas",
-          description: attempts >= 2 ? "Verificá tu usuario y contraseña." : `Intento ${attempts + 1} de 5`,
+          description: attempts >= 2 ? "Verificá tu email y contraseña." : `Intento ${attempts + 1} de 5`,
           variant: "destructive",
         });
         if (attempts >= 4) {
@@ -113,48 +46,75 @@ const AdminLoginForm = ({ onBack, onSuccess }: AdminLoginFormProps) => {
           });
           setTimeout(() => setAttempts(0), 30000);
         }
+        setLoading(false);
+        setPassword("");
+        return;
       }
+
+      // 2. Check if user has admin role
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", authData.user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (!roleData) {
+        // Not an admin — sign out immediately
+        await supabase.auth.signOut();
+        setAttempts((a) => a + 1);
+        toast({
+          title: "Acceso denegado",
+          description: "Esta cuenta no tiene permisos de administrador.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        setPassword("");
+        return;
+      }
+
+      // 3. Success — admin confirmed
+      sessionStorage.setItem("admin_unlocked", "true");
+      sessionStorage.setItem("admin_unlocked_at", Date.now().toString());
+      toast({ title: "Acceso concedido", description: "Bienvenido al panel de administración." });
+      onSuccess();
     } catch (err) {
       console.error(err);
       toast({ title: "Error", description: "No se pudo verificar el acceso.", variant: "destructive" });
     }
     setLoading(false);
-    setPassword("");
   };
 
   const isLocked = attempts >= 5;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Header */}
       <div className="text-center space-y-1 mb-2">
         <div className="mx-auto w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
           <Shield className="w-5 h-5 text-primary" />
         </div>
         <p className="text-sm font-semibold text-foreground">Acceso Administrador</p>
-        <p className="text-xs text-muted-foreground">Usuario y contraseña de administrador</p>
+        <p className="text-xs text-muted-foreground">Email y contraseña de tu cuenta admin</p>
       </div>
 
-      {/* Username */}
       <div className="space-y-2">
-        <Label htmlFor="admin-user">Usuario</Label>
+        <Label htmlFor="admin-email">Email</Label>
         <div className="relative">
-          <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            id="admin-user"
-            type="text"
-            placeholder="admin"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            id="admin-email"
+            type="email"
+            placeholder="admin@mejoraok.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="pl-10"
             disabled={isLocked}
-            autoComplete="username"
+            autoComplete="email"
             autoFocus
           />
         </div>
       </div>
 
-      {/* Password */}
       <div className="space-y-2">
         <Label htmlFor="admin-pass">Contraseña</Label>
         <div className="relative">
@@ -190,7 +150,7 @@ const AdminLoginForm = ({ onBack, onSuccess }: AdminLoginFormProps) => {
       <Button
         type="submit"
         className="w-full h-11"
-        disabled={loading || isLocked || !username.trim() || !password.trim()}
+        disabled={loading || isLocked || !email.trim() || !password.trim()}
       >
         {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Shield className="w-4 h-4 mr-2" />}
         Ingresar al Panel

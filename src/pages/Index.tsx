@@ -9,11 +9,13 @@ import Muro from "@/components/tabs/Muro";
 import Novedades from "@/components/tabs/Novedades";
 import DiagnosticTest from "@/components/DiagnosticTest";
 import ProfileCompleteModal from "@/components/ProfileCompleteModal";
+import Onboarding, { shouldShowOnboarding } from "@/components/Onboarding";
 
 const Index = () => {
   const { session, loading, user } = useAuth();
   const [activeTab, setActiveTab] = useState("contenido");
   const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -28,13 +30,19 @@ const Index = () => {
         .eq("user_id", user.id)
         .maybeSingle();
 
-      // Profile is complete if at least empresa or cargo is filled
       const isComplete = !!(data?.empresa || data?.cargo);
       setProfileComplete(isComplete);
     };
 
     checkProfile();
   }, [user]);
+
+  // Check onboarding after auth is ready
+  useEffect(() => {
+    if (!loading && session) {
+      setShowOnboarding(shouldShowOnboarding());
+    }
+  }, [loading, session]);
 
   if (loading) {
     return (
@@ -73,6 +81,11 @@ const Index = () => {
           userId={user.id}
           onComplete={() => setProfileComplete(true)}
         />
+      )}
+
+      {/* Onboarding overlay */}
+      {showOnboarding && (
+        <Onboarding onComplete={() => setShowOnboarding(false)} />
       )}
     </div>
   );

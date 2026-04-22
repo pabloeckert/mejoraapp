@@ -18,7 +18,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { aiService } from "@/services/ai";
 
 interface WallPost {
   id: string;
@@ -42,30 +41,6 @@ interface WallComment {
 const MAX_LENGTH = 500;
 const COMMENT_MAX_LENGTH = 300;
 const POSTS_PER_PAGE = 20;
-const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
-const MAX_POSTS_PER_WINDOW = 3;
-const MAX_COMMENTS_PER_WINDOW = 10;
-
-const MODERATION_PROMPT = `Sos el moderador de una comunidad de negocios argentina. Tu trabajo es decidir si un post anónimo es apropiado o no.
-
-APROBÁS si:
-- Comparte una experiencia de negocio (buena o mala)
-- Hace una pregunta genuina sobre emprendimiento
-- Expresa frustración real sobre su situación empresarial
-- Pide consejo o perspectiva sobre negocios
-- Comparte un aprendizaje o reflexión de negocio
-
-RECHAZÁS si:
-- Contiene spam, publicidad o promoción de servicios
-- Tiene insultos directos a personas o empresas con nombre
-- Incluye información personal identificable (teléfonos, direcciones, emails)
-- Contenido sexual, violento o discriminatorio
-- Es completamente irrelevante al mundo de los negocios
-- Intenta vender algo o captar clientes
-
-SÉ PERMISIVO con el tono argentino: puteadas leves, frustración genuina, ironía y sarcasmo son parte de la cultura. No censures por tono, solo por contenido dañino.
-
-Respondé ÚNICAMENTE en formato JSON: {"action": "approved" o "rejected", "reason": "razón breve en español"}`;
 
 const timeAgo = (date: string) => {
   const diff = Date.now() - new Date(date).getTime();
@@ -157,10 +132,8 @@ const PostCard = memo(
   }) => (
     <Card className="hover:shadow-sm transition-shadow">
       <CardContent className="p-3">
-        {/* Post content */}
         <p className="text-sm text-foreground whitespace-pre-line leading-relaxed">{post.content}</p>
 
-        {/* Actions row */}
         <div className="flex items-center justify-between mt-2.5">
           <div className="flex items-center gap-3">
             <span className="text-[10px] text-muted-foreground">
@@ -192,7 +165,6 @@ const PostCard = memo(
           </div>
         </div>
 
-        {/* Expanded comments section */}
         {expanded && (
           <div className="mt-3 pt-3 border-t border-border/50 space-y-1">
             {loadingComments ? (
@@ -212,7 +184,6 @@ const PostCard = memo(
               </>
             )}
 
-            {/* Reply input */}
             <div className="flex gap-2 items-end mt-2 pt-2 border-t border-border/30">
               <Textarea
                 placeholder="Escribí una respuesta..."
@@ -272,16 +243,10 @@ const Muro = () => {
   const [newPost, setNewPost] = useState("");
   const [posting, setPosting] = useState(false);
 
-  // Rate limiting timestamps
-  const postTimestamps = useRef<number[]>([]);
-  const commentTimestamps = useRef<number[]>([]);
-
-  // Expanded posts (comments visible)
   const [expandedPosts, setExpandedPosts] = useState<Set<string>>(new Set());
   const [commentsMap, setCommentsMap] = useState<Record<string, WallComment[]>>({});
   const [loadingComments, setLoadingComments] = useState<Set<string>>(new Set());
 
-  // Comment input per post
   const [commentTexts, setCommentTexts] = useState<Record<string, string>>({});
   const [submittingComment, setSubmittingComment] = useState<Set<string>>(new Set());
 
@@ -309,6 +274,7 @@ const Muro = () => {
     fetchUserLikes(user.id).then(setLikedPosts);
   }, [user]);
 
+  // Realtime subscription
   useEffect(() => {
     const channel = supabase
       .channel("wall_posts_changes")
@@ -324,13 +290,11 @@ const Muro = () => {
         { event: "INSERT", schema: "public", table: "wall_comments", filter: "status=eq.approved" },
         (payload) => {
           const comment = payload.new as WallComment;
-          // If this post is expanded, refresh its comments
           if (expandedPosts.has(comment.post_id)) {
             fetchComments(comment.post_id).then((c) => {
               setCommentsMap((prev) => ({ ...prev, [comment.post_id]: c }));
             });
           }
-          // Invalidate posts to update comments_count
           queryClient.invalidateQueries({ queryKey: ["wall-posts"] });
         }
       )
@@ -354,7 +318,6 @@ const Muro = () => {
         return next;
       });
 
-      // Fetch comments if expanding and not already loaded
       if (!expandedPosts.has(postId) && !commentsMap[postId]) {
         setLoadingComments((prev) => new Set(prev).add(postId));
         const comments = await fetchComments(postId);
@@ -369,72 +332,63 @@ const Muro = () => {
     [expandedPosts, commentsMap]
   );
 
+  // POST via Edge Function (server-side moderation + rate limit)
+  const handlePost = useCallback(async () => {
+    const content = newPost.trim();
+    if (!content || posting || !user) return;
+
+    setPosting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("moderate-post", {
+        body: { content },
+      });
+
+      if (error) throw error;
+
+      if (data?.rejected) {
+        toast({ title: "Post no publicado", description: data.reason, variant: "destructive" });
+      } else if (data?.success) {
+        setNewPost("");
+        toast({ title: "¡Publicado!", description: "Tu post ya está en el muro." });
+        refetch();
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "No se pudo publicar. Intentá de nuevo.";
+      console.error(err);
+      toast({ title: "Error", description: msg, variant: "destructive" });
+    } finally {
+      setPosting(false);
+    }
+  }, [newPost, posting, user, toast, refetch]);
+
+  // COMMENT via Edge Function (server-side moderation + rate limit)
   const handleComment = useCallback(
     async (postId: string) => {
       const content = (commentTexts[postId] || "").trim();
       if (!content || !user || submittingComment.has(postId)) return;
 
-      // Rate limit check
-      const now = Date.now();
-      commentTimestamps.current = commentTimestamps.current.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
-      if (commentTimestamps.current.length >= MAX_COMMENTS_PER_WINDOW) {
-        toast({ title: "Esperá un momento", description: "Máximo 10 comentarios por minuto.", variant: "destructive" });
-        return;
-      }
-      commentTimestamps.current.push(now);
-
       setSubmittingComment((prev) => new Set(prev).add(postId));
 
       try {
-        // Moderate comment with IA
-        let commentStatus = "approved";
-        const configured = aiService.getConfiguredProviders();
-        if (configured.length > 0) {
-          try {
-            const { content: aiResponse } = await aiService.chat(
-              MODERATION_PROMPT,
-              `Moderá este comentario en un post anónimo de comunidad de negocios:\n\n"${content}"`
-            );
-            const jsonMatch = aiResponse.match(/\{[\s\S]*?\}/);
-            if (jsonMatch) {
-              const parsed = JSON.parse(jsonMatch[0]);
-              commentStatus = parsed.action || "approved";
-            }
-          } catch (aiErr) {
-            console.warn("AI moderation for comment failed, approving by default:", aiErr);
-          }
-        }
-
-        const { data: comment, error } = await supabase
-          .from("wall_comments")
-          .insert({
-            post_id: postId,
-            user_id: user.id,
-            content,
-            status: commentStatus,
-          })
-          .select("id, post_id, content, created_at, user_id, status")
-          .single();
+        const { data, error } = await supabase.functions.invoke("moderate-comment", {
+          body: { post_id: postId, content },
+        });
 
         if (error) throw error;
 
-        // Clear input
-        setCommentTexts((prev) => ({ ...prev, [postId]: "" }));
-
-        if (commentStatus === "rejected") {
-          toast({ title: "Comentario no publicado", description: "Tu comentario no cumple con las normas.", variant: "destructive" });
+        if (data?.rejected) {
+          toast({ title: "Comentario no publicado", description: data.reason, variant: "destructive" });
           return;
         }
 
-        // Optimistically add comment
-        if (comment) {
+        if (data?.success && data?.comment) {
+          setCommentTexts((prev) => ({ ...prev, [postId]: "" }));
           setCommentsMap((prev) => ({
             ...prev,
-            [postId]: [...(prev[postId] || []), comment as WallComment],
+            [postId]: [...(prev[postId] || []), data.comment as WallComment],
           }));
+          toast({ title: "¡Respuesta publicada!" });
         }
-
-        toast({ title: "¡Respuesta publicada!" });
       } catch (err) {
         console.error(err);
         toast({ title: "Error", description: "No se pudo publicar la respuesta.", variant: "destructive" });
@@ -448,106 +402,6 @@ const Muro = () => {
     },
     [commentTexts, user, submittingComment, toast]
   );
-
-  const handlePost = useCallback(async () => {
-    const content = newPost.trim();
-    if (!content || posting || !user) return;
-
-    // Rate limit check
-    const now = Date.now();
-    postTimestamps.current = postTimestamps.current.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
-    if (postTimestamps.current.length >= MAX_POSTS_PER_WINDOW) {
-      toast({ title: "Esperá un momento", description: "Máximo 3 posts por minuto.", variant: "destructive" });
-      return;
-    }
-    postTimestamps.current.push(now);
-
-    setPosting(true);
-
-    try {
-      // 1. Moderar con IA
-      const configured = aiService.getConfiguredProviders();
-      let modAction = "approved";
-      let modReason = "Publicado";
-
-      if (configured.length > 0) {
-        try {
-          const { content: aiResponse } = await aiService.chat(
-            MODERATION_PROMPT,
-            `Moderá este post del muro anónimo:\n\n"${content}"`
-          );
-          const jsonMatch = aiResponse.match(/\{[\s\S]*?\}/);
-          if (jsonMatch) {
-            const parsed = JSON.parse(jsonMatch[0]);
-            modAction = parsed.action || "approved";
-            modReason = parsed.reason || "Moderado por IA";
-          }
-        } catch (aiErr) {
-          console.warn("AI moderation failed, approving by default:", aiErr);
-          modAction = "approved";
-          modReason = "Aprobado automáticamente (IA no disponible)";
-        }
-      }
-
-      // 2. Insertar en Supabase
-      const { data: post, error: insertError } = await supabase
-        .from("wall_posts")
-        .insert({
-          user_id: user.id,
-          content: content,
-          status: modAction,
-        })
-        .select("id, status")
-        .single();
-
-      if (insertError) {
-        if (insertError.code === "42501" || insertError.message?.includes("policy")) {
-          const { data: fnData, error: fnError } = await supabase.functions.invoke("moderate-post", {
-            body: { content },
-          });
-          if (fnError) throw fnError;
-          if (fnData?.rejected) {
-            toast({ title: "Post no publicado", description: fnData.reason, variant: "destructive" });
-          } else if (fnData?.success) {
-            setNewPost("");
-            toast({ title: "¡Publicado!", description: "Tu post ya está en el muro." });
-            refetch();
-          }
-          setPosting(false);
-          return;
-        }
-        throw insertError;
-      }
-
-      // 3. Log de moderación
-      if (post) {
-        try {
-          await supabase.from("moderation_log").insert({
-            post_id: post.id,
-            action: modAction,
-            reason: modReason,
-          });
-        } catch {}
-      }
-
-      if (modAction === "rejected") {
-        toast({
-          title: "Post no publicado",
-          description: "Tu post no cumple con las normas de la comunidad.",
-          variant: "destructive",
-        });
-      } else {
-        setNewPost("");
-        toast({ title: "¡Publicado!", description: "Tu post ya está en el muro." });
-        refetch();
-      }
-    } catch (err) {
-      console.error(err);
-      toast({ title: "Error", description: "No se pudo publicar. Intentá de nuevo.", variant: "destructive" });
-    } finally {
-      setPosting(false);
-    }
-  }, [newPost, posting, user, toast, refetch]);
 
   const toggleLike = useCallback(
     async (postId: string) => {

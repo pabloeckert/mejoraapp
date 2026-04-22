@@ -4,8 +4,115 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+    "authorization, x-client-info, apikey, content-type",
 };
+
+const MODERATION_PROMPT = `Sos el moderador de MejoraOK, una comunidad de negocios argentina. Tu trabajo es decidir si un post anónimo del muro es apropiado o no.
+
+APROBÁS si:
+- Comparte una experiencia de negocio (buena o mala)
+- Hace una pregunta genuina sobre emprendimiento
+- Expresa frustración real sobre su situación empresarial
+- Pide consejo o perspectiva sobre negocios
+- Comparte un aprendizaje o reflexión de negocio
+
+RECHAZÁS si:
+- Contiene spam, publicidad o promoción de servicios
+- Tiene insultos directos a personas o empresas con nombre
+- Incluye información personal identificable (teléfonos, direcciones, emails)
+- Contenido sexual, violento o discriminatorio
+- Es completamente irrelevante al mundo de los negocios
+- Intenta vender algo o captar clientes
+
+SÉ PERMISIVO con el tono argentino: puteadas leves, frustración genuina, ironía y sarcasmo son parte de la cultura y están bien. No censures por tono, solo por contenido dañino.
+
+Respondé ÚNICAMENTE en formato JSON: {"action": "approved" o "rejected", "reason": "razón breve en español"}`;
+
+async function callAI(prompt: string): Promise<{ action: string; reason: string } | null> {
+  // Try Gemini first
+  const geminiKey = Deno.env.get("GEMINI_API_KEY");
+  if (geminiKey) {
+    try {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.3, maxOutputTokens: 256 },
+          }),
+        }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        const match = text.match(/\{[\s\S]*?\}/);
+        if (match) return JSON.parse(match[0]);
+      }
+    } catch (e) {
+      console.warn("Gemini failed:", e);
+    }
+  }
+
+  // Fallback: Groq
+  const groqKey = Deno.env.get("GROQ_API_KEY");
+  if (groqKey) {
+    try {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${groqKey}` },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: [
+            { role: "system", content: MODERATION_PROMPT },
+            { role: "user", content: prompt },
+          ],
+          temperature: 0.3,
+          max_tokens: 256,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const text = data.choices?.[0]?.message?.content || "";
+        const match = text.match(/\{[\s\S]*?\}/);
+        if (match) return JSON.parse(match[0]);
+      }
+    } catch (e) {
+      console.warn("Groq failed:", e);
+    }
+  }
+
+  // Fallback: OpenRouter
+  const orKey = Deno.env.get("OPENROUTER_API_KEY");
+  if (orKey) {
+    try {
+      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${orKey}` },
+        body: JSON.stringify({
+          model: "deepseek/deepseek-chat-v3-0324:free",
+          messages: [
+            { role: "system", content: MODERATION_PROMPT },
+            { role: "user", content: prompt },
+          ],
+          temperature: 0.3,
+          max_tokens: 256,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const text = data.choices?.[0]?.message?.content || "";
+        const match = text.match(/\{[\s\S]*?\}/);
+        if (match) return JSON.parse(match[0]);
+      }
+    } catch (e) {
+      console.warn("OpenRouter failed:", e);
+    }
+  }
+
+  return null;
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -49,103 +156,37 @@ serve(async (req) => {
       });
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
-
-    // AI moderation
-    const moderationResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          {
-            role: "system",
-            content: `Sos el moderador de MejoraOK, una comunidad de negocios argentina. Tu trabajo es decidir si un post anónimo del muro es apropiado o no.
-
-APROBÁS si:
-- Comparte una experiencia de negocio (buena o mala)
-- Hace una pregunta genuina sobre emprendimiento
-- Expresa frustración real sobre su situación empresarial
-- Pide consejo o perspectiva sobre negocios
-- Comparte un aprendizaje o reflexión de negocio
-
-RECHAZÁS si:
-- Contiene spam, publicidad o promoción de servicios
-- Tiene insultos directos a personas o empresas con nombre
-- Incluye información personal identificable (teléfonos, direcciones, emails)
-- Contenido sexual, violento o discriminatorio
-- Es completamente irrelevante al mundo de los negocios
-- Intenta vender algo o captar clientes
-
-SÉ PERMISIVO con el tono argentino: puteadas leves, frustración genuina, ironía y sarcasmo son parte de la cultura y están bien. No censures por tono, solo por contenido dañino.`,
-          },
-          {
-            role: "user",
-            content: `Moderá este post del muro anónimo:\n\n"${content}"`,
-          },
-        ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "moderate_post",
-              description: "Decide if a wall post should be approved or rejected",
-              parameters: {
-                type: "object",
-                properties: {
-                  action: { type: "string", enum: ["approved", "rejected"] },
-                  reason: { type: "string", description: "Brief reason in Spanish" },
-                },
-                required: ["action", "reason"],
-                additionalProperties: false,
-              },
-            },
-          },
-        ],
-        tool_choice: { type: "function", function: { name: "moderate_post" } },
-      }),
-    });
-
-    if (!moderationResponse.ok) {
-      if (moderationResponse.status === 429) {
-        return new Response(JSON.stringify({ error: "Demasiadas solicitudes. Intentá de nuevo." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (moderationResponse.status === 402) {
-        return new Response(JSON.stringify({ error: "Créditos agotados." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      console.error("AI moderation error:", moderationResponse.status);
-      // On AI failure, approve by default to not block users
-    }
-
-    let modAction = "approved";
-    let modReason = "Auto-aprobado";
-
-    if (moderationResponse.ok) {
-      const aiData = await moderationResponse.json();
-      const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
-      if (toolCall) {
-        const parsed = JSON.parse(toolCall.function.arguments);
-        modAction = parsed.action;
-        modReason = parsed.reason;
-      }
-    }
-
-    // Use service role to insert post + moderation log
+    // Rate limit: max 3 posts per minute per user
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    const oneMinuteAgo = new Date(Date.now() - 60000).toISOString();
+    const { count } = await supabaseAdmin
+      .from("wall_posts")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .gte("created_at", oneMinuteAgo);
+
+    if ((count || 0) >= 3) {
+      return new Response(JSON.stringify({ error: "Máximo 3 posts por minuto. Esperá un momento." }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // AI moderation
+    let modAction = "approved";
+    let modReason = "Auto-aprobado (sin IA configurada)";
+
+    const aiResult = await callAI(`Moderá este post del muro anónimo:\n\n"${content}"`);
+    if (aiResult) {
+      modAction = aiResult.action || "approved";
+      modReason = aiResult.reason || "Moderado por IA";
+    }
+
+    // Insert post with service_role (bypasses RLS)
     const { data: post, error: insertError } = await supabaseAdmin
       .from("wall_posts")
       .insert({

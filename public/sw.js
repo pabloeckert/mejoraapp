@@ -1,5 +1,5 @@
-const CACHE_NAME = "mejoraapp-v1";
-const STATIC_ASSETS = ["/", "/index.html"];
+const CACHE_NAME = "mejoraapp-v2";
+const STATIC_ASSETS = ["/app/", "/app/index.html"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -27,7 +27,6 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(req)
       .then((res) => {
-        // Cache successful responses
         if (res.status === 200) {
           const clone = res.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));

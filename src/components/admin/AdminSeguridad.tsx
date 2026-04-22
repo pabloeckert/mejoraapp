@@ -5,179 +5,132 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Shield, KeyRound, HelpCircle, Save, User } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Loader2, Shield, UserPlus, Trash2, Save, User, Crown } from "lucide-react";
 
-async function sha256Salted(message: string, salt?: string): Promise<{ hash: string; salt: string }> {
-  const usedSalt = salt || crypto.randomUUID().replace(/-/g, "").slice(0, 16);
-  const saltedMessage = `${usedSalt}:${message}:${usedSalt.split("").reverse().join("")}`;
-  const msgBuffer = new TextEncoder().encode(saltedMessage);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hash = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-  return { hash, salt: usedSalt };
-}
-
-async function sha256Legacy(message: string): Promise<string> {
-  const msgBuffer = new TextEncoder().encode(message);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+interface AdminUser {
+  user_id: string;
+  role: string;
+  email?: string;
+  nombre?: string;
 }
 
 const AdminSeguridad = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [admins, setAdmins] = useState<AdminUser[]>([]);
+  const [newAdminEmail, setNewAdminEmail] = useState("");
 
-  // Username
-  const [username, setUsername] = useState("");
-  const [originalUsername, setOriginalUsername] = useState("");
+  const fetchAdmins = useCallback(async () => {
+    setLoading(true);
+    try {
+      // Get all admin roles
+      const { data: roles, error } = await supabase
+        .from("user_roles")
+        .select("user_id, role")
+        .eq("role", "admin");
 
-  // Password change
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+      if (error) throw error;
 
-  // Security questions
-  const [question1, setQuestion1] = useState("");
-  const [answer1, setAnswer1] = useState("");
-  const [question2, setQuestion2] = useState("");
-  const [answer2, setAnswer2] = useState("");
+      // Get profiles for those users
+      if (roles && roles.length > 0) {
+        const userIds = roles.map((r) => r.user_id);
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, email, nombre")
+          .in("user_id", userIds);
 
-  const getConfig = useCallback(async (key: string): Promise<string | null> => {
-    const { data } = await supabase.from("admin_config").select("value").eq("key", key).maybeSingle();
-    return data?.value ?? null;
-  }, []);
-
-  const setConfig = useCallback(async (key: string, value: string) => {
-    await supabase.from("admin_config").upsert({ key, value }, { onConflict: "key" });
+        const profileMap = new Map((profiles || []).map((p) => [p.user_id, p]));
+        const enriched = roles.map((r) => ({
+          ...r,
+          email: profileMap.get(r.user_id)?.email || "Sin email",
+          nombre: profileMap.get(r.user_id)?.nombre || "",
+        }));
+        setAdmins(enriched);
+      } else {
+        setAdmins([]);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+    setLoading(false);
   }, []);
 
   useEffect(() => {
-    (async () => {
-      const [user, q1, q2] = await Promise.all([
-        getConfig("admin_username"),
-        getConfig("recovery_question_1"),
-        getConfig("recovery_question_2"),
-      ]);
-      const u = user || "admin";
-      setUsername(u);
-      setOriginalUsername(u);
-      setQuestion1(q1 || "");
-      setQuestion2(q2 || "");
-      setLoading(false);
-    })();
-  }, [getConfig]);
+    fetchAdmins();
+  }, [fetchAdmins]);
 
-  const handleSaveUsername = async (e: React.FormEvent) => {
+  const handleAddAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const trimmed = username.trim();
-    if (!trimmed) {
-      toast({ title: "El usuario no puede estar vacío", variant: "destructive" });
-      return;
-    }
-    if (trimmed.length < 3) {
-      toast({ title: "Usuario muy corto", description: "Mínimo 3 caracteres.", variant: "destructive" });
-      return;
-    }
-    setSaving(true);
-    try {
-      await setConfig("admin_username", trimmed);
-      setOriginalUsername(trimmed);
-      toast({ title: "Usuario actualizado", description: `Ahora ingresás como '${trimmed}'.` });
-    } catch (err) {
-      toast({ title: "Error", description: "No se pudo guardar.", variant: "destructive" });
-    }
-    setSaving(false);
-  };
-
-  const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!currentPassword.trim() || !newPassword.trim()) return;
-
-    if (newPassword.length < 8) {
-      toast({ title: "Contraseña muy corta", description: "Mínimo 8 caracteres.", variant: "destructive" });
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      toast({ title: "Las contraseñas no coinciden", variant: "destructive" });
-      return;
-    }
+    if (!newAdminEmail.trim()) return;
 
     setSaving(true);
     try {
-      const [storedHash, storedSalt] = await Promise.all([
-        getConfig("master_password_hash"),
-        getConfig("master_password_salt"),
-      ]);
+      // Find user by email in profiles
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("user_id, email")
+        .eq("email", newAdminEmail.trim().toLowerCase())
+        .maybeSingle();
 
-      let currentHash: string;
-      if (storedSalt) {
-        const r = await sha256Salted(currentPassword, storedSalt);
-        currentHash = r.hash;
-      } else {
-        currentHash = await sha256Legacy(currentPassword);
-      }
-
-      if (currentHash !== storedHash) {
-        toast({ title: "Contraseña actual incorrecta", variant: "destructive" });
+      if (profileError || !profile) {
+        toast({
+          title: "Usuario no encontrado",
+          description: "No hay un usuario registrado con ese email.",
+          variant: "destructive",
+        });
         setSaving(false);
         return;
       }
 
-      const { hash, salt } = await sha256Salted(newPassword);
-      await Promise.all([
-        setConfig("master_password_hash", hash),
-        setConfig("master_password_salt", salt),
-      ]);
+      // Check if already admin
+      const existing = admins.find((a) => a.user_id === profile.user_id);
+      if (existing) {
+        toast({ title: "Ya es admin", description: "Ese usuario ya tiene permisos de administrador.", variant: "destructive" });
+        setSaving(false);
+        return;
+      }
 
-      const version = await getConfig("admin_version");
-      await setConfig("admin_version", String(Number(version || "0") + 1));
+      // Add admin role
+      const { error } = await supabase
+        .from("user_roles")
+        .insert({ user_id: profile.user_id, role: "admin" });
 
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-      toast({ title: "Contraseña actualizada", description: "La contraseña maestra fue cambiada." });
+      if (error) throw error;
+
+      toast({ title: "Admin agregado", description: `${profile.email} ahora tiene permisos de admin.` });
+      setNewAdminEmail("");
+      fetchAdmins();
     } catch (err) {
-      toast({ title: "Error", description: "No se pudo actualizar.", variant: "destructive" });
+      console.error(err);
+      toast({ title: "Error", description: "No se pudo agregar el admin.", variant: "destructive" });
     }
     setSaving(false);
   };
 
-  const handleSaveQuestions = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!question1.trim() || !question2.trim()) {
-      toast({ title: "Completá ambas preguntas", variant: "destructive" });
+  const handleRemoveAdmin = async (userId: string, email: string) => {
+    if (userId === user?.id) {
+      toast({ title: "No podés eliminarte a vos mismo", variant: "destructive" });
       return;
     }
 
-    setSaving(true);
     try {
-      await setConfig("recovery_question_1", question1.trim());
-      await setConfig("recovery_question_2", question2.trim());
+      const { error } = await supabase
+        .from("user_roles")
+        .delete()
+        .eq("user_id", userId)
+        .eq("role", "admin");
 
-      if (answer1.trim()) {
-        const { hash, salt } = await sha256Salted(answer1.toLowerCase().trim());
-        await Promise.all([
-          setConfig("recovery_answer_1_hash", hash),
-          setConfig("recovery_answer_1_salt", salt),
-        ]);
-      }
-      if (answer2.trim()) {
-        const { hash, salt } = await sha256Salted(answer2.toLowerCase().trim());
-        await Promise.all([
-          setConfig("recovery_answer_2_hash", hash),
-          setConfig("recovery_answer_2_salt", salt),
-        ]);
-      }
+      if (error) throw error;
 
-      setAnswer1("");
-      setAnswer2("");
-      toast({ title: "Preguntas de seguridad actualizadas" });
+      toast({ title: "Admin removido", description: `${email} ya no tiene permisos de admin.` });
+      fetchAdmins();
     } catch (err) {
-      toast({ title: "Error", description: "No se pudieron guardar.", variant: "destructive" });
+      console.error(err);
+      toast({ title: "Error", description: "No se pudo remover el admin.", variant: "destructive" });
     }
-    setSaving(false);
   };
 
   if (loading) {
@@ -191,146 +144,76 @@ const AdminSeguridad = () => {
         <h2 className="text-lg font-bold text-foreground">Seguridad</h2>
       </div>
 
-      {/* Change admin username */}
+      {/* Current admins */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm flex items-center gap-2">
-            <User className="w-4 h-4" />
-            Usuario administrador
+            <Crown className="w-4 h-4" />
+            Administradores
           </CardTitle>
           <CardDescription className="text-xs">
-            Este es el nombre de usuario que ingresás en el login admin.
+            Los administradores pueden gestionar contenido, usuarios y configuración.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSaveUsername} className="space-y-3">
-            <div className="space-y-1">
-              <Label htmlFor="admin-user" className="text-xs">Usuario</Label>
-              <Input
-                id="admin-user"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="admin"
-              />
-            </div>
-            <Button
-              type="submit"
-              size="sm"
-              disabled={saving || !username.trim() || username.trim() === originalUsername}
-            >
-              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <Save className="w-3.5 h-3.5 mr-1" />}
-              Guardar usuario
-            </Button>
-          </form>
+        <CardContent className="space-y-2">
+          {admins.length === 0 ? (
+            <p className="text-xs text-muted-foreground py-2">No hay administradores configurados.</p>
+          ) : (
+            admins.map((admin) => (
+              <div key={admin.user_id} className="flex items-center justify-between py-2 border-b last:border-0">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <User className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      {admin.nombre || admin.email}
+                      {admin.user_id === user?.id && (
+                        <span className="text-[10px] text-primary ml-1.5">(vos)</span>
+                      )}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">{admin.email}</p>
+                  </div>
+                </div>
+                {admin.user_id !== user?.id && (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 text-destructive"
+                    onClick={() => handleRemoveAdmin(admin.user_id, admin.email || "")}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </Button>
+                )}
+              </div>
+            ))
+          )}
         </CardContent>
       </Card>
 
-      {/* Change master password */}
+      {/* Add admin */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm flex items-center gap-2">
-            <KeyRound className="w-4 h-4" />
-            Cambiar contraseña maestra
+            <UserPlus className="w-4 h-4" />
+            Agregar administrador
           </CardTitle>
           <CardDescription className="text-xs">
-            Esta contraseña protege el acceso al panel de administración.
+            El usuario debe estar registrado en la app primero.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleChangePassword} className="space-y-3">
-            <div className="space-y-1">
-              <Label htmlFor="current-pass" className="text-xs">Contraseña actual</Label>
-              <Input
-                id="current-pass"
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder="••••••••"
-                autoComplete="current-password"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="new-pass" className="text-xs">Nueva contraseña</Label>
-              <Input
-                id="new-pass"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Mínimo 8 caracteres"
-                autoComplete="new-password"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="confirm-pass" className="text-xs">Confirmar nueva contraseña</Label>
-              <Input
-                id="confirm-pass"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Repetí la contraseña"
-                autoComplete="new-password"
-              />
-            </div>
-            <Button type="submit" size="sm" disabled={saving || !currentPassword.trim() || !newPassword.trim()}>
-              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <Save className="w-3.5 h-3.5 mr-1" />}
-              Cambiar contraseña
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      {/* Security questions */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm flex items-center gap-2">
-            <HelpCircle className="w-4 h-4" />
-            Preguntas de seguridad
-          </CardTitle>
-          <CardDescription className="text-xs">
-            Se usan para recuperar el acceso si olvidás la contraseña maestra.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSaveQuestions} className="space-y-3">
-            <div className="space-y-1">
-              <Label className="text-xs">Pregunta 1</Label>
-              <Input
-                value={question1}
-                onChange={(e) => setQuestion1(e.target.value)}
-                placeholder="Ej: ¿Cuál es el nombre de tu primera mascota?"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">
-                Respuesta 1 <span className="text-muted-foreground">(dejar vacío para no cambiar)</span>
-              </Label>
-              <Input
-                value={answer1}
-                onChange={(e) => setAnswer1(e.target.value)}
-                placeholder="Tu respuesta"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Pregunta 2</Label>
-              <Input
-                value={question2}
-                onChange={(e) => setQuestion2(e.target.value)}
-                placeholder="Ej: ¿En qué ciudad naciste?"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">
-                Respuesta 2 <span className="text-muted-foreground">(dejar vacío para no cambiar)</span>
-              </Label>
-              <Input
-                value={answer2}
-                onChange={(e) => setAnswer2(e.target.value)}
-                placeholder="Tu respuesta"
-              />
-            </div>
-            <Button type="submit" size="sm" disabled={saving || !question1.trim() || !question2.trim()}>
-              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <Save className="w-3.5 h-3.5 mr-1" />}
-              Guardar preguntas
+          <form onSubmit={handleAddAdmin} className="flex gap-2">
+            <Input
+              type="email"
+              placeholder="email@ejemplo.com"
+              value={newAdminEmail}
+              onChange={(e) => setNewAdminEmail(e.target.value)}
+              className="flex-1"
+            />
+            <Button type="submit" size="sm" disabled={saving || !newAdminEmail.trim()}>
+              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <UserPlus className="w-3.5 h-3.5 mr-1" />}
+              Agregar
             </Button>
           </form>
         </CardContent>
@@ -339,10 +222,10 @@ const AdminSeguridad = () => {
       {/* Info */}
       <Card className="border-dashed">
         <CardContent className="p-4 text-xs text-muted-foreground space-y-1">
-          <p><strong>Acceso:</strong> Se piden usuario y contraseña al entrar al panel admin.</p>
-          <p><strong>Sesión:</strong> El acceso se mantiene por 4 horas, luego se bloquea.</p>
-          <p><strong>Recuperación:</strong> Si olvidás la contraseña, podés responder las preguntas de seguridad.</p>
-          <p><strong>Tip:</strong> Cambiá usuario y contraseña por defecto antes de poner la app en producción.</p>
+          <p><strong>Acceso admin:</strong> Login con email + contraseña de Supabase Auth.</p>
+          <p><strong>Sesión:</strong> Se mantiene por 4 horas, luego se bloquea automáticamente.</p>
+          <p><strong>Roles:</strong> Los permisos se verifican server-side contra la tabla user_roles.</p>
+          <p><strong>Tip:</strong> Agregá al menos 2 admins para no quedar bloqueado.</p>
         </CardContent>
       </Card>
     </div>
