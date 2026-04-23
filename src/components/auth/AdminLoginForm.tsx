@@ -51,15 +51,10 @@ const AdminLoginForm = ({ onBack, onSuccess }: AdminLoginFormProps) => {
         return;
       }
 
-      // 2. Check if user has admin role
-      const { data: roleData } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", authData.user.id)
-        .eq("role", "admin")
-        .maybeSingle();
+      // 2. Check if user has admin role (server-side via Edge Function)
+      const { data: verifyData, error: verifyError } = await supabase.functions.invoke("verify-admin");
 
-      if (!roleData) {
+      if (verifyError || !verifyData?.authorized) {
         // Not an admin — sign out immediately
         await supabase.auth.signOut();
         setAttempts((a) => a + 1);

@@ -29,7 +29,7 @@ MejoraApp es la app digital de **Mejora Continua**, una comunidad de negocios pa
 | 1.1 | Rotar credenciales expuestas | Master password, tokens, FTP password, Google Client Secret |
 | 1.2 | Mover lógica admin a Edge Functions | Operaciones sensibles no deben depender del cliente |
 | 1.3 | RLS admin_config seguro | Cerrar lectura pública, autenticar vía Edge Function |
-| 1.4 | Eliminar "puntito secreto" | Reemplazar por sistema de roles real en la UI |
+| 1.4 | Eliminar "puntito secreto" | ✅ Reemplazado por botón admin legítimo con Shield icon |
 | 1.5 | Auditoría de RLS policies | Revisar todas las 12 tablas por posibles bypasses |
 | 1.6 | Revisar ofuscación de API keys | Evaluar si migrar a Edge Functions para calls de IA |
 
@@ -123,6 +123,7 @@ Cada sesión de desarrollo sigue este ciclo:
 | Fecha | Etapa | Tareas | Nota |
 |-------|-------|--------|------|
 | 2026-04-23 | Planificación | Creación del plan general | Este documento |
+| 2026-04-23 | Etapa 1 — Seguridad | 1.4 (parcial), código muerto eliminado, Edge Function verify-admin, migración SQL | `SESION-2026-04-23.md` |
 
 ---
 

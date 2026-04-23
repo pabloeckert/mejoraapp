@@ -22,34 +22,39 @@ const Admin = () => {
 
   useEffect(() => {
     const verifyAdmin = async () => {
-      // Check session flag first
+      if (!user) {
+        setChecking(false);
+        return;
+      }
+
+      // Check session flag first (local optimization)
       const flag = sessionStorage.getItem("admin_unlocked");
       const unlockedAt = sessionStorage.getItem("admin_unlocked_at");
 
       if (flag === "true" && unlockedAt) {
         const elapsed = Date.now() - Number(unlockedAt);
         if (elapsed < 4 * 60 * 60 * 1000) {
-          // Verify role is still valid (in case it was revoked)
-          if (user) {
-            const { data } = await supabase
-              .from("user_roles")
-              .select("role")
-              .eq("user_id", user.id)
-              .eq("role", "admin")
-              .maybeSingle();
-            if (data) {
+          // Verify role server-side via Edge Function (re-check every time)
+          try {
+            const { data, error } = await supabase.functions.invoke("verify-admin");
+            if (!error && data?.authorized) {
               setUnlocked(true);
-            } else {
-              // Role revoked
-              sessionStorage.removeItem("admin_unlocked");
-              sessionStorage.removeItem("admin_unlocked_at");
+              setChecking(false);
+              return;
             }
+          } catch {
+            // Edge Function not available, fall through to redirect
           }
+          // Role revoked or session invalid
+          sessionStorage.removeItem("admin_unlocked");
+          sessionStorage.removeItem("admin_unlocked_at");
         } else {
           sessionStorage.removeItem("admin_unlocked");
           sessionStorage.removeItem("admin_unlocked_at");
         }
       }
+
+      // Not verified — redirect to auth
       setChecking(false);
     };
     verifyAdmin();

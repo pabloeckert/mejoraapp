@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
+import { Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import LoginForm from "@/components/auth/LoginForm";
@@ -49,17 +50,20 @@ const Auth = () => {
             alt="Mejora Continua - Comunidad de Negocios"
             className="h-14 object-contain"
           />
-          {/* Small admin access point — toggles admin mode in-place */}
+          {/* Admin access toggle — visible but discreet */}
           <button
             onClick={() => setMode(mode === "admin" ? "login" : "admin")}
             aria-label="Acceso administrador"
             title="Acceso administrador"
-            className={`w-2 h-2 rounded-full transition-all duration-200 ${
-              mode === "admin"
-                ? "bg-mc-red scale-150"
-                : "bg-mc-dark-blue/30 hover:bg-mc-red hover:scale-150"
-            }`}
-          />
+            className={`flex items-center gap-1.5 text-[10px] font-medium transition-all duration-200 px-2 py-0.5 rounded-full
+              ${mode === "admin"
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted"
+              }`}
+          >
+            <Shield className="w-2.5 h-2.5" />
+            {mode === "admin" ? "Modo admin" : "Admin"}
+          </button>
         </div>
 
         <Card className="border-0 shadow-lg">
