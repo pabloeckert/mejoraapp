@@ -39,17 +39,17 @@ MejoraApp es la app digital de **Mejora Continua**, una comunidad de negocios pa
 
 ### ETAPA 2 — Arquitectura y DevOps 🟡
 **Prioridad:** ALTA
-**Estado:** ⏳ En progreso (2026-04-23)
+**Estado:** ⏳ 4/6 completadas (2026-04-23)
 **Depende de:** Etapa 1 ✅
 
 | # | Tarea | Descripción |
 |---|-------|-------------|
-| 2.1 | Entorno de staging | Branch `develop` + deploy a URL de prueba |
-| 2.2 | Sistema de migraciones SQL | Reemplazar CLEAN_SETUP.sql por migraciones incrementales |
-| 2.3 | Tests de integración | Flujos críticos: auth, publicación, diagnóstico, admin |
-| 2.4 | Monitoring y alertas | Error tracking (Sentry o similar), uptime check |
-| 2.5 | Estrategia de rollback | Poder revertir deploy roto sin acceso manual a FTP |
-| 2.6 | PWA real | Service worker con cache offline, manifest completo |
+| 2.1 | Entorno de staging | ⏳ Rama `develop` creada. Pendiente: segundo proyecto Supabase |
+| 2.2 | Sistema de migraciones SQL | ✅ 12 archivos incrementales en `supabase/migrations/` |
+| 2.3 | Tests de integración | ✅ 103 tests (7 archivos), cubren flujos críticos |
+| 2.4 | Monitoring y alertas | ⏳ Pendiente (Sentry o similar) |
+| 2.5 | Estrategia de rollback | ✅ Workflow `rollback.yml` + health check post-deploy |
+| 2.6 | PWA real | ✅ Ya existía: manifest.json + service worker con network-first |
 
 **Criterio de cierre:** Hay staging, tests cubren flujos críticos, deploy es reversible.
 
@@ -125,7 +125,7 @@ Cada sesión de desarrollo sigue este ciclo:
 |-------|-------|--------|------|
 | 2026-04-23 | Planificación | Creación del plan general | Este documento |
 | 2026-04-23 | Etapa 1 — Seguridad | Completa: Edge Functions, RLS hardening, master password eliminada | `SESION-2026-04-23.md` |
-| 2026-04-23 | Etapa 2 — DevOps | CI workflow, rama develop, 15 tests de seguridad | `SESION-2026-04-23.md` |
+| 2026-04-23 | Etapa 2 — DevOps | CI workflow, rollback, 103 tests, migraciones SQL | `SESION-2026-04-23.md` |
 
 ---
 
