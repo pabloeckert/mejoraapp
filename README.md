@@ -20,9 +20,8 @@ MejoraApp es la aplicación digital del ecosistema Mejora Continua — una comun
 
 ## Documentación
 
-- **Evolución completa:** [`Documents/MEJORAAPP-EVOLUCION-COMPLETA.md`](Documents/MEJORAAPP-EVOLUCION-COMPLETA.md)
-- **Informe integral:** [`Documents/mejoraapp+2026-04-20.docx`](Documents/mejoraapp+2026-04-20.docx)
-- **Arquitectura:** [`Documents/Como_Funciona_MejoraApp.docx`](Documents/Como_Funciona_MejoraApp.docx)
+**📄 Fuente única de verdad:** [`Documents/MEJORAAPP.md`](Documents/MEJORAAPP.md)  
+Arquitectura, plan de desarrollo, análisis UX, estado actual, y registro de sesiones.
 
 ## Desarrollo Local
 
@@ -30,7 +29,8 @@ MejoraApp es la aplicación digital del ecosistema Mejora Continua — una comun
 npm install
 npm run dev      # Dev server en http://localhost:8080
 npm run build    # Build de producción en dist/
-npm run test     # Tests (24 passing)
+npm run test     # Tests (103 passing)
+npm run lint     # Lint: eslint
 ```
 
 ## Despliegue
@@ -42,7 +42,8 @@ Push a `main` → build automático → deploy a Hostinger via FTP.
 1. `npm run build`
 2. Subir contenido de `dist/` a `/public_html/app/` en Hostinger
 
-Ver [`Documents/MEJORAAPP-EVOLUCION-COMPLETA.md`](Documents/MEJORAAPP-EVOLUCION-COMPLETA.md) sección 7 para instructivo completo.
+### Rollback
+Desde GitHub Actions → workflow `rollback.yml` → especificar commit SHA + razón.
 
 ## Stack
 
@@ -54,7 +55,7 @@ Ver [`Documents/MEJORAAPP-EVOLUCION-COMPLETA.md`](Documents/MEJORAAPP-EVOLUCION-
 | Backend | Supabase (Auth + DB + Edge Functions) |
 | Database | PostgreSQL (RLS habilitado) |
 | IA | Gemini + DeepSeek + Groq |
-| Testing | Vitest (24 tests) |
+| Testing | Vitest (103 tests) |
 
 ## Estructura
 
@@ -67,19 +68,19 @@ src/
 │   ├── tabs/        # Muro, Novedades, Contenido
 │   └── ui/          # 30+ componentes shadcn/ui
 ├── contexts/        # AuthContext, ThemeContext
-├── services/        # ai.ts (multi-provider)
+├── hooks/           # use-toast, useAdminAction, use-mobile
 ├── data/            # Datos del diagnóstico
 └── integrations/    # Supabase client + tipos
 ```
 
 ## Acceso Admin
 
-En la pantalla de login (`/auth`) hay un **puntito pequeño debajo del logo**. Click → modo admin (usuario + contraseña). Click otra vez → login normal.
+En la pantalla de login (`/auth`) hay un **botón con icono Shield**. Click → modo admin (usuario + contraseña). Click otra vez → login normal.
 
 ## Métricas
 
-- **Líneas de código:** ~11,400
+- **Líneas de código:** ~11,900
 - **Archivos TS/TSX:** 93
-- **Tests:** 24 (100% passing)
+- **Tests:** 103 (100% passing)
 - **Bundle gzipped:** ~350KB
 - **Build time:** ~4 segundos
