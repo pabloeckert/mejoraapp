@@ -38,7 +38,17 @@ const SignupForm = ({ onSwitchToLogin }: SignupFormProps) => {
       },
     });
     if (error) {
-      toast({ title: "Error al registrarse", description: error.message, variant: "destructive" });
+      const lower = error.message.toLowerCase();
+      let msg = "No pudimos crear tu cuenta. Intentá de nuevo.";
+      if (lower.includes("already registered") || lower.includes("user already") || lower.includes("already been registered"))
+        msg = "Ya existe una cuenta con ese email. ¿Querés iniciar sesión?";
+      else if (lower.includes("password") && lower.includes("short"))
+        msg = "La contraseña debe tener al menos 6 caracteres.";
+      else if (lower.includes("invalid email"))
+        msg = "El email no parece válido. Verificalo e intentá de nuevo.";
+      else if (lower.includes("too many requests") || lower.includes("rate limit"))
+        msg = "Demasiados intentos. Esperá unos minutos e intentá de nuevo.";
+      toast({ title: "Error al registrarse", description: msg, variant: "destructive" });
     } else {
       toast({ title: "¡Registro exitoso!", description: "Revisá tu email para confirmar tu cuenta." });
     }

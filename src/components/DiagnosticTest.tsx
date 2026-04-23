@@ -191,7 +191,7 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
           </h2>
           <p className="text-[11px] opacity-75 leading-relaxed">{currentQuestion.sub}</p>
         </div>
-        <div className="h-1 bg-white/25">
+        <div className="h-1 bg-foreground/15">
           <div
             className="h-full bg-mc-diag-red transition-all duration-300"
             style={{ width: `${progress}%` }}

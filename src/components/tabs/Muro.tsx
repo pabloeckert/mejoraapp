@@ -10,6 +10,7 @@ import {
   ChevronDown,
   ChevronUp,
   CornerDownRight,
+  ArrowDown,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -189,7 +190,7 @@ const PostCard = memo(
                 placeholder="Escribí una respuesta..."
                 value={commentText}
                 onChange={(e) => onCommentTextChange(post.id, e.target.value.slice(0, COMMENT_MAX_LENGTH))}
-                className="min-h-[36px] h-[36px] text-xs resize-none border-0 bg-secondary/50 focus-visible:ring-1 focus-visible:ring-primary/30 py-2"
+                className="min-h-[44px] text-xs resize-none border-0 bg-secondary/50 focus-visible:ring-1 focus-visible:ring-primary/30 py-3"
                 maxLength={COMMENT_MAX_LENGTH}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
@@ -439,8 +440,65 @@ const Muro = () => {
     return () => observer.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+  // Pull-to-refresh
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [pullDistance, setPullDistance] = useState(0);
+  const [isPulling, setIsPulling] = useState(false);
+  const touchStartY = useRef(0);
+  const PULL_THRESHOLD = 80;
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (window.scrollY === 0) {
+      touchStartY.current = e.touches[0].clientY;
+      setIsPulling(true);
+    }
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isPulling) return;
+    const diff = e.touches[0].clientY - touchStartY.current;
+    if (diff > 0) {
+      setPullDistance(Math.min(diff * 0.5, 120));
+    }
+  }, [isPulling]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (pullDistance >= PULL_THRESHOLD && !isRefetching) {
+      refetch();
+    }
+    setPullDistance(0);
+    setIsPulling(false);
+  }, [pullDistance, isRefetching, refetch]);
+
   return (
-    <div className="space-y-4 animate-fade-in">
+    <div
+      ref={containerRef}
+      className="space-y-4 animate-fade-in touch-pan-y"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Pull-to-refresh indicator */}
+      {(pullDistance > 0 || isRefetching) && (
+        <div
+          className="flex justify-center transition-all duration-200 overflow-hidden"
+          style={{ height: isRefetching ? 40 : pullDistance }}
+        >
+          <div className="flex items-center gap-2 text-muted-foreground">
+            {isRefetching ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <ArrowDown
+                className="w-4 h-4 transition-transform duration-200"
+                style={{ transform: pullDistance >= PULL_THRESHOLD ? "rotate(180deg)" : "rotate(0deg)" }}
+              />
+            )}
+            <span className="text-xs">
+              {isRefetching ? "Actualizando…" : pullDistance >= PULL_THRESHOLD ? "Soltá para actualizar" : "Jalá para actualizar"}
+            </span>
+          </div>
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <h1 className="text-xl font-bold text-foreground">Muro Anónimo</h1>

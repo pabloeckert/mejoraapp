@@ -37,17 +37,18 @@ const Index = () => {
     checkProfile();
   }, [user]);
 
-  // Check onboarding after auth is ready
+  // Check onboarding after auth is ready — only if profile is already complete
   useEffect(() => {
-    if (!loading && session) {
+    if (!loading && session && profileComplete === true) {
       setShowOnboarding(shouldShowOnboarding());
     }
-  }, [loading, session]);
+  }, [loading, session, profileComplete]);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-background">
         <div className="w-8 h-8 border-3 border-mc-dark-blue border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-muted-foreground">Cargando tu sesión…</p>
       </div>
     );
   }
@@ -58,8 +59,9 @@ const Index = () => {
 
   if (profileComplete === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-background">
         <div className="w-8 h-8 border-3 border-mc-dark-blue border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-muted-foreground">Verificando tu perfil…</p>
       </div>
     );
   }

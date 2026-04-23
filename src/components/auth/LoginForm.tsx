@@ -17,12 +17,27 @@ const LoginForm = ({ onSwitchToSignup }: LoginFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const humanizeAuthError = (msg: string): string => {
+    const lower = msg.toLowerCase();
+    if (lower.includes("invalid login credentials") || lower.includes("invalid credentials"))
+      return "Email o contraseña incorrectos. Verificá e intentá de nuevo.";
+    if (lower.includes("email not confirmed") || lower.includes("email not verified"))
+      return "Tu email todavía no fue confirmado. Revisá tu bandeja de entrada.";
+    if (lower.includes("too many requests") || lower.includes("rate limit"))
+      return "Demasiados intentos. Esperá unos minutos e intentá de nuevo.";
+    if (lower.includes("user not found"))
+      return "No existe una cuenta con ese email. ¿Querés registrarte?";
+    if (lower.includes("network") || lower.includes("fetch"))
+      return "Problema de conexión. Verificá tu internet e intentá de nuevo.";
+    return "No pudimos iniciar sesión. Intentá de nuevo en unos segundos.";
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      toast({ title: "Error al iniciar sesión", description: error.message, variant: "destructive" });
+      toast({ title: "Error al iniciar sesión", description: humanizeAuthError(error.message), variant: "destructive" });
     }
     setLoading(false);
   };
@@ -41,7 +56,7 @@ const LoginForm = ({ onSwitchToSignup }: LoginFormProps) => {
       redirectTo: `${window.location.origin}/reset-password`,
     });
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: "No se pudo enviar el email de recuperación. Intentá de nuevo.", variant: "destructive" });
     } else {
       toast({ title: "Email enviado", description: "Revisá tu correo para restablecer tu contraseña." });
     }
