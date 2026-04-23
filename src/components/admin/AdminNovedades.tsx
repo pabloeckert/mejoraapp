@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAdminAction } from "@/hooks/useAdminAction";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,7 @@ const emptyForm = {
 
 const AdminNovedades = () => {
   const { toast } = useToast();
+  const { execute: adminAction } = useAdminAction();
   const [novedades, setNovedades] = useState<Novedad[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -67,7 +69,7 @@ const AdminNovedades = () => {
     }
     setSaving(true);
 
-    const payload: TablesInsert<"novedades"> = {
+    const payload = {
       titulo: form.titulo.trim(),
       resumen: form.resumen.trim() || null,
       contenido: form.contenido.trim() || null,
@@ -77,28 +79,24 @@ const AdminNovedades = () => {
       published_at: form.publicado ? new Date().toISOString() : null,
     };
 
-    let error;
-    if (editingId) {
-      ({ error } = await supabase.from("novedades").update(payload).eq("id", editingId));
-    } else {
-      ({ error } = await supabase.from("novedades").insert(payload));
-    }
-
-    if (error) {
-      toast({ title: "Error al guardar", description: error.message, variant: "destructive" });
-    } else {
+    try {
+      await adminAction("upsert-novedad", { novedadId: editingId || undefined, data: payload });
       toast({ title: editingId ? "Novedad actualizada" : "Novedad creada" });
       setShowForm(false);
       fetchNovedades();
+    } catch (err) {
+      toast({ title: "Error al guardar", description: String(err), variant: "destructive" });
     }
     setSaving(false);
   };
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from("novedades").delete().eq("id", id);
-    if (!error) {
+    try {
+      await adminAction("delete-novedad", { novedadId: id });
       toast({ title: "Novedad eliminada" });
       fetchNovedades();
+    } catch (err) {
+      toast({ title: "Error", description: String(err), variant: "destructive" });
     }
   };
 

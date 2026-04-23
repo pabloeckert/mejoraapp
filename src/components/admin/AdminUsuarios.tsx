@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { useAdminAction } from "@/hooks/useAdminAction";
 import {
   Loader2,
   User,
@@ -64,6 +65,7 @@ const ProfileSkeleton = () => (
 
 const AdminUsuarios = () => {
   const { toast } = useToast();
+  const { execute: adminAction, loading: adminLoading } = useAdminAction();
   const [profiles, setProfiles] = useState<ExtendedProfile[]>([]);
   const [diagnostics, setDiagnostics] = useState<Record<string, DiagResult>>({});
   const [loading, setLoading] = useState(true);
@@ -107,27 +109,16 @@ const AdminUsuarios = () => {
     });
   };
 
-  // Save profile changes
+  // Save profile changes — via Edge Function (server-side admin verification)
   const saveProfile = async () => {
     if (!editingId || saving) return;
 
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({
-          nombre: editForm.nombre.trim() || null,
-          apellido: editForm.apellido.trim() || null,
-          empresa: editForm.empresa.trim() || null,
-          cargo: editForm.cargo.trim() || null,
-          email: editForm.email.trim() || null,
-          phone: editForm.phone.trim() || null,
-          display_name: `${editForm.nombre.trim()} ${editForm.apellido.trim()}`.trim() || null,
-        })
-        .eq("id", editingId);
-
-      if (error) throw error;
-
+      await adminAction("update-profile", {
+        profileId: editingId,
+        data: editForm,
+      });
       toast({ title: "Perfil actualizado" });
       setEditingId(null);
       loadData();

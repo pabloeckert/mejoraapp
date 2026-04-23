@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-// AI is server-side via Edge Functions — no client-side AI service needed
+import { useAdminAction } from "@/hooks/useAdminAction";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 
 type Category = Tables<"content_categories">;
@@ -40,6 +40,7 @@ const getTypeBadge = (type: string) => {
 
 const AdminContenido = () => {
   const { toast } = useToast();
+  const { execute: adminAction } = useAdminAction();
   const [view, setView] = useState<View>("posts");
   const [categories, setCategories] = useState<Category[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -93,7 +94,7 @@ const AdminContenido = () => {
         { nombre: "Noticia", slug: "noticia", icono: "Newspaper", activa: true },
       ];
       Promise.all(
-        defaults.map((d) => supabase.from("content_categories").insert(d))
+        defaults.map((d) => adminAction("create-category", { category: d }))
       ).then(() => fetchData());
     }
   }, [categories.length, loading]);
@@ -115,7 +116,7 @@ const AdminContenido = () => {
       return;
     }
     setSaving(true);
-    const payload: TablesInsert<"content_posts"> = {
+    const payload = {
       titulo: titulo.trim(),
       contenido: contenido.trim(),
       resumen: resumen.trim() || null,
@@ -127,16 +128,16 @@ const AdminContenido = () => {
       estado,
       fuente: "admin",
     };
-    const { error } = await supabase.from("content_posts").insert(payload);
-    setSaving(false);
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } else {
+    try {
+      await adminAction("create-post", { post: payload });
       toast({ title: estado === "publicado" ? "Publicado" : "Guardado como borrador" });
       resetForm();
       setView("posts");
       fetchData();
+    } catch (err) {
+      toast({ title: "Error", description: String(err), variant: "destructive" });
     }
+    setSaving(false);
   };
 
   const generateWithAI = async () => {
@@ -178,7 +179,7 @@ const AdminContenido = () => {
   const publishAiContent = async () => {
     if (!aiPreview) return;
     setSaving(true);
-    const payload: TablesInsert<"content_posts"> = {
+    const payload = {
       titulo: aiPreview.titulo,
       contenido: aiPreview.contenido,
       resumen: aiPreview.resumen || null,
@@ -187,41 +188,40 @@ const AdminContenido = () => {
       estado: "publicado",
       fuente: "ia",
     };
-    const { error } = await supabase.from("content_posts").insert(payload);
-    setSaving(false);
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } else {
+    try {
+      await adminAction("create-post", { post: payload });
       toast({ title: "Publicado con IA" });
       setAiPreview(null);
       setAiGuidelines("");
       setView("posts");
       fetchData();
+    } catch (err) {
+      toast({ title: "Error", description: String(err), variant: "destructive" });
     }
+    setSaving(false);
   };
 
   const togglePostEstado = async (post: Post) => {
     const newEstado = post.estado === "publicado" ? "borrador" : "publicado";
-    await supabase.from("content_posts").update({ estado: newEstado }).eq("id", post.id);
+    await adminAction("update-post-status", { postId: post.id, estado: newEstado });
     fetchData();
   };
 
   const deletePost = async (id: string) => {
-    await supabase.from("content_posts").delete().eq("id", id);
+    await adminAction("delete-post", { postId: id });
     fetchData();
   };
 
   const addCategory = async () => {
     if (!newCatName.trim()) return;
     const slug = newCatSlug.trim() || newCatName.trim().toLowerCase().replace(/\s+/g, "-");
-    const payload: TablesInsert<"content_categories"> = { nombre: newCatName.trim(), slug };
-    const { error } = await supabase.from("content_categories").insert(payload);
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } else {
+    try {
+      await adminAction("create-category", { category: { nombre: newCatName.trim(), slug } });
       setNewCatName("");
       setNewCatSlug("");
       fetchData();
+    } catch (err) {
+      toast({ title: "Error", description: String(err), variant: "destructive" });
     }
   };
 

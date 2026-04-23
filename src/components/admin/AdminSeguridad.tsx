@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAdminAction } from "@/hooks/useAdminAction";
 import { Loader2, Shield, UserPlus, Trash2, User, Crown, CheckCircle, AlertTriangle, Lock, Server, Eye } from "lucide-react";
 
 interface AdminUser {
@@ -18,6 +19,7 @@ interface AdminUser {
 const AdminSeguridad = () => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { execute: adminAction, loading: adminLoading } = useAdminAction();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [admins, setAdmins] = useState<AdminUser[]>([]);
@@ -93,12 +95,8 @@ const AdminSeguridad = () => {
         return;
       }
 
-      // Add admin role
-      const { error } = await supabase
-        .from("user_roles")
-        .insert({ user_id: profile.user_id, role: "admin" });
-
-      if (error) throw error;
+      // Add admin role via Edge Function
+      await adminAction("add-role", { targetUserId: profile.user_id, role: "admin" });
 
       toast({ title: "Admin agregado", description: `${profile.email} ahora tiene permisos de admin.` });
       setNewAdminEmail("");
@@ -117,14 +115,7 @@ const AdminSeguridad = () => {
     }
 
     try {
-      const { error } = await supabase
-        .from("user_roles")
-        .delete()
-        .eq("user_id", userId)
-        .eq("role", "admin");
-
-      if (error) throw error;
-
+      await adminAction("remove-role", { targetUserId: userId, role: "admin" });
       toast({ title: "Admin removido", description: `${email} ya no tiene permisos de admin.` });
       fetchAdmins();
     } catch (err) {

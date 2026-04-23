@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAdminAction } from "@/hooks/useAdminAction";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle, Loader2, AlertTriangle, RefreshCw, MessageSquare, ChevronDown, ChevronUp, CornerDownRight } from "lucide-react";
@@ -25,6 +26,7 @@ const statusColors: Record<string, string> = {
 
 const AdminMuro = () => {
   const { toast } = useToast();
+  const { execute: adminAction } = useAdminAction();
   const [posts, setPosts] = useState<WallPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
@@ -48,16 +50,12 @@ const AdminMuro = () => {
   useEffect(() => { fetchPosts(); }, [fetchPosts]);
 
   const updateStatus = async (postId: string, newStatus: string) => {
-    const { error } = await supabase
-      .from("wall_posts")
-      .update({ status: newStatus })
-      .eq("id", postId);
-
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } else {
+    try {
+      await adminAction("moderate-post", { postId, status: newStatus });
       toast({ title: `Post ${newStatus === "approved" ? "aprobado" : "rechazado"}` });
       setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, status: newStatus } : p)));
+    } catch (err) {
+      toast({ title: "Error", description: String(err), variant: "destructive" });
     }
   };
 
@@ -86,18 +84,15 @@ const AdminMuro = () => {
   };
 
   const updateCommentStatus = async (commentId: string, postId: string, newStatus: string) => {
-    const { error } = await supabase
-      .from("wall_comments")
-      .update({ status: newStatus })
-      .eq("id", commentId);
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } else {
+    try {
+      await adminAction("moderate-comment", { commentId, status: newStatus });
       toast({ title: `Comentario ${newStatus === "approved" ? "aprobado" : "rechazado"}` });
       setCommentsMap((prev) => ({
         ...prev,
         [postId]: (prev[postId] || []).map((c) => (c.id === commentId ? { ...c, status: newStatus } : c)),
       }));
+    } catch (err) {
+      toast({ title: "Error", description: String(err), variant: "destructive" });
     }
   };
 
