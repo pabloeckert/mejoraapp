@@ -13,7 +13,15 @@ import Onboarding, { shouldShowOnboarding } from "@/components/Onboarding";
 
 const Index = () => {
   const { session, loading, user } = useAuth();
-  const [activeTab, setActiveTab] = useState("contenido");
+  const [activeTab, setActiveTab] = useState(() => {
+    // Default to muro for returning users who've been here before
+    try {
+      const visits = parseInt(sessionStorage.getItem("mc-visits") ?? "0", 10);
+      sessionStorage.setItem("mc-visits", String(visits + 1));
+      if (visits > 0) return "muro";
+    } catch { /* ignore */ }
+    return "contenido";
+  });
   const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
 

@@ -11,6 +11,7 @@ import {
   ChevronUp,
   CornerDownRight,
   ArrowDown,
+  Trash2,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -117,6 +118,8 @@ const PostCard = memo(
     isLiked,
     isOwn,
     onLike,
+    onDelete,
+    confirmingDelete,
     expanded,
     onToggle,
     comments,
@@ -131,6 +134,8 @@ const PostCard = memo(
     isLiked: boolean;
     isOwn: boolean;
     onLike: (postId: string) => void;
+    onDelete: (postId: string) => void;
+    confirmingDelete: boolean;
     expanded: boolean;
     onToggle: (postId: string) => void;
     comments: WallComment[];
@@ -152,6 +157,20 @@ const PostCard = memo(
             </span>
           </div>
           <div className="flex items-center gap-1.5">
+            {isOwn && (
+              <button
+                onClick={() => onDelete(post.id)}
+                className={`flex items-center gap-1 text-xs transition-colors px-2 py-1 rounded-full ${
+                  confirmingDelete
+                    ? "text-destructive bg-destructive/10 font-medium"
+                    : "text-muted-foreground hover:text-destructive hover:bg-destructive/5"
+                }`}
+                title={confirmingDelete ? "Tocá de nuevo para confirmar" : "Eliminar post"}
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                {confirmingDelete && <span className="text-[10px]">¿Eliminar?</span>}
+              </button>
+            )}
             <button
               onClick={() => onLike(post.id)}
               className={`flex items-center gap-1 text-xs transition-colors px-2 py-1 rounded-full
@@ -260,6 +279,7 @@ const Muro = () => {
 
   const [commentTexts, setCommentTexts] = useState<Record<string, string>>({});
   const [submittingComment, setSubmittingComment] = useState<Set<string>>(new Set());
+  const [confirmingDelete, setConfirmingDelete] = useState<string | null>(null);
 
   const {
     data,
@@ -434,6 +454,37 @@ const Muro = () => {
     [user, likedPosts]
   );
 
+  // Delete own post — first tap shows confirm, second tap deletes
+  const handleDelete = useCallback(
+    async (postId: string) => {
+      if (confirmingDelete !== postId) {
+        setConfirmingDelete(postId);
+        // Auto-cancel after 5 seconds
+        setTimeout(() => setConfirmingDelete((prev) => (prev === postId ? null : prev)), 5000);
+        return;
+      }
+
+      // Confirmed — delete
+      setConfirmingDelete(null);
+      try {
+        const { error } = await supabase
+          .from("wall_posts")
+          .delete()
+          .eq("id", postId)
+          .eq("user_id", user?.id ?? "");
+
+        if (error) throw error;
+
+        toast({ title: "Post eliminado" });
+        refetch();
+      } catch (err) {
+        console.error(err);
+        toast({ title: "Error", description: "No se pudo eliminar el post.", variant: "destructive" });
+      }
+    },
+    [confirmingDelete, user, toast, refetch]
+  );
+
   const sentinelRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -577,6 +628,8 @@ const Muro = () => {
               isLiked={likedPosts.has(post.id)}
               isOwn={post.user_id === user?.id}
               onLike={toggleLike}
+              onDelete={handleDelete}
+              confirmingDelete={confirmingDelete === post.id}
               expanded={expandedPosts.has(post.id)}
               onToggle={toggleExpand}
               comments={commentsMap[post.id] || []}

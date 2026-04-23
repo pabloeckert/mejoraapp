@@ -76,6 +76,28 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
     return saved?.answers ?? {};
   });
 
+  // Diagnostic history
+  interface DiagnosticHistoryEntry {
+    id: string;
+    perfil: string;
+    puntaje_total: number;
+    created_at: string;
+  }
+  const [history, setHistory] = useState<DiagnosticHistoryEntry[]>([]);
+
+  useEffect(() => {
+    if (!user || step !== "intro") return;
+    supabase
+      .from("diagnostic_results")
+      .select("id, perfil, puntaje_total, created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(3)
+      .then(({ data }) => {
+        if (data && data.length > 0) setHistory(data);
+      });
+  }, [user, step]);
+
   // Persist progress whenever it changes
   useEffect(() => {
     if (step === "question") {
@@ -170,8 +192,44 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
             onClick={startDiag}
             className="bg-mc-diag-red hover:bg-mc-diag-red/90 text-white px-8 py-3 text-base font-bold"
           >
-            Empezar diagnóstico →
+            {history.length > 0 ? "Hacerlo de nuevo →" : "Empezar diagnóstico →"}
           </Button>
+
+          {history.length > 0 && (
+            <div className="mt-6 pt-4 border-t border-border text-left">
+              <h3 className="text-[11px] font-bold tracking-widest text-muted-foreground uppercase mb-3">
+                Tus diagnósticos anteriores
+              </h3>
+              <div className="space-y-2">
+                {history.map((entry) => {
+                  const perfilData = PERFILES[entry.perfil];
+                  return (
+                    <div
+                      key={entry.id}
+                      className="flex items-center gap-3 p-2.5 rounded-lg bg-secondary/50"
+                    >
+                      <div
+                        className="w-3 h-3 rounded-full shrink-0"
+                        style={{ backgroundColor: perfilData?.color ?? "#888" }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <span className="text-xs font-medium text-foreground line-clamp-1">
+                          {perfilData?.tagline ?? entry.perfil}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground block">
+                          {new Date(entry.created_at).toLocaleDateString("es-AR", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })} · Puntaje: {entry.puntaje_total}/40
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
