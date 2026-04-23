@@ -17,11 +17,13 @@ import {
   ChevronDown,
   ChevronUp,
   X,
+  Search,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -246,6 +248,7 @@ const PostSkeleton = () => (
 
 const ContenidoDeValor = () => {
   const [activeFilter, setActiveFilter] = useState<string>("todos");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -262,9 +265,26 @@ const ContenidoDeValor = () => {
   const isLoading = categoriesLoading || postsLoading;
 
   const filtered = useMemo(() => {
-    if (activeFilter === "todos") return posts;
-    return posts.filter((p) => p.content_categories?.slug === activeFilter);
-  }, [posts, activeFilter]);
+    let result = posts;
+
+    // Category filter
+    if (activeFilter !== "todos") {
+      result = result.filter((p) => p.content_categories?.slug === activeFilter);
+    }
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      result = result.filter(
+        (p) =>
+          p.titulo.toLowerCase().includes(q) ||
+          (p.resumen || "").toLowerCase().includes(q) ||
+          (p.contenido || "").toLowerCase().includes(q)
+      );
+    }
+
+    return result;
+  }, [posts, activeFilter, searchQuery]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / POSTS_PER_PAGE));
   const paginatedPosts = filtered.slice(
@@ -274,6 +294,12 @@ const ContenidoDeValor = () => {
 
   const handleFilterChange = useCallback((value: string) => {
     setActiveFilter(value);
+    setCurrentPage(1);
+    setExpandedId(null);
+  }, []);
+
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchQuery(value);
     setCurrentPage(1);
     setExpandedId(null);
   }, []);
@@ -303,6 +329,25 @@ const ContenidoDeValor = () => {
         </p>
       </div>
 
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input
+          placeholder="Buscar contenido..."
+          value={searchQuery}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          className="pl-9 h-9 text-sm"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => handleSearchChange("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        )}
+      </div>
+
       {/* Feed */}
       {isLoading ? (
         <div className="space-y-3">
@@ -312,9 +357,13 @@ const ContenidoDeValor = () => {
         <Card className="border-dashed border-2">
           <CardContent className="flex flex-col items-center justify-center py-10 text-center">
             <Lightbulb className="w-12 h-12 text-muted-foreground/40 mb-4" />
-            <h3 className="font-semibold text-foreground mb-2">Todavía no hay publicaciones</h3>
+            <h3 className="font-semibold text-foreground mb-2">
+              {searchQuery ? "Sin resultados" : "Todavía no hay publicaciones"}
+            </h3>
             <p className="text-sm text-muted-foreground max-w-[280px]">
-              Pronto vas a encontrar acá contenido pensado para tu negocio.
+              {searchQuery
+                ? `No encontramos contenido para "${searchQuery}". Probá con otras palabras.`
+                : "Pronto vas a encontrar acá contenido pensado para tu negocio."}
             </p>
           </CardContent>
         </Card>
