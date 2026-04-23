@@ -124,7 +124,8 @@ Cada sesión de desarrollo sigue este ciclo:
 | Fecha | Etapa | Tareas | Nota |
 |-------|-------|--------|------|
 | 2026-04-23 | Planificación | Creación del plan general | Este documento |
-| 2026-04-23 | Etapa 1 — Seguridad | 1.4 (parcial), código muerto eliminado, Edge Function verify-admin, migración SQL | `SESION-2026-04-23.md` |
+| 2026-04-23 | Etapa 1 — Seguridad | Completa: Edge Functions, RLS hardening, master password eliminada | `SESION-2026-04-23.md` |
+| 2026-04-23 | Etapa 2 — DevOps | CI workflow, rama develop, 15 tests de seguridad | `SESION-2026-04-23.md` |
 
 ---
 
