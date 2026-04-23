@@ -3,8 +3,8 @@
 > **Proyecto:** MejoraApp — Comunidad de Líderes Empresariales
 > **Stack:** React 18 · TypeScript · Vite 5 · Supabase · Tailwind CSS · shadcn/ui
 > **Producción:** https://app.mejoraok.com
-> **Repo:** https://github.com/pabloeckert/mejoraapp
-> **Última actualización:** 2026-04-24 06:02 GMT+8
+> **Repo:** https://github.com/pabloeckert/MejoraApp
+> **Última actualización:** 2026-04-24 07:06 GMT+8
 
 ---
 
@@ -28,7 +28,7 @@
 
 MejoraApp es el MVP digital de **Mejora Continua**, comunidad de negocios para líderes empresariales argentinos. Funciona en producción con muro anónimo moderado por IA, contenido de valor, diagnóstico estratégico y panel admin.
 
-**Estado actual:** App funcional con seguridad completa (E1), DevOps al 67% (E2), y **UX completa (E3 6/6)**. Sección de Contenido y Engagement (E4) pendiente.
+**Estado actual:** App funcional con seguridad completa (E1), DevOps al 67% (E2), UX completa (E3 6/6). **Análisis multidisciplinario completo (2026-04-24).** Contenido y Engagement (E4) redefinido como prioridad crítica.
 
 ---
 
@@ -150,39 +150,39 @@ src/
 - Moderación IA server-side antes de publicar
 - Realtime: suscripción a inserts de posts y comentarios aprobados
 - Infinite scroll con IntersectionObserver
-- **Pull-to-refresh** con visual feedback (jalá/soltá/actualizando)
-- **Eliminar posts propios** — doble-tap para confirmar, auto-cancel 5s
-- **Ctrl+Enter / Cmd+Enter** para publicar
-- **Contador de caracteres** cambia color (naranja 400+, rojo 480+)
-- **Social proof** — post count visible en header
-- **Tooltip fecha absoluta** — hover/tap muestra fecha completa
-- **Cross-navigation** — empty state CTA al diagnóstico estratégico
+- Pull-to-refresh con visual feedback (jalá/soltá/actualizando)
+- Eliminar posts propios — doble-tap para confirmar, auto-cancel 5s
+- Ctrl+Enter / Cmd+Enter para publicar
+- Contador de caracteres cambia color (naranja 400+, rojo 480+)
+- Social proof — post count visible en header
+- Tooltip fecha absoluta — hover/tap muestra fecha completa
+- Cross-navigation — empty state CTA al diagnóstico estratégico
 - Textarea comentarios: 44px (target táctil mejorado)
 
 ### 3.2 Contenido de Valor
 - 4 categorías: Tip, Estrategia, Reflexión, Noticia
 - 4 tipos de contenido: article, video, infographic, book/PDF
 - Búsqueda por título, resumen y contenido
-- **Filtro por categoría como pills horizontales** (reemplaza dropdown)
-- **Category badge** visible en cada card
+- Filtro por categoría como pills horizontales (reemplaza dropdown)
+- Category badge visible en cada card
 - Generación IA desde panel admin
 
 ### 3.3 Diagnóstico Estratégico
 - Test interactivo con preguntas categorizadas y shuffle aleatorio
 - Puntaje y perfil resultante con WhatsApp CTA
-- **Botón "Ver contenido"** post-resultado (no solo WhatsApp)
-- **Historial de últimos 3 resultados** con color, fecha y puntaje
-- **Botón "Hacerlo de nuevo"** si ya tiene historial
+- Botón "Ver contenido" post-resultado (no solo WhatsApp)
+- Historial de últimos 3 resultados con color, fecha y puntaje
+- Botón "Hacerlo de nuevo" si ya tiene historial
 - Persistencia en `diagnostic_results` + localStorage para progreso
-- **Progress bar theme-aware** (dark mode compatible)
+- Progress bar theme-aware (dark mode compatible)
 
 ### 3.4 Novedades
 - CRUD admin de noticias
 - Publicación con fecha
 - Imagen + enlace externo
 - Sección estática de servicios (consultoría, eventos, CRM, contacto)
-- **WhatsApp CTA como pill button** (más prominente)
-- **Empty state "Próximamente"** cuando no hay publicaciones
+- WhatsApp CTA como pill button (más prominente)
+- Empty state "Próximamente" cuando no hay publicaciones
 - Título simplificado: "Novedades" (antes "Novedades MC")
 
 ### 3.5 Panel Admin (6 módulos)
@@ -197,26 +197,26 @@ src/
 - 4 pasos con skip (Contenido, Diagnóstico, Muro, Novedades)
 - Persistencia en localStorage (`mc-onboarding-done`)
 - Overlay modal con progress dots
-- **Se saltea si el usuario ya completó el diagnóstico**
-- **Secuencia correcta** — primero onboarding, luego profile (nunca juntos)
+- Se saltea si el usuario ya completó el diagnóstico
+- Secuencia correcta — primero onboarding, luego profile (nunca juntos)
 
 ### 3.7 ProfileCompleteModal
 - Modal que solicita empresa, cargo, WhatsApp
 - Permite saltar ("Completar después")
 - Se muestra si el perfil no tiene empresa ni cargo
-- **Campo WhatsApp marcado como "(opcional)"**
+- Campo WhatsApp marcado como "(opcional)"
 
 ### 3.8 Header y Navegación
-- **Avatar con iniciales** del usuario (reemplaza icono genérico User)
-- **Targets táctiles 44×44px** (antes 32×32, debajo del mínimo)
-- **Tab default dinámico** — Muro para usuarios recurrentes, Tips para nuevos
+- Avatar con iniciales del usuario (reemplaza icono genérico User)
+- Targets táctiles 44×44px (antes 32×32, debajo del mínimo)
+- Tab default dinámico — Muro para usuarios recurrentes, Tips para nuevos
 - Bottom nav: label "Tips" (antes "Contenido", más corto)
 
 ### 3.9 Autenticación
-- **Errores humanos** en login/signup (mapeo de errores técnicos de Supabase)
-- **Indicador de fuerza de contraseña** en registro (débil/aceptable/buena/fuerte)
-- **Google OAuth feedback** — spinner + "Conectando con Google…"
-- **Loading states descriptivos** — "Cargando tu sesión…" / "Verificando tu perfil…"
+- Errores humanos en login/signup (mapeo de errores técnicos de Supabase)
+- Indicador de fuerza de contraseña en registro (débil/aceptable/buena/fuerte)
+- Google OAuth feedback — spinner + "Conectando con Google…"
+- Loading states descriptivos — "Cargando tu sesión…" / "Verificando tu perfil…"
 
 ---
 
@@ -258,108 +258,137 @@ npm run lint      # Lint: eslint
 
 ---
 
-## 6. Análisis UX (2026-04-24)
+## 6. Análisis Multidisciplinario (2026-04-24)
 
-Auditoría completa desde 9 perspectivas de UX.
+Auditoría completa desde 18 perspectivas: UX/UI (9 roles), Negocio (4 roles), Ingeniería (4 roles), Calidad/Operaciones (4 roles), Datos (3 roles).
 
 ### 6.1 UX Designer
 - ✅ Flujo de autenticación completo (email + Google + recuperación)
-- ✅ Onboarding progresivo con skip
+- ✅ Onboarding progresivo con skip inteligente
 - ✅ Diagnóstico con persistencia en localStorage
 - ✅ Post-diagnóstico: botón "Ver contenido" + historial de resultados
 - ✅ ProfileCompleteModal y Onboarding secuenciados (nunca juntos)
-- ✅ Loading states descriptivos ("Cargando tu sesión…" / "Verificando tu perfil…")
+- ✅ Loading states descriptivos
+- ⚠️ **Tab "Tips" carga primero para nuevos pero el diferencial es el Muro**
+- ⚠️ **No hay onboarding específico del muro (anonimato = confianza)**
+- ⚠️ **Diagnóstico no indica que se puede retomar si se abandona**
 
 ### 6.2 UI Designer
 - ✅ Sistema de diseño consistente (shadcn/ui + Tailwind + tokens semánticos)
-- ✅ Dark mode implementado
+- ✅ Dark mode implementado correctamente
 - ✅ Header con targets táctiles 44×44px
-- ✅ Dark mode audit: progress bar theme-aware (`bg-foreground/15`)
 - ✅ Avatar con iniciales del usuario
-- ⚠️ Typography inconsistente (valores ad-hoc: 10px, 11px, 15px sin escala)
+- ⚠️ **Typography sin escala definida** (valores ad-hoc: 10px, 11px, 15px)
+- ⚠️ **Contraste insuficiente** en elementos secundarios (`text-[10px] text-muted-foreground`)
+- ⚠️ **Cards sin jerarquía visual** — todas usan el mismo shadow
+- ⚠️ **BottomNav indicador activo débil** — línea h-0.5 casi invisible
 
 ### 6.3 UX Researcher
 - ✅ Muro anónimo resuelve miedo real de exposición
 - ✅ WhatsApp como canal CTA (dominante en Argentina)
-- ✅ Social proof — post count en header del muro
-- ✅ Historial de diagnósticos con fecha y puntaje
-- ⚠️ Shuffle de preguntas puede confundir al retomar
+- ✅ Social proof con post count
+- ⚠️ **Sin datos de comportamiento** (no hay analytics)
+- ⚠️ **Shuffle de preguntas puede confundir al retomar**
 
-### 6.4 UX Writer / Content Designer
+### 6.4 Product Designer
+- ⚠️ **Loop de valor no cerrado** — diagnóstico → resultado → WhatsApp → ¿y después?
+- ⚠️ **Sin triggers de re-engagement** — sin push, sin email, sin gamificación
+- ⚠️ **Modelo de negocio no visible en producto** — servicios enterrados en Novedades
+
+### 6.5 UX Writer / Content Designer
 - ✅ Tono argentino auténtico ("¿Te animás?", "Completá")
 - ✅ Microcopy con personalidad
-- ✅ Tab label "Tips" (más corto, más claro)
 - ✅ Errores técnicos mapeados a mensajes humanos
-- ✅ "Novedades" simplificado (antes "Novedades MC")
-- ✅ WhatsApp "(opcional)" en perfil
-- ⚠️ Inconsistencia en voseo/tuteo
+- ⚠️ **Inconsistencia en voseo/tuteo**
+- ⚠️ **"Novedades MC" en onboarding vs "Novedades" en app**
 
-### 6.5 Information Architect
-- ✅ 4 tabs claros sin overlap
-- ✅ Admin separado en /admin
-- ✅ Tab default dinámico (Muro para recurrentes, Tips para nuevos)
-- ✅ Secciones conectadas (empty state muro → diagnóstico, resultado → contenido)
-- ✅ Admin accesible via botón Shield legítimo
+### 6.6 Information Architect
+- ✅ 4 tabs claros sin overlap funcional
+- ✅ Admin separado en ruta distinta
+- ✅ Tab default dinámico
+- ⚠️ **"Tips" como label es demasiado vago** para artículos/videos/infografías/PDFs
+- ⚠️ **Servicios mezclados con novedades** — funnel de ventas disfrazado de contenido
 
-### 6.6 Interaction Designer
+### 6.7 Interaction Designer
 - ✅ Likes con feedback visual (fill + scale)
-- ✅ Transiciones suaves en onboarding
-- ✅ Enter para enviar comentario + Ctrl+Enter para publicar post
 - ✅ Pull-to-refresh en el muro
-- ✅ Textarea comentarios 44px (target táctil mejorado)
-- ✅ Contador de caracteres con color (naranja 400+, rojo 480+)
-- ✅ Category pills como filtro horizontal (reemplaza dropdown)
-- ⚠️ Sin feedback háptico en PWA
-- ⚠️ Scroll position no se preserva al cambiar de tab
+- ✅ Ctrl+Enter para publicar + contador de caracteres con color
+- ⚠️ **Sin feedback háptico en PWA**
+- ⚠️ **Scroll position se pierde al cambiar de tab**
+- ⚠️ **Enter envía comentario sin confirmación** (fácil enviar accidentalmente)
+- ⚠️ **Doble-tap para eliminar sin affordance** (el usuario no sabe que puede eliminar)
 
-### 6.7 Service Designer
-- ✅ Ecosistema integrado (diagnóstico → leads → contenido → comunidad → servicios)
-- ✅ WhatsApp como puente omnicanal (pill CTA prominente)
-- ✅ Onboarding se saltea si ya hizo diagnóstico
-- ⚠️ Diagnóstico sin follow-up por email
-- ⚠️ Sin integración con CRM propio
-- ⚠️ PWA sin push notifications
+### 6.8 Service Designer
+- ✅ Ecosistema integrado (diagnóstico → contenido → comunidad)
+- ✅ WhatsApp como puente omnicanal
+- ⚠️ **Diagnóstico sin follow-up por email**
+- ⚠️ **Sin integración con CRM**
+- ⚠️ **PWA sin push notifications**
 
-### 6.8 UX Strategist
+### 6.9 UX Strategist
 - ✅ Nicho claro (comunidad empresarial argentina)
-- ✅ Modelo de valor bilateral (usuario: contenido/comunidad, negocio: leads/ventas)
-- ✅ Conexiones entre secciones (cross-navigation)
-- ⚠️ Retención sin ganchos diarios
-- ⚠️ Gamificación ausente
-- ⚠️ Sin analytics para iterar
+- ✅ Modelo de valor bilateral
+- ⚠️ **Retención sin ganchos diarios**
+- ⚠️ **Gamificación ausente**
+- ⚠️ **Sin analytics para iterar**
 
-### 6.9 UX Manager / Head of UX
+### 6.10 Product Owner
+- ✅ Priorización correcta (seguridad → infraestructura → UX)
+- ⚠️ **Sin KPIs definidos** (DAU, tasa completado diagnóstico, posts/usuario)
+- ⚠️ **Etapa 4 (analytics) debería ser prioridad antes que features nuevas**
 
-| Área | Nivel antes | Nivel después |
+### 6.11 Business Analyst
+- ⚠️ **Funnel con agujero** — diagnóstico → WhatsApp → sin tracking de conversión
+- ⚠️ **Sección de servicios sin tracking de clicks ni conversiones**
+
+### 6.12 Frontend Developer
+- ✅ Lazy loading, React Query, memo, ErrorBoundary
+- ⚠️ **Muro.tsx tiene 14 useState** — necesita useReducer o subdivisión
+- ⚠️ **`sessionStorage.getItem("mc-visits")` frágil** — mejor campo en perfil Supabase
+- ⚠️ **CustomEvent `navigate-tab`** acoplado — mejor Context o URL params
+
+### 6.13 Software Architect
+- ✅ Arquitectura limpia SPA + Supabase + Edge Functions
+- ✅ Cadena de fallback IA inteligente
+- ⚠️ **`admin-action` como "god function"** con 13 acciones — riesgo de acoplamiento
+- ⚠️ **`is_admin()` SECURITY DEFINER** — necesita auditoría periódica
+
+### 6.14 QA Engineer
+- ✅ 103 tests, 100% passing
+- ⚠️ **Sin tests E2E** (Playwright/Cypress)
+- ⚠️ **Sin tests de accesibilidad** (axe-core)
+
+### 6.15 DevOps Engineer
+- ✅ CI/CD via GitHub Actions
+- ⚠️ **FTP sin atomic deploys** — riesgo de estado inconsistente
+- ⚠️ **Sin staging real**
+- ⚠️ **Sin monitoring** (Sentry)
+
+### 6.16 Security Specialist
+- ✅ RLS en todas las tablas + Edge Functions con JWT
+- ⚠️ **Admin access via Shield es security by obscurity** (mitigado por verify-admin)
+- ⚠️ **Rate limiting solo en moderación** — otras funciones sin límite
+
+### 6.17 Technical Writer
+- ✅ Documentación maestra excelente (fuente única de verdad)
+- ⚠️ **Componentes sin JSDoc** — props no documentados
+
+### 6.18 SEO / ASO Specialist
+- ⚠️ **Sin meta tags, Open Graph, structured data**
+- ⚠️ **Sin share cards** para WhatsApp/redes
+
+### Resumen de Calificación UX Manager
+
+| Área | Estado | Gap principal |
 |---|---|---|
-| Auth & onboarding | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
-| Navegación | ⭐⭐⭐ | ⭐⭐⭐⭐ |
-| Contenido | ⭐⭐⭐ | ⭐⭐⭐⭐ |
-| Muro | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
-| Diagnóstico | ⭐⭐⭐ | ⭐⭐⭐⭐ |
-| Admin | ⭐⭐ | ⭐⭐ |
-| PWA/Performance | ⭐⭐⭐ | ⭐⭐⭐ |
-| Dark mode | ⭐⭐⭐ | ⭐⭐⭐⭐ |
-
-### Prioridades UX — Estado
-
-**Corto plazo (1-2 sem):** ✅ COMPLETAS
-1. ✅ Fix targets táctiles del header (44×44px)
-2. ✅ Mapear errores técnicos a mensajes humanos
-3. ✅ Secuenciar modales (onboarding → profile)
-4. ✅ Dark mode audit (colores del diagnóstico)
-
-**Medio plazo (1 mes):** ⏳ EN PROGRESO
-5. ✅ Post-diagnóstico → contenido relevante
-6. ✅ Pull-to-refresh en el muro
-7. ⏳ Push notifications (Web Push API)
-8. ⏳ Email follow-up post-diagnóstico
-
-**Largo plazo (2-3 meses):** PENDIENTE
-9. ⏳ Gamificación (streaks, progreso)
-10. ⏳ Analytics (PostHog/Mixpanel)
-11. ⏳ Integración CRM
-12. ✅ Tab default dinámico
+| Auth & Onboarding | ⭐⭐⭐⭐ | Falta onboarding del muro |
+| Navegación | ⭐⭐⭐ | Scroll position perdida, label engañoso |
+| Contenido | ⭐⭐⭐ | Sin personalización, sin funnel |
+| Muro | ⭐⭐⭐⭐ | Falta háptica, menú contextual |
+| Diagnóstico | ⭐⭐⭐ | Sin follow-up, sin recomendaciones |
+| Admin | ⭐⭐ | No auditado en profundidad |
+| Retención | ⭐⭐ | Sin push, sin gamificación, sin analytics |
+| Performance | ⭐⭐⭐ | Bundle OK, sin CDN |
 
 ---
 
@@ -392,24 +421,55 @@ Auditoría completa desde 9 perspectivas de UX.
 - [x] 3.4 Muro: eliminar posts propios (doble-tap confirmar)
 - [x] 3.5 UX crítico: targets táctiles, errores humanos, dark mode, pull-to-refresh
 - [x] 3.6 Conexiones entre secciones (cross-navigation, tab dinámico, social proof)
-- [ ] 3.7 Notificaciones email (respuestas en muro, novedades) — movido a E4
-- [ ] 3.8 Perfil de usuario completo (bio, avatar upload, empresa, links) — movido a E4
 
-### ETAPA 4 — Contenido y Engagement (pendiente)
-- [ ] 4.1 Analytics de uso (DAU, engagement por sección)
-- [ ] 4.2 Sistema de categorías dinámico (admin CRUD)
-- [ ] 4.3 Contenido programado (fecha de publicación futura)
-- [ ] 4.4 Ranking de comunidad (top contributors, badges)
-- [ ] 4.5 Diagnóstico con IA (análisis personalizado)
-- [ ] 4.6 Exportar resultados a PDF
+### ETAPA 4 — Analytics y Retención ⚡ PRIORIDAD CRÍTICA
+> **Re-definida a partir del análisis multidisciplinario.** Sin datos no se puede optimizar. Sin retención no hay producto.
 
-### ETAPA 5 — Escalamiento y Optimización (futuro)
-- [ ] 5.1 Migrar hosting (Hostinger+FTP → Vercel/Cloudflare)
-- [ ] 5.2 CDN y optimización de assets (WebP, responsive)
-- [ ] 5.3 Bundle analysis (< 250KB gzipped)
-- [ ] 5.4 i18n base (multi-idioma)
-- [ ] 5.5 API pública (endpoints documentados)
-- [ ] 5.6 App mobile nativa (Capacitor o React Native)
+**Sprint 4.1 — Analytics (semana 1)**
+- [ ] 4.1.1 Integrar PostHog (o Plausible) — tracking de pageviews, eventos, sesiones
+- [ ] 4.1.2 Eventos custom: login, publicar_post, like, comentario, iniciar_diagnostico, completar_diagnostico, compartir_wa, ver_contenido
+- [ ] 4.1.3 Dashboard básico: DAU, WAU, posts/día, diagnósticos/día, tasa completado diagnóstico
+- [ ] 4.1.4 Funnel: registro → primer post → primer diagnóstico → retorno en 7 días
+
+**Sprint 4.2 — Retención (semanas 2-3)**
+- [ ] 4.2.1 Push notifications (Web Push API) — nuevo post en muro, respuesta a tu post, nueva novedad
+- [ ] 4.2.2 Email follow-up post-diagnóstico (Resend) — resultado + contenido recomendado + CTA consultoría
+- [ ] 4.2.3 Contenido "nuevo desde tu última visita" badge en tabs
+- [ ] 4.2.4 Notificación in-app (toast) para respuestas en muro en tiempo real
+
+**Sprint 4.3 — Engagement (semanas 3-4)**
+- [ ] 4.3.1 Gamificación básica: badges por actividad (primer post, 10 posts, 5 diagnósticos)
+- [ ] 4.3.2 Ranking de comunidad (top contributors, visible en muro)
+- [ ] 4.3.3 Perfil de usuario completo (bio, avatar upload, empresa, links)
+- [ ] 4.3.4 Contenido programado (fecha de publicación futura desde admin)
+
+**Sprint 4.4 — Optimización del funnel (semana 4)**
+- [ ] 4.4.1 Separar servicios de novedades — sección propia con tracking de clicks
+- [ ] 4.4.2 CTA de consultoría post-diagnóstico con tracking de conversión
+- [ ] 4.4.3 Diagnóstico con recomendación de contenido basada en perfil
+- [ ] 4.4.4 Exportar resultados de diagnóstico a PDF
+
+### ETAPA 5 — Calidad y Robustez
+> **Depende de E4 (analytics) para priorizar qué arreglar primero.**
+
+- [ ] 5.1 Tests E2E con Playwright (flujos críticos: auth → post → diagnóstico)
+- [ ] 5.2 Tests de accesibilidad (axe-core + keyboard navigation)
+- [ ] 5.3 Refactorizar Muro.tsx (14 useState → useReducer + sub-componentes)
+- [ ] 5.4 Typography scale definida (caption → body → subtitle → title → heading)
+- [ ] 5.5 Scroll position preservation al cambiar de tab
+- [ ] 5.6 Editorial style guide (voseo consistente)
+- [ ] 5.7 SEO básico (meta tags, Open Graph, share cards)
+- [ ] 5.8 Sentry integration (error tracking)
+
+### ETAPA 6 — Escalamiento (futuro)
+- [ ] 6.1 Migrar hosting (Hostinger+FTP → Vercel/Cloudflare)
+- [ ] 6.2 CDN y optimización de assets (WebP, responsive images)
+- [ ] 6.3 Bundle analysis y code splitting (< 250KB gzipped)
+- [ ] 6.4 i18n base (multi-idioma)
+- [ ] 6.5 API pública (endpoints documentados)
+- [ ] 6.6 App mobile nativa (Capacitor o React Native)
+- [ ] 6.7 Integración CRM propia
+- [ ] 6.8 Separar `admin-action` en funciones específicas
 
 ---
 
@@ -420,31 +480,36 @@ Auditoría completa desde 9 perspectivas de UX.
 3. **IA como herramienta** — Modera y genera, pero la comunidad es el producto.
 4. **Sin lock-in** — Código portable. Si se migra algo, el código debe sobrevivir.
 5. **Crecimiento orgánico** — Se construye lo que se necesita, no lo que podría necesitarse.
+6. **Datos antes que features** — No construir nada nuevo sin poder medir su impacto (E4).
 
 ---
 
 ## 9. Tecnologías Pendientes de Evaluar
 
-| Tech | Uso potencial | Estado |
-|------|--------------|--------|
-| Sentry | Error tracking | Pendiente (Etapa 2) |
-| Plausible / PostHog | Analytics | Pendiente (Etapa 4) |
-| Resend | Emails transaccionales | Pendiente (Etapa 3) |
-| Meilisearch | Búsqueda full-text | Pendiente (Etapa 3) |
-| Vercel | Hosting moderno | Pendiente (Etapa 5) |
-| Capacitor | App nativa | Pendiente (Etapa 5) |
+| Tech | Uso potencial | Etapa | Prioridad |
+|------|--------------|-------|-----------|
+| PostHog | Analytics + feature flags | E4 | 🔴 Crítica |
+| Resend | Emails transaccionales | E4 | 🔴 Crítica |
+| Web Push API | Push notifications PWA | E4 | 🟡 Alta |
+| Sentry | Error tracking | E5 | 🟡 Alta |
+| Playwright | Tests E2E | E5 | 🟡 Alta |
+| Plausible | Analytics alternativo (más simple) | E4 | 🟢 Media |
+| Meilisearch | Búsqueda full-text | E5 | 🟢 Media |
+| Vercel | Hosting moderno | E6 | ⚪ Futuro |
+| Capacitor | App nativa | E6 | ⚪ Futuro |
 
 ---
 
 ## 10. Registro de Sesiones
 
-| Fecha | Resumen | Archivo |
-|-------|---------|---------|
-| 2026-04-15 | Setup inicial: React + Supabase + Auth + Muro + Admin | — |
-| 2026-04-18 | Migraciones: comments, content media, profile fields, admin config | — |
-| 2026-04-23 | E1 completa, E2 (4/6), E3 (1/6). 103 tests. CI/CD. | `SESION-2026-04-23.md` |
-| 2026-04-24 AM | Auditoría UX (9 perspectivas). Consolidación documentación. Plan optimizado. | — |
-| 2026-04-24 | **E3 completa (6/6).** 30 cambios UX en 5 sprints (~35 min). | `SESION-2026-04-24.md` |
+| Fecha | Resumen | Cambios clave |
+|-------|---------|---------------|
+| 2026-04-15 | Setup inicial | React + Supabase + Auth + Muro + Admin |
+| 2026-04-18 | Migraciones DB | comments, content media, profile fields, admin config |
+| 2026-04-23 | Seguridad + DevOps | E1 completa, E2 (4/6), 103 tests, CI/CD, Edge Functions |
+| 2026-04-24 AM | Auditoría UX | 9 perspectivas UX, consolidación documentación |
+| 2026-04-24 | UX Sprint completo | E3 completa (6/6), 30 cambios UX en 5 sprints |
+| 2026-04-24 | Análisis multidisciplinario | 18 perspectivas, redefinición de E4 como prioridad crítica, consolidación documentación |
 
 ---
 
@@ -453,8 +518,7 @@ Auditoría completa desde 9 perspectivas de UX.
 | Archivo | Propósito |
 |---------|-----------|
 | `MEJORAAPP.md` | Este documento — fuente única de verdad |
-| `MIGRACION-SEGURIDAD-2026-04-23.sql` | Script SQL de hardening de seguridad |
-| `SESION-2026-04-23.md` | Detalle técnico de la sesión 2026-04-23 |
+| `MIGRACION-SEGURIDAD-2026-04-23.sql` | Script SQL de hardening de seguridad (ejecutado) |
 
 ---
 
