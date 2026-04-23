@@ -588,15 +588,27 @@ const Muro = () => {
             onChange={(e) => setNewPost(e.target.value.slice(0, MAX_LENGTH))}
             className="min-h-[80px] resize-none border-0 bg-secondary/50 focus-visible:ring-1 focus-visible:ring-primary/30"
             maxLength={MAX_LENGTH}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                handlePost();
+              }
+            }}
           />
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">
+            <span className={`text-xs transition-colors ${
+              newPost.length >= 480 ? "text-destructive font-medium" :
+              newPost.length >= 400 ? "text-amber-500" : "text-muted-foreground"
+            }`}>
               {newPost.length}/{MAX_LENGTH}
             </span>
-            <Button size="sm" onClick={handlePost} disabled={!newPost.trim() || posting} className="gap-1.5">
-              {posting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-              Publicar
-            </Button>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-muted-foreground hidden sm:inline">Ctrl+Enter</span>
+              <Button size="sm" onClick={handlePost} disabled={!newPost.trim() || posting} className="gap-1.5">
+                {posting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                Publicar
+              </Button>
+            </div>
           </div>
           <div className="flex items-start gap-1.5 text-[10px] text-muted-foreground">
             <AlertCircle className="w-3 h-3 mt-0.5 shrink-0" />

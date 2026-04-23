@@ -149,7 +149,17 @@ const Novedades = () => {
             );
           })}
         </div>
-      ) : null}
+      ) : (
+        <Card className="border-dashed border-2">
+          <CardContent className="flex flex-col items-center justify-center py-8 text-center">
+            <Calendar className="w-10 h-10 text-muted-foreground/40 mb-3" />
+            <h3 className="font-semibold text-foreground mb-1 text-sm">Próximamente</h3>
+            <p className="text-xs text-muted-foreground max-w-[260px]">
+              Estamos preparando eventos y novedades para la comunidad.
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Static services section */}
       <div className="space-y-1 pt-2">

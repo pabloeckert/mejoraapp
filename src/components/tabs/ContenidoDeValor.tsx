@@ -9,7 +9,6 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  Filter,
   Play,
   Image as ImageIcon,
   Download,
@@ -21,7 +20,6 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
@@ -353,6 +351,35 @@ const ContenidoDeValor = () => {
         )}
       </div>
 
+      {/* Category pills */}
+      {!categoriesLoading && categories.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none">
+          <button
+            onClick={() => handleFilterChange("todos")}
+            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+              activeFilter === "todos"
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Todos
+          </button>
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => handleFilterChange(cat.slug)}
+              className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                activeFilter === cat.slug
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {cat.nombre}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Feed */}
       {isLoading ? (
         <div className="space-y-3">
@@ -385,9 +412,9 @@ const ContenidoDeValor = () => {
         </div>
       )}
 
-      {/* Bottom bar: Pagination + Filter */}
+      {/* Pagination */}
       {!isLoading && filtered.length > 0 && (
-        <div className="flex items-center justify-between gap-2 pt-2 pb-1">
+        <div className="flex items-center justify-center gap-2 pt-2 pb-1">
           {/* Pagination */}
           <div className="flex items-center gap-1">
             <button
@@ -437,22 +464,6 @@ const ContenidoDeValor = () => {
               <ChevronsRight className="w-4 h-4" />
             </button>
           </div>
-
-          {/* Filter dropdown */}
-          <Select value={activeFilter} onValueChange={handleFilterChange}>
-            <SelectTrigger className="w-auto min-w-[120px] h-8 text-xs font-bold border-border gap-1.5">
-              <Filter className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-              <SelectValue placeholder="Filtrar" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todos">Todos</SelectItem>
-              {categories.map((cat) => (
-                <SelectItem key={cat.id} value={cat.slug}>
-                  {cat.nombre}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
       )}
     </div>
