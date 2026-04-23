@@ -206,7 +206,12 @@ const PostCard = ({
   return (
     <Card className="shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={() => onToggle(post.id)}>
       <CardContent className="p-4">
-        {/* Title + chevron */}
+        {/* Category badge + Title + chevron */}
+        {post.content_categories && (
+          <span className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-full mb-2 ${getCategoryColor(post.content_categories.slug)}`}>
+            {post.content_categories.nombre}
+          </span>
+        )}
         <div className="flex items-start gap-2">
           <h3 className="font-bold text-[15px] text-foreground leading-snug flex-1">{post.titulo}</h3>
           {isExpanded ? (

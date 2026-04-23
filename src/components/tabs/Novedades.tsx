@@ -172,7 +172,7 @@ const Novedades = () => {
                       href="https://wa.me/543764358152?text=Hola%2C%20quiero%20info%20de%20Mejora%20Continua"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 mt-1.5 text-xs font-semibold text-primary hover:underline"
+                      className="inline-flex items-center gap-1.5 mt-2 text-xs font-semibold bg-primary/10 text-primary px-3 py-1.5 rounded-full hover:bg-primary/20 transition-colors"
                     >
                       <MessageCircle className="w-3.5 h-3.5" />
                       Escribinos por WhatsApp

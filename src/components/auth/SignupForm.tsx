@@ -10,6 +10,20 @@ interface SignupFormProps {
   onSwitchToLogin: () => void;
 }
 
+const getPasswordStrength = (pw: string): { label: string; color: string; width: string } => {
+  if (pw.length === 0) return { label: "", color: "bg-transparent", width: "w-0" };
+  let score = 0;
+  if (pw.length >= 6) score++;
+  if (pw.length >= 10) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  if (score <= 1) return { label: "Débil", color: "bg-destructive", width: "w-1/4" };
+  if (score <= 2) return { label: "Aceptable", color: "bg-amber-500", width: "w-2/4" };
+  if (score <= 3) return { label: "Buena", color: "bg-yellow-500", width: "w-3/4" };
+  return { label: "Fuerte", color: "bg-emerald-500", width: "w-full" };
+};
+
 const SignupForm = ({ onSwitchToLogin }: SignupFormProps) => {
   const { toast } = useToast();
   const [email, setEmail] = useState("");
@@ -18,6 +32,7 @@ const SignupForm = ({ onSwitchToLogin }: SignupFormProps) => {
   const [apellido, setApellido] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const strength = getPasswordStrength(password);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,6 +133,14 @@ const SignupForm = ({ onSwitchToLogin }: SignupFormProps) => {
             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
         </div>
+        {password.length > 0 && (
+          <div className="flex items-center gap-2">
+            <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+              <div className={`h-full rounded-full transition-all duration-300 ${strength.color} ${strength.width}`} />
+            </div>
+            <span className="text-[10px] text-muted-foreground w-16 text-right">{strength.label}</span>
+          </div>
+        )}
       </div>
       <Button
         type="submit"

@@ -64,6 +64,16 @@ const Index = () => {
     }
   }, [loading, session, profileComplete, user]);
 
+  // Listen for cross-tab navigation events (e.g., muro empty → diagnóstico)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const tab = (e as CustomEvent).detail;
+      if (tab) setActiveTab(tab);
+    };
+    window.addEventListener("navigate-tab", handler);
+    return () => window.removeEventListener("navigate-tab", handler);
+  }, []);
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-background">

@@ -564,7 +564,9 @@ const Muro = () => {
         <div className="space-y-1">
           <h1 className="text-xl font-bold text-foreground">Muro Anónimo</h1>
           <p className="text-sm text-muted-foreground">
-            Compartí tus dudas y experiencias. Sin nombres, sin ventas.
+            {allPosts.length > 0
+              ? `${allPosts.length} post${allPosts.length !== 1 ? "s" : ""} · Compartí tus dudas. Sin nombres, sin ventas.`
+              : "Compartí tus dudas y experiencias. Sin nombres, sin ventas."}
           </p>
         </div>
         <Button
@@ -614,8 +616,21 @@ const Muro = () => {
           <CardContent className="flex flex-col items-center justify-center py-10 text-center">
             <MessageSquare className="w-12 h-12 text-muted-foreground/40 mb-4" />
             <h3 className="font-semibold text-foreground mb-2">El muro está vacío</h3>
-            <p className="text-sm text-muted-foreground max-w-[280px]">
+            <p className="text-sm text-muted-foreground max-w-[280px] mb-4">
               Sé el primero en compartir. Todo es anónimo.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              ¿Tenés dudas? Probá el{" "}
+              <button
+                onClick={() => {
+                  const event = new CustomEvent("navigate-tab", { detail: "diagnostico" });
+                  window.dispatchEvent(event);
+                }}
+                className="text-mc-diag-blue font-semibold hover:underline"
+              >
+                diagnóstico estratégico
+              </button>
+              {" "}para entender mejor tu negocio.
             </p>
           </CardContent>
         </Card>
