@@ -57,12 +57,13 @@ MejoraApp es la app digital de **Mejora Continua**, una comunidad de negocios pa
 
 ### ETAPA 3 — Experiencia de Usuario 🟢
 **Prioridad:** MEDIA
-**Depende de:** Etapa 1
+**Estado:** ⏳ 1/6 completadas (2026-04-23)
+**Depende de:** Etapa 1 ✅
 
 | # | Tarea | Descripción |
 |---|-------|-------------|
 | 3.1 | Notificaciones email | Alertas de respuestas en muro, novedades, recordatorios |
-| 3.2 | Búsqueda de contenido | Buscar en artículos, muro, novedades |
+| 3.2 | Búsqueda de contenido | ✅ Buscar en artículos por título, resumen y contenido |
 | 3.3 | Perfil de usuario completo | Bio, avatar, empresa, links — visible para la comunidad |
 | 3.4 | Onboarding mejorado | Tour interactivo que explique las 4 tabs y el diagnóstico |
 | 3.5 | Diagnóstico: historial | Ver diagnósticos anteriores, comparar evolución |
