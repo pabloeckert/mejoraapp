@@ -15,9 +15,10 @@ CREATE TABLE IF NOT EXISTS public.moderation_comments_log (
 
 -- ============================================================
 -- 2. Habilitar Realtime en tablas críticas
+-- (Fallará si ya están agregadas — ignorar errores)
 -- ============================================================
-ALTER PUBLICATION supabase_realtime ADD TABLE IF NOT EXISTS public.wall_posts;
-ALTER PUBLICATION supabase_realtime ADD TABLE IF NOT EXISTS public.wall_comments;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.wall_posts;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.wall_comments;
 
 -- ============================================================
 -- 3. RLS para moderation_comments_log (solo service_role)

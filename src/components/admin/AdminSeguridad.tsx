@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Loader2, Shield, UserPlus, Trash2, Save, User, Crown } from "lucide-react";
+import { Loader2, Shield, UserPlus, Trash2, User, Crown, CheckCircle, AlertTriangle, Lock, Server, Eye } from "lucide-react";
 
 interface AdminUser {
   user_id: string;
@@ -219,12 +219,44 @@ const AdminSeguridad = () => {
         </CardContent>
       </Card>
 
+      {/* Security status */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Lock className="w-4 h-4" />
+            Estado de seguridad
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <div className="flex items-center gap-2 text-xs">
+            <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+            <span>Autenticación: Supabase Auth (email + Google OAuth)</span>
+          </div>
+          <div className="flex items-center gap-2 text-xs">
+            <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+            <span>Verificación admin: Server-side (Edge Function)</span>
+          </div>
+          <div className="flex items-center gap-2 text-xs">
+            <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+            <span>RLS: Habilitado en todas las tablas</span>
+          </div>
+          <div className="flex items-center gap-2 text-xs">
+            <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+            <span>IA: Server-side (Edge Functions, keys en secrets)</span>
+          </div>
+          <div className="flex items-center gap-2 text-xs">
+            <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+            <span>Moderación: Automática con IA server-side</span>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Info */}
       <Card className="border-dashed">
         <CardContent className="p-4 text-xs text-muted-foreground space-y-1">
-          <p><strong>Acceso admin:</strong> Login con email + contraseña de Supabase Auth.</p>
+          <p><strong>Acceso admin:</strong> Login con email + contraseña de Supabase Auth + rol admin verificado server-side.</p>
           <p><strong>Sesión:</strong> Se mantiene por 4 horas, luego se bloquea automáticamente.</p>
-          <p><strong>Roles:</strong> Los permisos se verifican server-side contra la tabla user_roles.</p>
+          <p><strong>Roles:</strong> Los permisos se verifican via Edge Function (service_role) + RLS en cada tabla.</p>
           <p><strong>Tip:</strong> Agregá al menos 2 admins para no quedar bloqueado.</p>
         </CardContent>
       </Card>

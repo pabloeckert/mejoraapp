@@ -13,9 +13,6 @@ import {
   Pencil,
   X,
   Save,
-  Lock,
-  Eye,
-  EyeOff,
   Search,
   Building2,
   Briefcase,
@@ -23,7 +20,6 @@ import {
   Phone,
   ChevronDown,
   ChevronUp,
-  Shield,
 } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -37,14 +33,6 @@ interface DiagResult {
 
 interface ExtendedProfile extends Profile {
   auth_email?: string;
-}
-
-// SHA-256 hash
-async function sha256(message: string): Promise<string> {
-  const msgBuffer = new TextEncoder().encode(message);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 const fetchProfiles = async (): Promise<ExtendedProfile[]> => {
@@ -93,13 +81,6 @@ const AdminUsuarios = () => {
   });
   const [saving, setSaving] = useState(false);
 
-  // Password verification for edit
-  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
-  const [pendingEditId, setPendingEditId] = useState<string | null>(null);
-  const [adminPassword, setAdminPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [verifying, setVerifying] = useState(false);
-
   // Expanded row (mobile)
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -113,9 +94,9 @@ const AdminUsuarios = () => {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  // Request edit - shows password dialog
+  // Start editing — admin role already verified on page load via Edge Function
   const requestEdit = (profile: ExtendedProfile) => {
-    setPendingEditId(profile.id);
+    setEditingId(profile.id);
     setEditForm({
       nombre: profile.nombre || "",
       apellido: profile.apellido || "",
@@ -124,37 +105,6 @@ const AdminUsuarios = () => {
       email: profile.email || profile.auth_email || "",
       phone: profile.phone || "",
     });
-    setAdminPassword("");
-    setShowPasswordDialog(true);
-  };
-
-  // Verify password and open edit
-  const verifyAndEdit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!adminPassword.trim() || verifying) return;
-
-    setVerifying(true);
-    try {
-      const { data } = await supabase.from("admin_config").select("value").eq("key", "master_password_hash").maybeSingle();
-      const storedHash = data?.value;
-      if (!storedHash) {
-        toast({ title: "Error de configuración", variant: "destructive" });
-        setVerifying(false);
-        return;
-      }
-
-      const inputHash = await sha256(adminPassword);
-      if (inputHash === storedHash) {
-        setEditingId(pendingEditId);
-        setShowPasswordDialog(false);
-        setAdminPassword("");
-      } else {
-        toast({ title: "Contraseña incorrecta", variant: "destructive" });
-      }
-    } catch (err) {
-      toast({ title: "Error", description: "No se pudo verificar.", variant: "destructive" });
-    }
-    setVerifying(false);
   };
 
   // Save profile changes
@@ -190,7 +140,6 @@ const AdminUsuarios = () => {
 
   const cancelEdit = () => {
     setEditingId(null);
-    setPendingEditId(null);
   };
 
   // Filter
@@ -232,52 +181,6 @@ const AdminUsuarios = () => {
           />
         </div>
       </div>
-
-      {/* Password verification dialog */}
-      {showPasswordDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <Card className="w-full max-w-sm">
-            <CardContent className="p-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Shield className="w-5 h-5 text-primary" />
-                  <h3 className="font-bold text-sm">Verificar identidad</h3>
-                </div>
-                <button onClick={() => setShowPasswordDialog(false)} className="text-muted-foreground hover:text-foreground">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Ingresá la contraseña maestra para editar este perfil.
-              </p>
-              <form onSubmit={verifyAndEdit} className="space-y-3">
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Contraseña maestra"
-                    value={adminPassword}
-                    onChange={(e) => setAdminPassword(e.target.value)}
-                    className="pl-10 pr-10"
-                    autoFocus
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-                <Button type="submit" className="w-full" disabled={verifying || !adminPassword.trim()}>
-                  {verifying ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Lock className="w-4 h-4 mr-2" />}
-                  Verificar
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {/* Desktop table */}
       <div className="hidden md:block overflow-x-auto">

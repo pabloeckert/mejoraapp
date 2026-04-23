@@ -26,9 +26,9 @@ MejoraApp es la app digital de **Mejora Continua**, una comunidad de negocios pa
 
 | # | Tarea | Descripción |
 |---|-------|-------------|
-| 1.1 | Rotar credenciales expuestas | Master password, tokens, FTP password, Google Client Secret |
-| 1.2 | Mover lógica admin a Edge Functions | Operaciones sensibles no deben depender del cliente |
-| 1.3 | RLS admin_config seguro | Cerrar lectura pública, autenticar vía Edge Function |
+| 1.1 | Rotar credenciales expuestas | ⏳ Master password eliminada. Pendiente: tokens de sesión |
+| 1.2 | Mover lógica admin a Edge Functions | ⏳ verify-admin creada. Pendiente: operaciones de escritura |
+| 1.3 | RLS admin_config seguro | ✅ Cerrado a solo admins via política RLS + función is_admin() |
 | 1.4 | Eliminar "puntito secreto" | ✅ Reemplazado por botón admin legítimo con Shield icon |
 | 1.5 | Auditoría de RLS policies | Revisar todas las 12 tablas por posibles bypasses |
 | 1.6 | Revisar ofuscación de API keys | Evaluar si migrar a Edge Functions para calls de IA |
