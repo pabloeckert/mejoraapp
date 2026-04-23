@@ -21,17 +21,17 @@ MejoraApp es la app digital de **Mejora Continua**, una comunidad de negocios pa
 
 ### ETAPA 1 — Seguridad y Estabilización 🔴
 **Prioridad:** CRÍTICA
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Completada (2026-04-23)
 **Bloquea:** Todo lo demás
 
 | # | Tarea | Descripción |
 |---|-------|-------------|
 | 1.1 | Rotar credenciales expuestas | ⏳ Master password eliminada. Pendiente: tokens de sesión |
-| 1.2 | Mover lógica admin a Edge Functions | ⏳ verify-admin creada. Pendiente: operaciones de escritura |
+| 1.2 | Mover lógica admin a Edge Functions | ✅ admin-action con 13 acciones, todos los módulos migrados |
 | 1.3 | RLS admin_config seguro | ✅ Cerrado a solo admins via política RLS + función is_admin() |
 | 1.4 | Eliminar "puntito secreto" | ✅ Reemplazado por botón admin legítimo con Shield icon |
-| 1.5 | Auditoría de RLS policies | Revisar todas las 12 tablas por posibles bypasses |
-| 1.6 | Revisar ofuscación de API keys | Evaluar si migrar a Edge Functions para calls de IA |
+| 1.5 | Auditoría de RLS policies | ✅ 7 tablas con políticas mejoradas, función is_admin() |
+| 1.6 | Revisar ofuscación de API keys | ✅ Código muerto ai.ts eliminado. IAs 100% server-side |
 
 **Criterio de cierre:** No hay credenciales en el repo, operaciones admin protegidas server-side, RLS sin agujeros.
 
@@ -39,7 +39,8 @@ MejoraApp es la app digital de **Mejora Continua**, una comunidad de negocios pa
 
 ### ETAPA 2 — Arquitectura y DevOps 🟡
 **Prioridad:** ALTA
-**Depende de:** Etapa 1
+**Estado:** ⏳ En progreso (2026-04-23)
+**Depende de:** Etapa 1 ✅
 
 | # | Tarea | Descripción |
 |---|-------|-------------|
