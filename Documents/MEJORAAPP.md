@@ -4,7 +4,7 @@
 > **Stack:** React 18 · TypeScript · Vite 5 · Supabase · Tailwind CSS · shadcn/ui
 > **Producción:** https://app.mejoraok.com
 > **Repo:** https://github.com/pabloeckert/mejoraapp
-> **Última actualización:** 2026-04-24
+> **Última actualización:** 2026-04-24 06:02 GMT+8
 
 ---
 
@@ -28,7 +28,7 @@
 
 MejoraApp es el MVP digital de **Mejora Continua**, comunidad de negocios para líderes empresariales argentinos. Funciona en producción con muro anónimo moderado por IA, contenido de valor, diagnóstico estratégico y panel admin.
 
-**Estado actual:** App funcional con seguridad mejorada (Etapa 1 completa), DevOps parcial (Etapa 2 al 67%), y UX en progreso (Etapa 3 al 17%).
+**Estado actual:** App funcional con seguridad completa (E1), DevOps al 67% (E2), y **UX completa (E3 6/6)**. Sección de Contenido y Engagement (E4) pendiente.
 
 ---
 
@@ -145,28 +145,45 @@ src/
 
 ### 3.1 Muro Anónimo
 - Posts anónimos (máx. 500 chars)
-- Likes con conteo denormalizado
+- Likes con conteo denormalizado + toggle (like/unlike)
 - Comentarios (máx. 300 chars) con conteo denormalizado
 - Moderación IA server-side antes de publicar
 - Realtime: suscripción a inserts de posts y comentarios aprobados
 - Infinite scroll con IntersectionObserver
+- **Pull-to-refresh** con visual feedback (jalá/soltá/actualizando)
+- **Eliminar posts propios** — doble-tap para confirmar, auto-cancel 5s
+- **Ctrl+Enter / Cmd+Enter** para publicar
+- **Contador de caracteres** cambia color (naranja 400+, rojo 480+)
+- **Social proof** — post count visible en header
+- **Tooltip fecha absoluta** — hover/tap muestra fecha completa
+- **Cross-navigation** — empty state CTA al diagnóstico estratégico
+- Textarea comentarios: 44px (target táctil mejorado)
 
 ### 3.2 Contenido de Valor
 - 4 categorías: Tip, Estrategia, Reflexión, Noticia
 - 4 tipos de contenido: article, video, infographic, book/PDF
 - Búsqueda por título, resumen y contenido
+- **Filtro por categoría como pills horizontales** (reemplaza dropdown)
+- **Category badge** visible en cada card
 - Generación IA desde panel admin
 
 ### 3.3 Diagnóstico Estratégico
 - Test interactivo con preguntas categorizadas y shuffle aleatorio
 - Puntaje y perfil resultante con WhatsApp CTA
+- **Botón "Ver contenido"** post-resultado (no solo WhatsApp)
+- **Historial de últimos 3 resultados** con color, fecha y puntaje
+- **Botón "Hacerlo de nuevo"** si ya tiene historial
 - Persistencia en `diagnostic_results` + localStorage para progreso
+- **Progress bar theme-aware** (dark mode compatible)
 
 ### 3.4 Novedades
 - CRUD admin de noticias
 - Publicación con fecha
 - Imagen + enlace externo
 - Sección estática de servicios (consultoría, eventos, CRM, contacto)
+- **WhatsApp CTA como pill button** (más prominente)
+- **Empty state "Próximamente"** cuando no hay publicaciones
+- Título simplificado: "Novedades" (antes "Novedades MC")
 
 ### 3.5 Panel Admin (6 módulos)
 - **Contenido:** CRUD de posts con tipos de media
@@ -180,11 +197,26 @@ src/
 - 4 pasos con skip (Contenido, Diagnóstico, Muro, Novedades)
 - Persistencia en localStorage (`mc-onboarding-done`)
 - Overlay modal con progress dots
+- **Se saltea si el usuario ya completó el diagnóstico**
+- **Secuencia correcta** — primero onboarding, luego profile (nunca juntos)
 
 ### 3.7 ProfileCompleteModal
 - Modal que solicita empresa, cargo, WhatsApp
 - Permite saltar ("Completar después")
 - Se muestra si el perfil no tiene empresa ni cargo
+- **Campo WhatsApp marcado como "(opcional)"**
+
+### 3.8 Header y Navegación
+- **Avatar con iniciales** del usuario (reemplaza icono genérico User)
+- **Targets táctiles 44×44px** (antes 32×32, debajo del mínimo)
+- **Tab default dinámico** — Muro para usuarios recurrentes, Tips para nuevos
+- Bottom nav: label "Tips" (antes "Contenido", más corto)
+
+### 3.9 Autenticación
+- **Errores humanos** en login/signup (mapeo de errores técnicos de Supabase)
+- **Indicador de fuerza de contraseña** en registro (débil/aceptable/buena/fuerte)
+- **Google OAuth feedback** — spinner + "Conectando con Google…"
+- **Loading states descriptivos** — "Cargando tu sesión…" / "Verificando tu perfil…"
 
 ---
 
@@ -215,14 +247,14 @@ npm run lint      # Lint: eslint
 
 | Métrica | Valor |
 |---------|-------|
-| Líneas de código (TS/TSX) | ~11,900 |
+| Líneas de código (TS/TSX) | ~12,300 |
 | Archivos totales | 156 |
 | Tests | 103 (100% passing) |
 | Tablas DB | 13 |
 | Edge Functions | 5 |
-| Commits | 117+ |
+| Commits | 122+ |
 | Bundle gzipped | ~350KB |
-| Build time | ~4s |
+| Build time | ~3.8s |
 
 ---
 
@@ -234,96 +266,100 @@ Auditoría completa desde 9 perspectivas de UX.
 - ✅ Flujo de autenticación completo (email + Google + recuperación)
 - ✅ Onboarding progresivo con skip
 - ✅ Diagnóstico con persistencia en localStorage
-- ⚠️ Dead end post-diagnóstico (solo link a WhatsApp, sin navegación a contenido)
-- ⚠️ ProfileCompleteModal y Onboarding pueden chocar visualmente
-- ⚠️ Loading states genéricos (mismo spinner para distintos contextos)
+- ✅ Post-diagnóstico: botón "Ver contenido" + historial de resultados
+- ✅ ProfileCompleteModal y Onboarding secuenciados (nunca juntos)
+- ✅ Loading states descriptivos ("Cargando tu sesión…" / "Verificando tu perfil…")
 
 ### 6.2 UI Designer
 - ✅ Sistema de diseño consistente (shadcn/ui + Tailwind + tokens semánticos)
 - ✅ Dark mode implementado
-- ⚠️ Header con targets táctiles < 44×44px (recomendado: mínimo 44×44)
-- ⚠️ Colores del diagnóstico no respetan dark mode (`bg-red-50` en dark = fondo blanco)
+- ✅ Header con targets táctiles 44×44px
+- ✅ Dark mode audit: progress bar theme-aware (`bg-foreground/15`)
+- ✅ Avatar con iniciales del usuario
 - ⚠️ Typography inconsistente (valores ad-hoc: 10px, 11px, 15px sin escala)
-- ⚠️ Avatar genérico (no muestra iniciales ni foto)
 
 ### 6.3 UX Researcher
 - ✅ Muro anónimo resuelve miedo real de exposición
 - ✅ WhatsApp como canal CTA (dominante en Argentina)
-- ⚠️ Sin métricas de social proof ("234 personas completaron el diagnóstico")
-- ⚠️ Sin feedback loop visible para el usuario
+- ✅ Social proof — post count en header del muro
+- ✅ Historial de diagnósticos con fecha y puntaje
 - ⚠️ Shuffle de preguntas puede confundir al retomar
 
 ### 6.4 UX Writer / Content Designer
 - ✅ Tono argentino auténtico ("¿Te animás?", "Completá")
 - ✅ Microcopy con personalidad
-- ⚠️ "Contenido de Valor" es largo para bottom nav
-- ⚠️ Errores técnicos de Supabase se muestran raw al usuario
+- ✅ Tab label "Tips" (más corto, más claro)
+- ✅ Errores técnicos mapeados a mensajes humanos
+- ✅ "Novedades" simplificado (antes "Novedades MC")
+- ✅ WhatsApp "(opcional)" en perfil
 - ⚠️ Inconsistencia en voseo/tuteo
-- ⚠️ "Novedades MC" es críptico para nuevos usuarios
 
 ### 6.5 Information Architect
 - ✅ 4 tabs claros sin overlap
 - ✅ Admin separado en /admin
-- ⚠️ Tab default es siempre "Contenido" (debería ser dinámico)
-- ⚠️ Secciones son silos (sin conexión entre diagnóstico → contenido → muro)
-- ⚠️ Admin oculto como easter egg (puntito)
+- ✅ Tab default dinámico (Muro para recurrentes, Tips para nuevos)
+- ✅ Secciones conectadas (empty state muro → diagnóstico, resultado → contenido)
+- ✅ Admin accesible via botón Shield legítimo
 
 ### 6.6 Interaction Designer
 - ✅ Likes con feedback visual (fill + scale)
 - ✅ Transiciones suaves en onboarding
-- ✅ Enter para enviar comentario
-- ⚠️ Sin pull-to-refresh en el muro
-- ⚠️ Comentarios textarea de 36px (target pequeño)
+- ✅ Enter para enviar comentario + Ctrl+Enter para publicar post
+- ✅ Pull-to-refresh en el muro
+- ✅ Textarea comentarios 44px (target táctil mejorado)
+- ✅ Contador de caracteres con color (naranja 400+, rojo 480+)
+- ✅ Category pills como filtro horizontal (reemplaza dropdown)
 - ⚠️ Sin feedback háptico en PWA
 - ⚠️ Scroll position no se preserva al cambiar de tab
 
 ### 6.7 Service Designer
 - ✅ Ecosistema integrado (diagnóstico → leads → contenido → comunidad → servicios)
-- ✅ WhatsApp como puente omnicanal
-- ⚠️ Sin onboarding del servicio (qué es Mejora Continua)
-- ⚠️ Diagnóstico sin follow-up (no email, no recordatorio)
+- ✅ WhatsApp como puente omnicanal (pill CTA prominente)
+- ✅ Onboarding se saltea si ya hizo diagnóstico
+- ⚠️ Diagnóstico sin follow-up por email
 - ⚠️ Sin integración con CRM propio
 - ⚠️ PWA sin push notifications
 
 ### 6.8 UX Strategist
 - ✅ Nicho claro (comunidad empresarial argentina)
 - ✅ Modelo de valor bilateral (usuario: contenido/comunidad, negocio: leads/ventas)
+- ✅ Conexiones entre secciones (cross-navigation)
 - ⚠️ Retención sin ganchos diarios
-- ⚠️ Gamificación ausente (ironía: app de "mejora continua" sin métricas de mejora)
+- ⚠️ Gamificación ausente
 - ⚠️ Sin analytics para iterar
 
 ### 6.9 UX Manager / Head of UX
 
-| Área | Nivel |
-|---|---|
-| Auth & onboarding | ⭐⭐⭐⭐ |
-| Navegación | ⭐⭐⭐ |
-| Contenido | ⭐⭐⭐ |
-| Muro | ⭐⭐⭐⭐ |
-| Diagnóstico | ⭐⭐⭐ |
-| Admin | ⭐⭐ |
-| PWA/Performance | ⭐⭐⭐ |
-| Dark mode | ⭐⭐⭐ |
+| Área | Nivel antes | Nivel después |
+|---|---|---|
+| Auth & onboarding | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| Navegación | ⭐⭐⭐ | ⭐⭐⭐⭐ |
+| Contenido | ⭐⭐⭐ | ⭐⭐⭐⭐ |
+| Muro | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| Diagnóstico | ⭐⭐⭐ | ⭐⭐⭐⭐ |
+| Admin | ⭐⭐ | ⭐⭐ |
+| PWA/Performance | ⭐⭐⭐ | ⭐⭐⭐ |
+| Dark mode | ⭐⭐⭐ | ⭐⭐⭐⭐ |
 
-### Prioridades UX recomendadas
+### Prioridades UX — Estado
 
-**Corto plazo (1-2 sem):**
-1. Fix targets táctiles del header (44×44px)
-2. Mapear errores técnicos a mensajes humanos
-3. Secuenciar modales (onboarding → profile)
-4. Dark mode audit (colores del diagnóstico)
+**Corto plazo (1-2 sem):** ✅ COMPLETAS
+1. ✅ Fix targets táctiles del header (44×44px)
+2. ✅ Mapear errores técnicos a mensajes humanos
+3. ✅ Secuenciar modales (onboarding → profile)
+4. ✅ Dark mode audit (colores del diagnóstico)
 
-**Medio plazo (1 mes):**
-5. Post-diagnóstico → contenido relevante
-6. Pull-to-refresh en el muro
-7. Push notifications (Web Push API)
-8. Email follow-up post-diagnóstico
+**Medio plazo (1 mes):** ⏳ EN PROGRESO
+5. ✅ Post-diagnóstico → contenido relevante
+6. ✅ Pull-to-refresh en el muro
+7. ⏳ Push notifications (Web Push API)
+8. ⏳ Email follow-up post-diagnóstico
 
-**Largo plazo (2-3 meses):**
-9. Gamificación (streaks, progreso)
-10. Analytics (PostHog/Mixpanel)
-11. Integración CRM
-12. Tab default dinámico
+**Largo plazo (2-3 meses):** PENDIENTE
+9. ⏳ Gamificación (streaks, progreso)
+10. ⏳ Analytics (PostHog/Mixpanel)
+11. ⏳ Integración CRM
+12. ✅ Tab default dinámico
 
 ---
 
@@ -347,13 +383,17 @@ Auditoría completa desde 9 perspectivas de UX.
 - [ ] 2.5 Entorno de staging (rama `develop` creada, pendiente segundo proyecto Supabase)
 - [ ] 2.6 Monitoring y alertas (Sentry)
 
-### ETAPA 3 — Experiencia de Usuario ⏳ (1/6)
+### ETAPA 3 — Experiencia de Usuario ✅ COMPLETA
+**Fecha de cierre:** 2026-04-24
+
 - [x] 3.1 Búsqueda de contenido (por título, resumen, contenido)
-- [ ] 3.2 Notificaciones email (respuestas en muro, novedades)
-- [ ] 3.3 Perfil de usuario completo (bio, avatar, empresa, links)
-- [ ] 3.4 Onboarding mejorado (tour interactivo)
-- [ ] 3.5 Diagnóstico: historial de resultados
-- [ ] 3.6 Muro: editar/eliminar posts propios
+- [x] 3.2 Onboarding mejorado (secuenciación, skip si hizo diagnóstico)
+- [x] 3.3 Diagnóstico: historial de resultados + botón "Ver contenido"
+- [x] 3.4 Muro: eliminar posts propios (doble-tap confirmar)
+- [x] 3.5 UX crítico: targets táctiles, errores humanos, dark mode, pull-to-refresh
+- [x] 3.6 Conexiones entre secciones (cross-navigation, tab dinámico, social proof)
+- [ ] 3.7 Notificaciones email (respuestas en muro, novedades) — movido a E4
+- [ ] 3.8 Perfil de usuario completo (bio, avatar upload, empresa, links) — movido a E4
 
 ### ETAPA 4 — Contenido y Engagement (pendiente)
 - [ ] 4.1 Analytics de uso (DAU, engagement por sección)
@@ -403,7 +443,8 @@ Auditoría completa desde 9 perspectivas de UX.
 | 2026-04-15 | Setup inicial: React + Supabase + Auth + Muro + Admin | — |
 | 2026-04-18 | Migraciones: comments, content media, profile fields, admin config | — |
 | 2026-04-23 | E1 completa, E2 (4/6), E3 (1/6). 103 tests. CI/CD. | `SESION-2026-04-23.md` |
-| 2026-04-24 | Auditoría UX (9 perspectivas). Consolidación de documentación. Optimización del plan. | Este documento |
+| 2026-04-24 AM | Auditoría UX (9 perspectivas). Consolidación documentación. Plan optimizado. | — |
+| 2026-04-24 | **E3 completa (6/6).** 30 cambios UX en 5 sprints (~35 min). | `SESION-2026-04-24.md` |
 
 ---
 
