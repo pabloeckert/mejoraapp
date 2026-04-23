@@ -54,6 +54,16 @@ const timeAgo = (date: string) => {
   return `hace ${days}d`;
 };
 
+const formatFullDate = (date: string) => {
+  return new Date(date).toLocaleString("es-AR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
 const fetchWallPosts = async ({ pageParam }: { pageParam: number }) => {
   const from = pageParam * POSTS_PER_PAGE;
   const to = from + POSTS_PER_PAGE - 1;
@@ -92,7 +102,7 @@ const CommentItem = memo(({ comment, isOwn }: { comment: WallComment; isOwn: boo
     <CornerDownRight className="w-3 h-3 text-muted-foreground/50 mt-1 shrink-0" />
     <div className="flex-1 min-w-0">
       <p className="text-xs text-foreground/80 whitespace-pre-line leading-relaxed">{comment.content}</p>
-      <span className="text-[10px] text-muted-foreground">
+      <span className="text-[10px] text-muted-foreground" title={formatFullDate(comment.created_at)}>
         {isOwn ? "Vos" : "Anónimo"} · {timeAgo(comment.created_at)}
       </span>
     </div>
@@ -137,7 +147,7 @@ const PostCard = memo(
 
         <div className="flex items-center justify-between mt-2.5">
           <div className="flex items-center gap-3">
-            <span className="text-[10px] text-muted-foreground">
+            <span className="text-[10px] text-muted-foreground" title={formatFullDate(post.created_at)}>
               {isOwn ? "Vos" : "Anónimo"} · {timeAgo(post.created_at)}
             </span>
           </div>

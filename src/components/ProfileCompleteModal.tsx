@@ -102,7 +102,7 @@ const ProfileCompleteModal = ({ userId, onComplete }: ProfileCompleteModalProps)
             <div className="space-y-1.5">
               <Label htmlFor="phone" className="text-xs flex items-center gap-1.5">
                 <Phone className="w-3.5 h-3.5 text-muted-foreground" />
-                WhatsApp
+                WhatsApp <span className="text-muted-foreground/60 font-normal">(opcional)</span>
               </Label>
               <Input
                 id="phone"

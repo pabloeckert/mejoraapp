@@ -37,12 +37,24 @@ const Index = () => {
     checkProfile();
   }, [user]);
 
-  // Check onboarding after auth is ready — only if profile is already complete
+  // Check onboarding after auth is ready — only if profile is complete and hasn't completed diagnostic
   useEffect(() => {
     if (!loading && session && profileComplete === true) {
-      setShowOnboarding(shouldShowOnboarding());
+      // Skip onboarding if user already completed the diagnostic (they know the app)
+      const skipOnboarding = async () => {
+        if (!user) return false;
+        const { data } = await supabase
+          .from("profiles")
+          .select("has_completed_diagnostic")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        return data?.has_completed_diagnostic === true;
+      };
+      skipOnboarding().then((skip) => {
+        if (!skip) setShowOnboarding(shouldShowOnboarding());
+      });
     }
-  }, [loading, session, profileComplete]);
+  }, [loading, session, profileComplete, user]);
 
   if (loading) {
     return (

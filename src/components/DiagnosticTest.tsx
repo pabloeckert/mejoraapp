@@ -11,7 +11,7 @@ import {
   DiagnosticQuestion,
 } from "@/data/diagnosticData";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, ArrowRight, MessageCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, MessageCircle, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type Step = "intro" | "question" | "loading" | "result";
@@ -345,12 +345,22 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
           </a>
         </div>
 
-        <Button
-          onClick={onComplete}
-          className="w-full bg-mc-dark-blue hover:bg-mc-dark-blue/90 text-white py-3"
-        >
-          Continuar a la app →
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={onComplete}
+            variant="outline"
+            className="flex-1 py-3 gap-2"
+          >
+            <BookOpen className="w-4 h-4" />
+            Ver contenido
+          </Button>
+          <Button
+            onClick={onComplete}
+            className="flex-1 bg-mc-dark-blue hover:bg-mc-dark-blue/90 text-white py-3"
+          >
+            Continuar →
+          </Button>
+        </div>
       </div>
     );
   }

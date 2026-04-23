@@ -77,9 +77,9 @@ const Novedades = () => {
   return (
     <div className="space-y-4 animate-fade-in">
       <div className="space-y-1">
-        <h1 className="text-xl font-bold text-foreground">Novedades MC</h1>
+        <h1 className="text-xl font-bold text-foreground">Novedades</h1>
         <p className="text-sm text-muted-foreground">
-          Últimas noticias, eventos y recursos de la comunidad.
+          Eventos, herramientas y noticias de Mejora Continua.
         </p>
       </div>
 
