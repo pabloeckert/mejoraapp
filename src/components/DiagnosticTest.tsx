@@ -159,6 +159,11 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
           .from("profiles")
           .update({ has_completed_diagnostic: true })
           .eq("user_id", user.id);
+
+        // Send follow-up email (fire and forget — don't block the UI)
+        supabase.functions.invoke("send-diagnostic-email", {
+          body: { user_id: user.id, perfil, puntaje: puntajeTotal },
+        }).catch(() => {}); // Silent fail — email is best-effort
       } catch (err) {
         console.error("Error saving diagnostic:", err);
       }
