@@ -527,6 +527,8 @@ Auditoría completa desde 18 perspectivas: UX/UI (9 roles), Negocio (4 roles), I
 | Archivo | Propósito |
 |---------|-----------|
 | `MEJORAAPP.md` | Este documento — fuente única de verdad |
+| `SESSION-PROMPT.md` | ⚠️ Prompt de inicio para próxima sesión — LEER PRIMERO |
+| `PUSH_SUBSCRIPTIONS.sql` | Script SQL tabla push_subscriptions + RLS |
 | `MIGRACION-SEGURIDAD-2026-04-23.sql` | Script SQL de hardening de seguridad (ejecutado) |
 
 ---
