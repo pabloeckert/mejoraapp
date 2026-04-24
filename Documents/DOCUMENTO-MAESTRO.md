@@ -4,7 +4,7 @@
 > **Stack:** React 18 · TypeScript · Vite 5 · Supabase · Tailwind CSS · shadcn/ui
 > **Producción:** https://app.mejoraok.com
 > **Repo:** https://github.com/pabloeckert/MejoraApp
-> **Última actualización:** 2026-04-24 23:17 GMT+8
+> **Última actualización:** 2026-04-25 00:05 GMT+8
 
 ---
 
@@ -179,11 +179,11 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | Tests E2E | 22 (Playwright) |
 | Tests accesibilidad | 7 (axe-core) |
 | Typography tokens | 7 (caption → display) |
-| Tablas DB | 15 (incluye badges + push) |
-| Edge Functions | 7 |
+| Tablas DB | 18 (profiles, user_roles, diagnostic_results, wall_posts, wall_comments, wall_likes, content_categories, content_posts, content_guidelines, novedades, admin_config, moderation_log, moderation_comments_log, user_badges, push_subscriptions, admin_audit_log, nps_responses, referrals, admin_whitelist) |
+| Edge Functions | 7 (moderate-post, moderate-comment, verify-admin, admin-action, generate-content, send-push-notification, send-diagnostic-email) |
 | Eventos analytics | 25+ |
-| Bundle gzipped | ~350KB |
-| Build time | ~4.4s |
+| Bundle gzipped | ~355KB |
+| Build time | ~6s |
 
 ---
 
@@ -244,17 +244,19 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 ### ETAPA 6 — Escalamiento ⏳ EN PROGRESO
 
 **Sprint 6.1 — Infraestructura ✅ COMPLETO (2026-04-24)**
-- [x] 6.1.1 Hosting: config preparada para Vercel/Cloudflare (pending credentials del usuario)
+- [x] 6.1.1 Hosting: Hostinger por ahora (disk quota exceeded → evaluar migración a Vercel). Landing estática preparada.
 - [x] 6.1.2 CSP headers: meta tag CSP en index.html (script-src, style-src, img-src, connect-src, frame-ancestors). CORS restringido en 5 Edge Functions (app.mejoraok.com + localhost).
 - [x] 6.1.3 Uptime monitoring: documentado en plan (requiere setup manual en BetterStack/UptimeRobot)
 - [x] 6.1.4 Sentry alerts: configurado en código (captureError + addBreadcrumb). Alert rules configurables en Sentry UI.
 - [x] 6.1.5 admin-action: rate limiting (30 req/min por admin) + audit log (tabla admin_audit_log + inserción fire-and-forget) + error handling mejorado
+- [x] 6.1.6 Push notifications: triggers añadidos — Muro llama send-push-notification (new_post) después de publicar, hook useWallInteractions llama (reply) al autor del post. **Requiere VAPID keys en Supabase secrets + VITE_VAPID_PUBLIC_KEY en .env/GitHub Secrets.**
+- [x] 6.1.7 Admin whitelist: tabla admin_whitelist (3 emails) + trigger auto-admin al signup. Emails: pabloeckert@gmail.com, sindygeisert@gmail.com, mejoraok@gmail.com.
 
 **Sprint 6.2 — Growth y Monetización ⏳ PARCIAL**
-- [x] 6.2.1 Landing page pública: `src/pages/Landing.tsx` — Hero, features (4 cards), diagnóstico preview, social proof, CTA final, footer. Lazy-loaded, SEO en sitemap. Ruta: `/landing`.
-- [x] 6.2.2 Programa de referidos: `ReferralBanner.tsx` — link con `?ref=userId`, copiar/compartir, persistencia en tabla `referrals` con RLS. Integrado en Muro + SignupForm (detecta ref al registrarse).
-- [ ] 6.2.3 Integración CRM (pendiente — requiere credenciales HubSpot)
-- [x] 6.2.4 NPS survey in-app: componente NPSSurvey (7 días activo → score 0-10 → feedback → Supabase). Tabla nps_responses + RLS.
+- [x] 6.2.1 Landing page pública: `src/pages/Landing.tsx` + `landing-static/index.html` (HTML estático para mejoraok.com root). Hero, features, diagnóstico, social proof, CTA, footer. Dark mode, responsive, SEO.
+- [x] 6.2.2 Programa de referidos: `ReferralBanner.tsx` — link con `?ref=userId`, copiar/compartir, persistencia en tabla `referrals` con RLS. Integrado en Muro + SignupForm.
+- [ ] 6.2.3 Integración CRM — **Pendiente: usuario tiene cuenta HubSpot, falta configurar API key**
+- [x] 6.2.4 NPS survey in-app: componente NPSSurvey (7 días → score 0-10 → feedback → Supabase). Tabla nps_responses + RLS.
 - [ ] 6.2.5 Evaluar modelo freemium/premium (pendiente)
 
 **Sprint 6.3 — Escalamiento Técnico ⏳ PARCIAL**
@@ -353,12 +355,14 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | PostHog | Analytics + feature flags | ✅ | E4 |
 | Sentry | Error tracking + user context | ✅ | E2 |
 | Resend | Emails transaccionales | ✅ | E4 |
-| Web Push API | Push notifications PWA | ✅ | E4 |
+| Web Push API | Push notifications PWA | ✅ (triggers listos, falta VAPID) | E4/E6 |
 | Playwright | Tests E2E | ✅ | E5 |
 | axe-core | Tests accesibilidad | ✅ | E5 |
 | jsPDF | Exportar diagnóstico PDF | ✅ | E4 |
-| Vercel/Cloudflare | Hosting moderno | 🔴 Pendiente | E6 |
-| Capacitor | App nativa | 🔴 Pendiente | E6 |
+| I18n | Internacionalización base | ✅ (es/en) | E6 |
+| HubSpot | CRM integración | 🔴 Pendiente (usuario tiene cuenta) | E6 |
+| Vercel/Cloudflare | Hosting moderno | 🔴 Pendiente (disk quota Hostinger) | E6 |
+| Capacitor | App nativa | 🔴 Pendiente (no prioritario) | E6 |
 
 ---
 
@@ -373,6 +377,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | `PUSH_SUBSCRIPTIONS.sql` | Script SQL push_subscriptions |
 | `MIGRACION-SEGURIDAD-2026-04-23.sql` | Script hardening (ejecutado) |
 | `MIGRACION-GAMIFICACION-2026-04-24.sql` | Script gamificación (ejecutado) |
+| `../landing-static/index.html` | Landing page estática para mejoraok.com (HTML+CSS puro) |
 
 ---
 
@@ -413,6 +418,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | 2026-04-24 | Sprint 5.3 UX Polish | Typography scale (7 tokens, 72+ instancias), scroll preservation, editorial style guide, SEO completo, renombre "Tips"→"Contenido". E5 completa. |
 | 2026-04-24 | E6 Escalamiento | CORS restringido (5 Edge Functions), CSP headers, admin-action (rate limiting 30/min + audit log), Repository Layer, NPS survey, bundle analysis. E6 6/12 items. |
 | 2026-04-24 | E6 Growth + i18n | Landing page (/landing), referidos (link+tracking+DB), i18n base (130+ claves es/en, I18nProvider). E6 9/12 items. |
+| 2026-04-24 | E6 Push + Landing + Admins | Push triggers (new_post + reply), landing estática mejoraok.com, admin whitelist (3 emails auto-admin), HubSpot tutorial pendiente. E6 10/12. |
 
 ---
 
@@ -427,13 +433,25 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
    ✅ 5.1 Legal
    ✅ 5.2 Testing
    ✅ 5.3 UX Polish
-⏳ E6: Escalamiento (9/12 items)
+⏳ E6: Escalamiento (10/12 items)
    ✅ 6.1 Infraestructura (CSP, CORS, rate limiting, audit log)
-   ⏳ 6.2 Growth (landing ✅, referidos ✅, NPS ✅, CRM/freemium pendientes)
+   ⏳ 6.2 Growth (landing ✅, referidos ✅, NPS ✅, HubSpot pendiente, freemium pendiente)
    ⏳ 6.3 Técnico (repo layer ✅, i18n ✅, bundle analysis ✅, Capacitor pendiente)
 ```
 
 **Tiempo restante estimado:** ~3 semanas (items pendientes de E6)
+
+---
+
+## 14. Acciones Pendientes del Usuario
+
+| # | Acción | Estado | Detalle |
+|---|--------|--------|---------|
+| 1 | VAPID keys en Supabase | 🔴 Pendiente | Agregar `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` en Supabase → Settings → Edge Functions → Secrets |
+| 2 | `VITE_VAPID_PUBLIC_KEY` en .env | 🔴 Pendiente | Mismo valor público, en `.env` local y GitHub Secrets |
+| 3 | Landing mejoraok.com | 🔴 Bloqueado | Disk quota exceeded en Hostinger. Evaluar migración a Vercel o liberar espacio. |
+| 4 | HubSpot API key | 🔴 Pendiente | Crear app privada en HubSpot → Settings → Integrations → Private Apps → copiar API key |
+| 5 | Ejecutar migrations nuevas | 🔴 Pendiente | `admin_audit_log`, `nps_responses`, `referrals`, `admin_whitelist` — ejecutar SQL en Supabase SQL Editor |
 
 
 
