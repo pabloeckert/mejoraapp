@@ -373,6 +373,10 @@ const Muro = () => {
         toast({ title: "¡Publicado!", description: "Tu post ya está en el muro." });
         trackPublishPost(content.length);
         refetch();
+        // Send push notification to other subscribers (fire-and-forget)
+        supabase.functions.invoke("send-push-notification", {
+          body: { action: "new_post", exclude_user_id: user.id },
+        }).catch(() => {});
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "No se pudo publicar. Intentá de nuevo.";

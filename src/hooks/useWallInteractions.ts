@@ -131,6 +131,15 @@ export function useWallInteractions(userId: string | undefined) {
           }));
           toast({ title: "¡Respuesta publicada!" });
           trackCommentPost(postId, content.length);
+          // Notify post author (fire-and-forget)
+          supabase.from("wall_posts").select("user_id").eq("id", postId).maybeSingle()
+            .then(({ data: post }) => {
+              if (post?.user_id && post.user_id !== userId) {
+                supabase.functions.invoke("send-push-notification", {
+                  body: { action: "reply", target_user_id: post.user_id },
+                }).catch(() => {});
+              }
+            }).catch(() => {});
         }
       } catch (err) {
         console.error(err);

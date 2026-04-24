@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MejoraApp — Comunidad de Negocios para Líderes Empresariales</title>
+  <meta name="description" content="Comunidad de negocios para líderes empresariales argentinos. Contenido de valor, diagnóstico estratégico, networking y herramientas para hacer crecer tu empresa." />
+  <meta name="keywords" content="comunidad empresarial, negocios Argentina, líderes empresariales, diagnóstico estratégico, networking, mejora continua" />
+  <link rel="canonical" href="https://mejoraok.com" />
+  <link rel="icon" href="/app/favicon.png" type="image/png" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://mejoraok.com" />
+  <meta property="og:title" content="MejoraApp — Comunidad de Negocios" />
+  <meta property="og:description" content="Comunidad de negocios para líderes empresariales argentinos. Contenido de valor, diagnóstico estratégico y networking." />
+  <meta property="og:site_name" content="MejoraApp" />
+  <meta property="og:locale" content="es_AR" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@mejoraok" />
+  <meta name="twitter:title" content="MejoraApp — Comunidad de Negocios" />
+  <meta name="twitter:description" content="Comunidad de negocios para líderes empresariales argentinos." />
+
+  <!-- Security -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="X-Frame-Options" content="DENY" />
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+
+  <style>
+    :root {
+      --bg: #fafafa;
+      --fg: #0d0d0d;
+      --muted: #666;
+      --primary: #0505a6;
+      --primary-light: #0505a614;
+      --accent: #e6a817;
+      --card: #fff;
+      --border: #e5e5e5;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0a0a1a;
+        --fg: #f2f2f2;
+        --muted: #999;
+        --primary: #e6a817;
+        --primary-light: #e6a81718;
+        --card: #12122a;
+        --border: #252540;
+      }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Bw Modelica', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.6;
+    }
+    h1, h2, h3 { font-family: 'League Spartan', 'Bw Modelica', system-ui, sans-serif; }
+    a { color: var(--primary); text-decoration: none; }
+    .container { max-width: 960px; margin: 0 auto; padding: 0 1.5rem; }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 5rem 0 4rem;
+      background: linear-gradient(180deg, var(--primary-light) 0%, transparent 100%);
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 1rem;
+      border-radius: 999px;
+      background: var(--primary-light);
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--primary);
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 1rem;
+    }
+    .hero h1 span { color: var(--primary); }
+    .hero p {
+      font-size: 1.125rem;
+      color: var(--muted);
+      max-width: 560px;
+      margin: 0 auto 2rem;
+    }
+    .hero-buttons { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-bottom: 3rem; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.75rem;
+      border-radius: 0.75rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-outline { background: transparent; color: var(--fg); border: 1px solid var(--border); }
+    .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+
+    /* Stats */
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; max-width: 400px; margin: 0 auto; }
+    .stat-value { font-size: 1.25rem; font-weight: 700; }
+    .stat-label { font-size: 0.75rem; color: var(--muted); }
+
+    /* Features */
+    .features { padding: 5rem 0; }
+    .features-header { text-align: center; margin-bottom: 3rem; }
+    .features-header h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem; }
+    .features-header p { color: var(--muted); max-width: 480px; margin: 0 auto; }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+    .feature-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      display: flex;
+      gap: 1rem;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .feature-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-2px); }
+    .feature-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+    .feature-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; }
+    .feature-card p { font-size: 0.875rem; color: var(--muted); }
+
+    /* Diagnóstico */
+    .diagnostico {
+      padding: 5rem 0;
+      background: var(--primary-light);
+      text-align: center;
+    }
+    .diagnostico-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 1rem;
+      border-radius: 999px;
+      background: #10b98120;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #059669;
+      margin-bottom: 1rem;
+    }
+    .diagnostico h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem; }
+    .diagnostico > .container > p { color: var(--muted); max-width: 480px; margin: 0 auto 2rem; }
+    .diag-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; max-width: 480px; margin: 0 auto 2rem; }
+    .diag-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      text-align: center;
+    }
+    .diag-card .emoji { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .diag-card h4 { font-size: 0.9rem; font-weight: 600; }
+    .diag-card p { font-size: 0.75rem; color: var(--muted); }
+
+    /* Community */
+    .community { padding: 5rem 0; text-align: center; }
+    .community h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem; }
+    .community > .container > p { color: var(--muted); max-width: 480px; margin: 0 auto 2rem; }
+    .community-features { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; max-width: 480px; margin: 0 auto; }
+    .community-feature {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      font-size: 0.9rem;
+    }
+
+    /* CTA */
+    .cta {
+      padding: 5rem 0;
+      background: var(--primary);
+      text-align: center;
+    }
+    @media (prefers-color-scheme: dark) { .cta { background: #1a1a3a; } }
+    .cta h2 { font-size: 1.5rem; font-weight: 700; color: #fff; margin-bottom: 0.75rem; }
+    .cta p { color: rgba(255,255,255,0.8); max-width: 480px; margin: 0 auto 2rem; }
+    .btn-secondary { background: #fff; color: var(--primary); }
+    .btn-secondary:hover { opacity: 0.9; }
+
+    /* Footer */
+    footer {
+      padding: 2rem 0;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .footer-brand { font-weight: 700; }
+    .footer-brand span { font-weight: 400; font-size: 0.8rem; color: var(--muted); margin-left: 0.5rem; }
+    .footer-links { display: flex; gap: 1.5rem; font-size: 0.8rem; color: var(--muted); }
+    .footer-links a:hover { color: var(--fg); }
+
+    @media (max-width: 640px) {
+      .stats { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+      .diag-cards { grid-template-columns: 1fr; }
+      footer { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge">🛡️ Comunidad de líderes empresariales</div>
+      <h1>Hacé crecer tu negocio<br /><span>con los que entienden</span></h1>
+      <p>Contenido de valor, diagnóstico estratégico y una comunidad anónima donde los empresarios argentinos comparten lo que realmente pasa.</p>
+      <div class="hero-buttons">
+        <a href="https://app.mejoraok.com/auth" class="btn btn-primary">Empezá gratis →</a>
+        <a href="#features" class="btn btn-outline">Conocé más ↓</a>
+      </div>
+      <div class="stats">
+        <div><div class="stat-value">1 min</div><div class="stat-label">Diagnóstico</div></div>
+        <div><div class="stat-value">100%</div><div class="stat-label">Anónimo</div></div>
+        <div><div class="stat-value">IA</div><div class="stat-label">Moderación</div></div>
+        <div><div class="stat-value">Gratis</div><div class="stat-label">Siempre</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features" id="features">
+    <div class="container">
+      <div class="features-header">
+        <h2>Todo lo que necesitás, en un solo lugar</h2>
+        <p>Cuatro herramientas diseñadas para empresarios que quieren crecer con estrategia, no con improvisación.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#8b5cf620;color:#8b5cf6;">💬</div>
+          <div>
+            <h3>Muro Anónimo</h3>
+            <p>Compartí experiencias, dudas y frustraciones sin revelar tu identidad. Moderado por IA para mantener calidad.</p>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#3b82f620;color:#3b82f6;">📚</div>
+          <div>
+            <h3>Contenido de Valor</h3>
+            <p>Tips, estrategias y reflexiones semanales para hacer crecer tu negocio. Generado por IA y curado por expertos.</p>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#10b98120;color:#10b981;">🎯</div>
+          <div>
+            <h3>Diagnóstico Estratégico</h3>
+            <p>8 preguntas, 1 minuto. Descubrí qué está frenando tu crecimiento y recibí un plan de acción personalizado.</p>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#f59e0b20;color:#f59e0b;">✨</div>
+          <div>
+            <h3>Novedades</h3>
+            <p>Eventos, workshops, lanzamientos y herramientas de la comunidad Mejora Continua.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Diagnóstico -->
+  <section class="diagnostico">
+    <div class="container">
+      <div class="diagnostico-badge">⚡ Diagnóstico estratégico</div>
+      <h2>¿Qué está frenando tu crecimiento?</h2>
+      <p>8 preguntas. 1 minuto. Un plan de acción personalizado basado en tu situación real.</p>
+      <div class="diag-cards">
+        <div class="diag-card"><div class="emoji">🎯</div><h4>Preciso</h4><p>Detecta tu perfil exacto</p></div>
+        <div class="diag-card"><div class="emoji">⚡</div><h4>Rápido</h4><p>1 minuto, sin vueltas</p></div>
+        <div class="diag-card"><div class="emoji">📋</div><h4>Accionable</h4><p>Plan concreto post-test</p></div>
+      </div>
+      <a href="https://app.mejoraok.com/auth" class="btn btn-primary">Hacé el diagnóstico gratis →</a>
+    </div>
+  </section>
+
+  <!-- Community -->
+  <section class="community">
+    <div class="container">
+      <h2>No estás solo en esto</h2>
+      <p>Una comunidad de empresarios argentinos que comparten lo que realmente pasa — sin filtros, sin exposición.</p>
+      <div class="community-features">
+        <div class="community-feature">🇦🇷 Para empresarios argentinos</div>
+        <div class="community-feature">🔒 100% anónimo en el muro</div>
+        <div class="community-feature">🤖 Moderado por IA</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <div class="container">
+      <h2>¿Listo para crecer?</h2>
+      <p>Unite a la comunidad. Es gratis, es anónimo, y en 1 minuto ya tenés tu primer diagnóstico.</p>
+      <a href="https://app.mejoraok.com/auth" class="btn btn-secondary">Crear cuenta gratis →</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <div class="container">
+    <footer>
+      <div class="footer-brand">MejoraApp<span>by Mejora Continua</span></div>
+      <div class="footer-links">
+        <a href="https://app.mejoraok.com/auth">Iniciar sesión</a>
+        <a href="https://app.mejoraok.com/politica-privacidad.html">Privacidad</a>
+        <a href="https://app.mejoraok.com/terminos-servicio.html">Términos</a>
+      </div>
+    </footer>
+  </div>
+
+</body>
+</html>
