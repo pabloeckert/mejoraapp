@@ -8,7 +8,7 @@ interface BottomNavProps {
 }
 
 const tabs = [
-  { id: "contenido", label: "Tips", icon: BookOpen },
+  { id: "contenido", label: "Contenido", icon: BookOpen },
   { id: "diagnostico", label: "Diagnóstico", icon: ClipboardCheck },
   { id: "muro", label: "Muro", icon: MessageSquare },
   { id: "novedades", label: "Novedades", icon: Sparkles },
@@ -27,9 +27,9 @@ const BottomNav = ({ activeTab, onTabChange, badges }: BottomNavProps) => {
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
               className={cn(
-                "relative flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors min-w-[72px]",
+                "relative flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all min-w-[72px]",
                 isActive
-                  ? "text-mc-dark-blue"
+                  ? "text-mc-dark-blue bg-mc-dark-blue/8 dark:bg-primary/12"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -39,12 +39,9 @@ const BottomNav = ({ activeTab, onTabChange, badges }: BottomNavProps) => {
                   <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-mc-red rounded-full border-2 border-card animate-pulse" />
                 )}
               </div>
-              <span className={cn("text-[11px]", isActive ? "font-bold" : "font-medium")}>
+              <span className={cn("text-caption", isActive ? "font-bold" : "font-medium")}>
                 {tab.label}
               </span>
-              {isActive && (
-                <div className="absolute bottom-0 w-12 h-0.5 bg-mc-dark-blue rounded-t-full" />
-              )}
             </button>
           );
         })}

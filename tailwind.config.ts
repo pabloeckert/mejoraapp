@@ -13,6 +13,16 @@ export default {
       },
     },
     extend: {
+      fontSize: {
+        // Typography scale: caption → body → subtitle → title → heading → display
+        "caption": ["0.6875rem", { lineHeight: "1rem", letterSpacing: "0.01em" }],    // 11px
+        "body-sm": ["0.8125rem", { lineHeight: "1.125rem" }],                         // 13px
+        "body": ["0.875rem", { lineHeight: "1.25rem" }],                              // 14px
+        "subtitle": ["1rem", { lineHeight: "1.5rem", fontWeight: "500" }],            // 16px
+        "title": ["1.25rem", { lineHeight: "1.75rem", fontWeight: "600" }],           // 20px
+        "heading": ["1.5rem", { lineHeight: "2rem", fontWeight: "700" }],             // 24px
+        "display": ["1.875rem", { lineHeight: "2.25rem", fontWeight: "800" }],        // 30px
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

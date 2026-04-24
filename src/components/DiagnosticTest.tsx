@@ -190,13 +190,13 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
     return (
       <div className="max-w-xl mx-auto animate-fade-in">
         <div className="bg-mc-diag-blue rounded-t-xl px-6 py-7 text-center text-white">
-          <h1 className="text-xl font-extrabold leading-tight mb-1">
+          <h1 className="text-heading font-extrabold leading-tight mb-1">
             ¿Te animás a ver cómo está tu negocio?
           </h1>
-          <p className="text-xs opacity-75">8 preguntas. Diagnóstico preciso.</p>
+          <p className="text-caption opacity-75">8 preguntas. Diagnóstico preciso.</p>
         </div>
         <div className="bg-card rounded-b-xl shadow-lg p-6 text-center">
-          <h2 className="text-lg font-black text-mc-diag-blue mb-3">
+          <h2 className="text-title font-black text-mc-diag-blue mb-3">
             Tu proyecto puede estar frenado y no lo estás viendo.
           </h2>
           <p className="text-sm text-muted-foreground leading-relaxed mb-6">
@@ -205,11 +205,11 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
           <div className="flex justify-center gap-8 mb-6">
             <div className="text-center">
               <div className="text-2xl font-black text-mc-diag-red">8</div>
-              <div className="text-xs text-muted-foreground">preguntas en 1 min</div>
+              <div className="text-caption text-muted-foreground">preguntas en 1 min</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-black text-mc-diag-red">100%</div>
-              <div className="text-xs text-muted-foreground">gratuito</div>
+              <div className="text-caption text-muted-foreground">gratuito</div>
             </div>
           </div>
           <Button
@@ -221,7 +221,7 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
 
           {history.length > 0 && (
             <div className="mt-6 pt-4 border-t border-border text-left">
-              <h3 className="text-[11px] font-bold tracking-widest text-muted-foreground uppercase mb-3">
+              <h3 className="text-caption font-bold tracking-widest text-muted-foreground uppercase mb-3">
                 Tus diagnósticos anteriores
               </h3>
               <div className="space-y-2">
@@ -237,10 +237,10 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
                         style={{ backgroundColor: perfilData?.color ?? "#888" }}
                       />
                       <div className="flex-1 min-w-0">
-                        <span className="text-xs font-medium text-foreground line-clamp-1">
+                        <span className="text-caption font-medium text-foreground line-clamp-1">
                           {perfilData?.tagline ?? entry.perfil}
                         </span>
-                        <span className="text-[10px] text-muted-foreground block">
+                        <span className="text-caption text-muted-foreground block">
                           {new Date(entry.created_at).toLocaleDateString("es-AR", {
                             day: "numeric",
                             month: "short",
@@ -265,13 +265,13 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
     return (
       <div className="max-w-xl mx-auto animate-fade-in">
         <div className="bg-mc-diag-blue rounded-t-xl px-5 py-4 text-white">
-          <div className="text-[10px] font-bold tracking-widest uppercase opacity-65 mb-1">
+          <div className="text-caption font-bold tracking-widest uppercase opacity-65 mb-1">
             Pregunta {currentIdx + 1} de 8
           </div>
-          <h2 className="text-[15px] font-black leading-snug mb-1">
+          <h2 className="text-body font-black leading-snug mb-1">
             {currentQuestion.title}
           </h2>
-          <p className="text-[11px] opacity-75 leading-relaxed">{currentQuestion.sub}</p>
+          <p className="text-caption opacity-75 leading-relaxed">{currentQuestion.sub}</p>
         </div>
         <div className="h-1 bg-foreground/15">
           <div
@@ -338,7 +338,7 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
     return (
       <div className="max-w-xl mx-auto text-center py-16 animate-fade-in">
         <div className="w-12 h-12 border-3 border-mc-diag-blue border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <h2 className="text-lg font-extrabold text-mc-diag-blue mb-2">Analizando tu negocio…</h2>
+        <h2 className="text-title font-extrabold text-mc-diag-blue mb-2">Analizando tu negocio…</h2>
         <p className="text-sm text-muted-foreground">
           Procesando tus respuestas y generando tu diagnóstico personalizado.
         </p>
@@ -412,7 +412,7 @@ const DiagnosticResultView = ({
   return (
     <div className="max-w-xl mx-auto animate-fade-in space-y-5">
       <div
-        className="text-lg font-black text-center text-white py-5 px-5 rounded-xl leading-tight"
+        className="text-title font-black text-center text-white py-5 px-5 rounded-xl leading-tight"
         style={{ backgroundColor: perfilData.color }}
       >
         {perfilData.tagline}
@@ -423,7 +423,7 @@ const DiagnosticResultView = ({
       </div>
 
       <div>
-        <h3 className="text-[11px] font-bold tracking-widest text-muted-foreground uppercase mb-3">
+        <h3 className="text-caption font-bold tracking-widest text-muted-foreground uppercase mb-3">
           Lo que te dijiste esta semana
         </h3>
         <div className="space-y-2">
@@ -440,7 +440,7 @@ const DiagnosticResultView = ({
       </div>
 
       <div>
-        <h3 className="text-[11px] font-bold tracking-widest text-muted-foreground uppercase mb-3">
+        <h3 className="text-caption font-bold tracking-widest text-muted-foreground uppercase mb-3">
           Lo que tu negocio está mostrando
         </h3>
         <div className="border border-border rounded-xl overflow-hidden">
@@ -453,7 +453,7 @@ const DiagnosticResultView = ({
               )}
             >
               <div
-                className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5"
+                className="w-5 h-5 rounded-full flex items-center justify-center text-caption font-bold flex-shrink-0 mt-0.5"
                 style={{
                   borderWidth: 2,
                   borderColor: perfilData.color,
@@ -491,7 +491,7 @@ const DiagnosticResultView = ({
 
       {/* Recomendaciones de contenido */}
       <div className="space-y-2">
-        <h3 className="text-[11px] font-bold tracking-widest text-muted-foreground uppercase flex items-center gap-1.5">
+        <h3 className="text-caption font-bold tracking-widest text-muted-foreground uppercase flex items-center gap-1.5">
           <Lightbulb className="w-3.5 h-3.5" />
           Contenido recomendado para tu perfil
         </h3>
@@ -520,7 +520,7 @@ const DiagnosticResultView = ({
                     <p className="text-xs font-semibold text-foreground line-clamp-1">
                       {rec.titulo}
                     </p>
-                    <p className="text-[10px] text-muted-foreground line-clamp-2 mt-0.5">
+                    <p className="text-caption text-muted-foreground line-clamp-2 mt-0.5">
                       {rec.resumen || rec.contenido?.slice(0, 100)}
                     </p>
                     {rec.content_categories && (

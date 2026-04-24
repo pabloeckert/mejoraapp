@@ -160,10 +160,10 @@ const AdminSeguridad = () => {
                     <p className="text-sm font-medium text-foreground">
                       {admin.nombre || admin.email}
                       {admin.user_id === user?.id && (
-                        <span className="text-[10px] text-primary ml-1.5">(vos)</span>
+                        <span className="text-caption text-primary ml-1.5">(vos)</span>
                       )}
                     </p>
-                    <p className="text-[10px] text-muted-foreground">{admin.email}</p>
+                    <p className="text-caption text-muted-foreground">{admin.email}</p>
                   </div>
                 </div>
                 {admin.user_id !== user?.id && (

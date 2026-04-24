@@ -67,7 +67,7 @@ export const CommunityRules = () => {
 
         {expanded && (
           <div className="mt-3 space-y-2">
-            <p className="text-[11px] text-muted-foreground leading-relaxed">
+            <p className="text-caption text-muted-foreground leading-relaxed">
               El muro es un espacio seguro para compartir. Las publicaciones son anónimas
               y moderadas por IA. Estas son las reglas:
             </p>
@@ -93,7 +93,7 @@ export const CommunityRules = () => {
                 );
               })}
             </div>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-caption text-muted-foreground">
               Los posts que no cumplan estas reglas serán rechazados por la moderación automática.
             </p>
           </div>

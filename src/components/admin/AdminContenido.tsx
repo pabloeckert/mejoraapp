@@ -291,24 +291,24 @@ const AdminContenido = () => {
                   <CardContent className="p-3 flex items-start gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                        <span className="text-caption font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
                           {post.content_categories?.nombre || "Sin cat."}
                         </span>
-                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded inline-flex items-center gap-0.5 ${badge.value === "video" ? "bg-red-500/10 text-red-600" : badge.value === "infographic" ? "bg-purple-500/10 text-purple-600" : badge.value === "book" ? "bg-emerald-500/10 text-emerald-600" : "bg-blue-500/10 text-blue-600"}`}>
+                        <span className={`text-caption font-bold px-1.5 py-0.5 rounded inline-flex items-center gap-0.5 ${badge.value === "video" ? "bg-red-500/10 text-red-600" : badge.value === "infographic" ? "bg-purple-500/10 text-purple-600" : badge.value === "book" ? "bg-emerald-500/10 text-emerald-600" : "bg-blue-500/10 text-blue-600"}`}>
                           <BadgeIcon className="w-2.5 h-2.5" />
                           {badge.label}
                         </span>
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-caption text-muted-foreground">
                           {post.fuente === "ia" ? "🤖" : "✍️"}
                         </span>
                         {post.estado === "programado" && post.published_at && (
-                          <span className="text-[10px] text-blue-500 font-bold flex items-center gap-0.5">
+                          <span className="text-caption text-blue-500 font-bold flex items-center gap-0.5">
                             <Clock className="w-2.5 h-2.5" />
                             Programado: {new Date(post.published_at).toLocaleDateString("es-AR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                           </span>
                         )}
                         {post.estado === "borrador" && (
-                          <span className="text-[10px] text-orange-500 font-bold">Borrador</span>
+                          <span className="text-caption text-orange-500 font-bold">Borrador</span>
                         )}
                       </div>
                       <h4 className="text-sm font-bold text-foreground truncate">{post.titulo}</h4>

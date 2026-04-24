@@ -42,17 +42,17 @@ const RankingRow = ({
           isCurrentUser ? "text-primary" : "text-foreground"
         )}>
           {entry.display_name}
-          {isCurrentUser && <span className="text-[10px] ml-1 opacity-60">(vos)</span>}
+          {isCurrentUser && <span className="text-caption ml-1 opacity-60">(vos)</span>}
         </span>
       </div>
       {entry.empresa && (
-        <span className="text-[10px] text-muted-foreground truncate block">
+        <span className="text-caption text-muted-foreground truncate block">
           {entry.empresa}
         </span>
       )}
     </div>
 
-    <div className="flex items-center gap-3 shrink-0 text-[10px] text-muted-foreground">
+    <div className="flex items-center gap-3 shrink-0 text-caption text-muted-foreground">
       {entry.badge_count > 0 && (
         <span className="flex items-center gap-0.5" title="Badges">
           <Award className="w-3 h-3" />
@@ -99,7 +99,7 @@ export const CommunityRanking = ({
             <span className="text-xs font-bold text-foreground">
               Top Contribuidores
             </span>
-            <span className="text-[10px] text-muted-foreground">
+            <span className="text-caption text-muted-foreground">
               ({ranking.length})
             </span>
           </div>
@@ -124,7 +124,7 @@ export const CommunityRanking = ({
         {!expanded && ranking.length > 3 && (
           <button
             onClick={() => setExpanded(true)}
-            className="w-full text-center text-[10px] text-muted-foreground hover:text-foreground transition-colors py-1"
+            className="w-full text-center text-caption text-muted-foreground hover:text-foreground transition-colors py-1"
           >
             Ver los {ranking.length} contribuidores →
           </button>

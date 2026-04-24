@@ -95,7 +95,7 @@ const CommentItem = memo(({ comment, isOwn }: { comment: WallComment; isOwn: boo
     <CornerDownRight className="w-3 h-3 text-muted-foreground/50 mt-1 shrink-0" />
     <div className="flex-1 min-w-0">
       <p className="text-xs text-foreground/80 whitespace-pre-line leading-relaxed">{comment.content}</p>
-      <span className="text-[10px] text-muted-foreground" title={formatFullDate(comment.created_at)}>
+      <span className="text-caption text-muted-foreground" title={formatFullDate(comment.created_at)}>
         {isOwn ? "Vos" : "Anónimo"} · {timeAgo(comment.created_at)}
       </span>
     </div>
@@ -144,7 +144,7 @@ const PostCard = memo(
 
         <div className="flex items-center justify-between mt-2.5">
           <div className="flex items-center gap-3">
-            <span className="text-[10px] text-muted-foreground" title={formatFullDate(post.created_at)}>
+            <span className="text-caption text-muted-foreground" title={formatFullDate(post.created_at)}>
               {isOwn ? "Vos" : "Anónimo"} · {timeAgo(post.created_at)}
             </span>
           </div>
@@ -160,7 +160,7 @@ const PostCard = memo(
                 title={confirmingDelete ? "Tocá de nuevo para confirmar" : "Eliminar post"}
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                {confirmingDelete && <span className="text-[10px]">¿Eliminar?</span>}
+                {confirmingDelete && <span className="text-caption">¿Eliminar?</span>}
               </button>
             )}
             <button
@@ -192,7 +192,7 @@ const PostCard = memo(
             ) : (
               <>
                 {comments.length === 0 && (
-                  <p className="text-[11px] text-muted-foreground text-center py-2">
+                  <p className="text-caption text-muted-foreground text-center py-2">
                     Sin respuestas todavía. Sé el primero.
                   </p>
                 )}
@@ -226,7 +226,7 @@ const PostCard = memo(
                 {submittingComment ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
               </Button>
             </div>
-            <span className="text-[10px] text-muted-foreground">{commentText.length}/{COMMENT_MAX_LENGTH}</span>
+            <span className="text-caption text-muted-foreground">{commentText.length}/{COMMENT_MAX_LENGTH}</span>
           </div>
         )}
       </CardContent>
@@ -465,14 +465,14 @@ const Muro = () => {
               {newPost.length}/{MAX_LENGTH}
             </span>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-muted-foreground hidden sm:inline">Ctrl+Enter</span>
+              <span className="text-caption text-muted-foreground hidden sm:inline">Ctrl+Enter</span>
               <Button size="sm" onClick={handlePost} disabled={!newPost.trim() || posting} className="gap-1.5">
                 {posting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
                 Publicar
               </Button>
             </div>
           </div>
-          <div className="flex items-start gap-1.5 text-[10px] text-muted-foreground">
+          <div className="flex items-start gap-1.5 text-caption text-muted-foreground">
             <AlertCircle className="w-3 h-3 mt-0.5 shrink-0" />
             <span>Tu post es anónimo y moderado por IA. No se permiten ventas, promos ni datos personales.</span>
           </div>

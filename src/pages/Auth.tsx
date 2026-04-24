@@ -58,7 +58,7 @@ const Auth = () => {
             onClick={() => setMode(mode === "admin" ? "login" : "admin")}
             aria-label="Acceso administrador"
             title="Acceso administrador"
-            className={`flex items-center gap-1.5 text-[10px] font-medium transition-all duration-200 px-2 py-0.5 rounded-full
+            className={`flex items-center gap-1.5 text-caption font-medium transition-all duration-200 px-2 py-0.5 rounded-full
               ${mode === "admin"
                 ? "bg-primary/10 text-primary"
                 : "text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted"

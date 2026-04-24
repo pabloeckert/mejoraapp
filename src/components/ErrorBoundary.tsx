@@ -62,8 +62,8 @@ class ErrorBoundary extends Component<Props, State> {
             </div>
 
             <div className="space-y-2">
-              <h1 className="text-xl font-bold text-foreground">Algo salió mal</h1>
-              <p className="text-sm text-muted-foreground">
+              <h1 className="text-heading text-foreground">Algo salió mal</h1>
+              <p className="text-body text-muted-foreground">
                 La aplicación encontró un error inesperado. Tus datos están seguros.
               </p>
             </div>

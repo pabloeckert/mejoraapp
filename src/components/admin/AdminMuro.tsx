@@ -136,10 +136,10 @@ const AdminMuro = () => {
           <Card key={post.id}>
             <CardContent className="p-3">
               <div className="flex items-start justify-between gap-2 mb-2">
-                <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${statusColors[post.status] || ""}`}>
+                <span className={`text-caption font-medium px-2 py-0.5 rounded-full ${statusColors[post.status] || ""}`}>
                   {post.status}
                 </span>
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-caption text-muted-foreground">
                   ❤ {post.likes_count} · 💬 {post.comments_count} · {new Date(post.created_at).toLocaleDateString("es-AR")}
                 </span>
               </div>
@@ -184,19 +184,19 @@ const AdminMuro = () => {
                             <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded-full ${statusColors[c.status] || ""}`}>
                               {c.status}
                             </span>
-                            <span className="text-[10px] text-muted-foreground">
+                            <span className="text-caption text-muted-foreground">
                               {new Date(c.created_at).toLocaleDateString("es-AR")}
                             </span>
                           </div>
                           <p className="text-xs text-foreground/80 whitespace-pre-line">{c.content}</p>
                           <div className="flex gap-1 mt-1">
                             {c.status !== "approved" && (
-                              <Button size="sm" variant="outline" className="h-6 text-[10px] gap-1 text-green-600 px-2" onClick={() => updateCommentStatus(c.id, post.id, "approved")}>
+                              <Button size="sm" variant="outline" className="h-6 text-caption gap-1 text-green-600 px-2" onClick={() => updateCommentStatus(c.id, post.id, "approved")}>
                                 <CheckCircle className="w-3 h-3" /> OK
                               </Button>
                             )}
                             {c.status !== "rejected" && (
-                              <Button size="sm" variant="outline" className="h-6 text-[10px] gap-1 text-red-600 px-2" onClick={() => updateCommentStatus(c.id, post.id, "rejected")}>
+                              <Button size="sm" variant="outline" className="h-6 text-caption gap-1 text-red-600 px-2" onClick={() => updateCommentStatus(c.id, post.id, "rejected")}>
                                 <XCircle className="w-3 h-3" /> Rechazar
                               </Button>
                             )}

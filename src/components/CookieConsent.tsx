@@ -98,7 +98,7 @@ export const CookieConsent = () => {
             </Button>
           </div>
 
-          <p className="text-[10px] text-muted-foreground text-center">
+          <p className="text-caption text-muted-foreground text-center">
             Al aceptar, nos ayudás a mejorar la app. Podés leer nuestra{" "}
             <a
               href="/Documents/PRIVACIDAD.html"

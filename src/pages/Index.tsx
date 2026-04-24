@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Navigate } from "react-router-dom";
@@ -27,6 +27,7 @@ const Index = () => {
   const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const { badges, markVisited } = useLastVisit();
+  const scrollPositions = useRef<Record<string, number>>({});
 
   useEffect(() => {
     if (!user) {
@@ -83,11 +84,17 @@ const Index = () => {
     markVisited(activeTab);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Track tab switches and mark visited
+  // Track tab switches, save/restore scroll position, and mark visited
   const handleTabChange = (tab: string) => {
+    // Save current scroll position
+    scrollPositions.current[activeTab] = window.scrollY;
     trackTabSwitch(activeTab, tab);
     markVisited(tab);
     setActiveTab(tab);
+    // Restore scroll position for new tab (after render)
+    requestAnimationFrame(() => {
+      window.scrollTo(0, scrollPositions.current[tab] ?? 0);
+    });
   };
 
   if (loading) {

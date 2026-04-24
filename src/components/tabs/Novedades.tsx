@@ -86,7 +86,7 @@ const Novedades = () => {
                   </div>
                 )}
                 <CardContent className="p-3">
-                  <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mb-1.5">
+                  <div className="flex items-center gap-1.5 text-caption text-muted-foreground mb-1.5">
                     <Calendar className="w-3 h-3" />
                     <span>{formatDate(dateStr)}</span>
                   </div>

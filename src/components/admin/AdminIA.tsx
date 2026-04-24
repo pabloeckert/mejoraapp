@@ -68,17 +68,17 @@ const AdminIA = () => {
             <div className="flex items-center gap-2 py-1.5">
               <div className="w-2 h-2 rounded-full bg-yellow-400" />
               <span className="text-sm font-medium">Gemini (Google)</span>
-              <span className="text-[10px] text-muted-foreground ml-auto">GEMINI_API_KEY</span>
+              <span className="text-caption text-muted-foreground ml-auto">GEMINI_API_KEY</span>
             </div>
             <div className="flex items-center gap-2 py-1.5">
               <div className="w-2 h-2 rounded-full bg-orange-400" />
               <span className="text-sm font-medium">Groq (Llama 3.3)</span>
-              <span className="text-[10px] text-muted-foreground ml-auto">GROQ_API_KEY</span>
+              <span className="text-caption text-muted-foreground ml-auto">GROQ_API_KEY</span>
             </div>
             <div className="flex items-center gap-2 py-1.5">
               <div className="w-2 h-2 rounded-full bg-blue-400" />
               <span className="text-sm font-medium">OpenRouter (DeepSeek)</span>
-              <span className="text-[10px] text-muted-foreground ml-auto">OPENROUTER_API_KEY</span>
+              <span className="text-caption text-muted-foreground ml-auto">OPENROUTER_API_KEY</span>
             </div>
           </div>
 
@@ -97,16 +97,16 @@ const AdminIA = () => {
         <CardContent className="space-y-3 text-xs text-muted-foreground">
           <ol className="space-y-2 list-decimal list-inside">
             <li>Andá a <a href="https://supabase.com/dashboard/project/pwiduojwgkaoxxuautkp/settings/functions" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">Supabase → Edge Functions Secrets <ExternalLink className="w-3 h-3" /></a></li>
-            <li>Agregá al menos un secret: <code className="bg-muted px-1 rounded text-[10px]">GEMINI_API_KEY</code></li>
+            <li>Agregá al menos un secret: <code className="bg-muted px-1 rounded text-caption">GEMINI_API_KEY</code></li>
             <li>Obtené tu key gratis en <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">aistudio.google.com</a></li>
             <li>Guardá y probá con el botón de arriba</li>
           </ol>
 
           <div className="bg-muted/50 rounded-lg p-3 mt-2">
             <p className="font-medium text-foreground text-xs mb-1">¿Qué hace cada secret?</p>
-            <p><code className="text-[10px]">GEMINI_API_KEY</code> — Moderación + generación de contenido (gratis, 15 req/min)</p>
-            <p><code className="text-[10px]">GROQ_API_KEY</code> — Fallback ultra-rápido (gratis)</p>
-            <p><code className="text-[10px]">OPENROUTER_API_KEY</code> — Fallback con DeepSeek (gratis con límite)</p>
+            <p><code className="text-caption">GEMINI_API_KEY</code> — Moderación + generación de contenido (gratis, 15 req/min)</p>
+            <p><code className="text-caption">GROQ_API_KEY</code> — Fallback ultra-rápido (gratis)</p>
+            <p><code className="text-caption">OPENROUTER_API_KEY</code> — Fallback con DeepSeek (gratis con límite)</p>
           </div>
         </CardContent>
       </Card>

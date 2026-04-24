@@ -27,7 +27,7 @@
 
 MejoraApp es el MVP digital de **Mejora Continua**, comunidad de negocios para líderes empresariales argentinos. App funcional en producción con muro anónimo moderado por IA, contenido de valor, diagnóstico estratégico y panel admin.
 
-**Estado:** E1 ✅ · E2 ✅ · E3 ✅ · E4 ✅ · E5 ⏳ (2/3) · E6 🔴
+**Estado:** E1 ✅ · E2 ✅ · E3 ✅ · E4 ✅ · E5 ✅ · E6 🔴
 
 ---
 
@@ -178,6 +178,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | Tests unitarios | 103 (100% passing) |
 | Tests E2E | 22 (Playwright) |
 | Tests accesibilidad | 7 (axe-core) |
+| Typography tokens | 7 (caption → display) |
 | Tablas DB | 15 (incluye badges + push) |
 | Edge Functions | 7 |
 | Eventos analytics | 25+ |
@@ -218,7 +219,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 - [x] 4.3 Gamificación (8 badges) + Ranking + Perfil completo + Contenido programado
 - [x] 4.4 Servicios separados + CTA consultoría + Recomendaciones + PDF export + Dashboards PostHog
 
-### ETAPA 5 — Calidad y Robustez ⏳ EN PROGRESO (2/3 sprints)
+### ETAPA 5 — Calidad y Robustez ✅ COMPLETA (2026-04-24)
 
 **Sprint 5.1 — Legal y Compliance ✅ COMPLETO (2026-04-24)**
 - [x] 5.1.1 Política de privacidad (Ley 25.326)
@@ -233,12 +234,12 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 - [x] 5.2.3 Coverage report (v8 provider, thresholds 50%)
 - [x] 5.2.4 Refactor Muro.tsx (hooks extraídos, componentes memoizados)
 
-**Sprint 5.3 — UX Polish ⏳ PENDIENTE**
-- [ ] 5.3.1 Typography scale definida (caption→body→subtitle→title→heading)
-- [ ] 5.3.2 Scroll position preservation al cambiar tab
-- [ ] 5.3.3 Editorial style guide (voseo consistente)
-- [ ] 5.3.4 SEO básico (meta tags mejorados, Open Graph completo, sitemap.xml)
-- [ ] 5.3.5 Renombrar "Tips" → "Contenido" o "Biblioteca"
+**Sprint 5.3 — UX Polish ✅ COMPLETO (2026-04-24)**
+- [x] 5.3.1 Typography scale definida: 7 tokens (caption 11px → body-sm 13px → body 14px → subtitle 16px → title 20px → heading 24px → display 30px). 72+ instancias migradas en 15 archivos.
+- [x] 5.3.2 Scroll position preservation al cambiar tab: `useRef<Record<string, number>>` guarda/restaura posición por tab en Index.tsx
+- [x] 5.3.3 Editorial style guide: `Documents/EDITORIAL-STYLE-GUIDE.md` — voseo obligatorio, escala tipográfica, contraste WCAG AA, guía de tono/mensajes/CTAs. Auditoría: 0 instancias de tuteo encontradas.
+- [x] 5.3.4 SEO básico: meta tags completos (canonical, keywords, description mejorada), Open Graph completo (og:url, og:site_name, og:locale), Twitter Card, sitemap.xml, security headers meta (X-Content-Type-Options, X-Frame-Options, Referrer-Policy). Preconnect a Supabase.
+- [x] 5.3.5 Renombrar "Tips" → "Contenido" en BottomNav y Onboarding. "Novedades MC" → "Novedades".
 
 ### ETAPA 6 — Escalamiento 🔴 NO INICIADA
 
@@ -366,6 +367,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | Archivo | Propósito |
 |---------|-----------|
 | `DOCUMENTO-MAESTRO.md` | **Este archivo** — fuente única de verdad (reemplaza MEJORAAPP.md + ANALISIS-MAESTRO.md) |
+| `EDITORIAL-STYLE-GUIDE.md` | Guía de escritura: voseo, tono, tipografía, contraste, CTAs |
 | `POSTHOG-DASHBOARDS.md` | Guía dashboards PostHog |
 | `SESSION-PROMPT.md` | Prompt inicio sesión |
 | `PUSH_SUBSCRIPTIONS.sql` | Script SQL push_subscriptions |
@@ -408,6 +410,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | 2026-04-24 | Sprint 5.1 Legal | Privacidad, términos, cookies, "Mis Datos", reglas |
 | 2026-04-24 | Sprint 5.2 Testing | Playwright E2E (22), axe-core (7), coverage, refactor Muro |
 | 2026-04-24 | Consolidación docs | DOCUMENTO-MAESTRO.md reemplaza MEJORAAPP.md + ANALISIS-MAESTRO.md. Optimizaciones SEO/headers. |
+| 2026-04-24 | Sprint 5.3 UX Polish | Typography scale (7 tokens, 72+ instancias), scroll preservation, editorial style guide, SEO completo, renombre "Tips"→"Contenido". E5 completa. |
 
 ---
 
@@ -418,17 +421,17 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 ✅ E2: DevOps (completa)
 ✅ E3: UX (completa)
 ✅ E4: Analytics y Retención (completa)
-⏳ E5: Calidad y Robustez (2/3 sprints)
+✅ E5: Calidad y Robustez (completa)
    ✅ 5.1 Legal
    ✅ 5.2 Testing
-   ⏳ 5.3 UX Polish ← SIGUIENTE
+   ✅ 5.3 UX Polish
 🔴 E6: Escalamiento (pendiente)
    6.1 Infraestructura (2 semanas)
    6.2 Growth (2-3 semanas)
    6.3 Escalamiento técnico (2-3 semanas)
 ```
 
-**Tiempo restante estimado:** ~8 semanas (E5.3 + E6 completo)
+**Tiempo restante estimado:** ~7 semanas (E6 completo)
 
 ---
 

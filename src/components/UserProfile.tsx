@@ -178,7 +178,7 @@ export const UserProfile = ({ open, onOpenChange }: UserProfileProps) => {
                     rows={3}
                     className="resize-none"
                   />
-                  <span className="text-[10px] text-muted-foreground">{bio.length}/300</span>
+                  <span className="text-caption text-muted-foreground">{bio.length}/300</span>
                 </div>
 
                 <div className="space-y-1.5">
@@ -273,17 +273,17 @@ export const UserProfile = ({ open, onOpenChange }: UserProfileProps) => {
             <div className="grid grid-cols-3 gap-3 pt-2 border-t border-border">
               <div className="text-center">
                 <div className="text-lg font-bold text-foreground">{totalEarned}</div>
-                <div className="text-[10px] text-muted-foreground">Badges</div>
+                <div className="text-caption text-muted-foreground">Badges</div>
               </div>
               <div className="text-center">
                 <div className="text-lg font-bold text-foreground">{totalAvailable}</div>
-                <div className="text-[10px] text-muted-foreground">Disponibles</div>
+                <div className="text-caption text-muted-foreground">Disponibles</div>
               </div>
               <div className="text-center">
                 <div className="text-lg font-bold text-foreground">
                   {totalEarned > 0 ? Math.round((totalEarned / totalAvailable) * 100) : 0}%
                 </div>
-                <div className="text-[10px] text-muted-foreground">Completado</div>
+                <div className="text-caption text-muted-foreground">Completado</div>
               </div>
             </div>
 
@@ -297,14 +297,14 @@ export const UserProfile = ({ open, onOpenChange }: UserProfileProps) => {
               <a
                 href="/politica-privacidad.html"
                 target="_blank"
-                className="text-[10px] text-muted-foreground hover:text-foreground underline"
+                className="text-caption text-muted-foreground hover:text-foreground underline"
               >
                 Privacidad
               </a>
               <a
                 href="/terminos-servicio.html"
                 target="_blank"
-                className="text-[10px] text-muted-foreground hover:text-foreground underline"
+                className="text-caption text-muted-foreground hover:text-foreground underline"
               >
                 Términos
               </a>

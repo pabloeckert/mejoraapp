@@ -366,7 +366,7 @@ const AdminUsuarios = () => {
                       <div className="space-y-2">
                         <div className="grid grid-cols-2 gap-2">
                           <div>
-                            <Label className="text-[10px] text-muted-foreground">Nombre</Label>
+                            <Label className="text-caption text-muted-foreground">Nombre</Label>
                             <Input
                               value={editForm.nombre}
                               onChange={(e) => setEditForm((f) => ({ ...f, nombre: e.target.value }))}
@@ -374,7 +374,7 @@ const AdminUsuarios = () => {
                             />
                           </div>
                           <div>
-                            <Label className="text-[10px] text-muted-foreground">Apellido</Label>
+                            <Label className="text-caption text-muted-foreground">Apellido</Label>
                             <Input
                               value={editForm.apellido}
                               onChange={(e) => setEditForm((f) => ({ ...f, apellido: e.target.value }))}
@@ -383,7 +383,7 @@ const AdminUsuarios = () => {
                           </div>
                         </div>
                         <div>
-                          <Label className="text-[10px] text-muted-foreground">Empresa</Label>
+                          <Label className="text-caption text-muted-foreground">Empresa</Label>
                           <Input
                             value={editForm.empresa}
                             onChange={(e) => setEditForm((f) => ({ ...f, empresa: e.target.value }))}
@@ -391,7 +391,7 @@ const AdminUsuarios = () => {
                           />
                         </div>
                         <div>
-                          <Label className="text-[10px] text-muted-foreground">Cargo</Label>
+                          <Label className="text-caption text-muted-foreground">Cargo</Label>
                           <Input
                             value={editForm.cargo}
                             onChange={(e) => setEditForm((f) => ({ ...f, cargo: e.target.value }))}
@@ -399,7 +399,7 @@ const AdminUsuarios = () => {
                           />
                         </div>
                         <div>
-                          <Label className="text-[10px] text-muted-foreground">Email</Label>
+                          <Label className="text-caption text-muted-foreground">Email</Label>
                           <Input
                             value={editForm.email}
                             onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))}
@@ -407,7 +407,7 @@ const AdminUsuarios = () => {
                           />
                         </div>
                         <div>
-                          <Label className="text-[10px] text-muted-foreground">Teléfono</Label>
+                          <Label className="text-caption text-muted-foreground">Teléfono</Label>
                           <Input
                             value={editForm.phone}
                             onChange={(e) => setEditForm((f) => ({ ...f, phone: e.target.value }))}
@@ -472,7 +472,7 @@ const AdminUsuarios = () => {
                           </div>
                         )}
 
-                        <div className="text-[10px] text-muted-foreground pt-1">
+                        <div className="text-caption text-muted-foreground pt-1">
                           Registro: {new Date(p.created_at).toLocaleDateString("es-AR")}
                         </div>
 

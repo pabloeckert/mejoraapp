@@ -140,7 +140,7 @@ const SignupForm = ({ onSwitchToLogin }: SignupFormProps) => {
             <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
               <div className={`h-full rounded-full transition-all duration-300 ${strength.color} ${strength.width}`} />
             </div>
-            <span className="text-[10px] text-muted-foreground w-16 text-right">{strength.label}</span>
+            <span className="text-caption text-muted-foreground w-16 text-right">{strength.label}</span>
           </div>
         )}
       </div>

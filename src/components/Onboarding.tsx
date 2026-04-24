@@ -29,7 +29,7 @@ const steps = [
   },
   {
     icon: Sparkles,
-    title: "Novedades MC",
+    title: "Novedades",
     desc: "Eventos, workshops, lanzamientos y herramientas de la comunidad Mejora Continua.",
     color: "bg-amber-500/15 text-amber-600",
   },
@@ -84,8 +84,8 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
 
           {/* Content */}
           <div className="text-center space-y-2">
-            <h2 className="text-lg font-bold text-foreground">{currentStep.title}</h2>
-            <p className="text-sm text-muted-foreground leading-relaxed">{currentStep.desc}</p>
+            <h2 className="text-title text-foreground">{currentStep.title}</h2>
+            <p className="text-body text-muted-foreground leading-relaxed">{currentStep.desc}</p>
           </div>
 
           {/* Progress dots */}

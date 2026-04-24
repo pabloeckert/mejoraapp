@@ -39,7 +39,7 @@ export const BadgeDisplay = ({
           <span
             key={badge.slug}
             className={cn(
-              "inline-flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full",
+              "inline-flex items-center gap-0.5 text-caption font-semibold px-1.5 py-0.5 rounded-full",
               badge.bgColor,
               badge.color
             )}
@@ -49,7 +49,7 @@ export const BadgeDisplay = ({
           </span>
         ))}
         {remaining > 0 && (
-          <span className="text-[10px] text-muted-foreground font-medium">
+          <span className="text-caption text-muted-foreground font-medium">
             +{remaining} más
           </span>
         )}
@@ -77,7 +77,7 @@ export const BadgeDisplay = ({
               <span className="text-lg">{badge.emoji}</span>
               <div className="min-w-0">
                 <p className={cn("text-xs font-bold", badge.color)}>{badge.name}</p>
-                <p className="text-[10px] text-muted-foreground leading-snug">
+                <p className="text-caption text-muted-foreground leading-snug">
                   {badge.description}
                 </p>
               </div>
@@ -114,7 +114,7 @@ export const BadgeDisplay = ({
               <div className="min-w-0">
                 <p
                   className={cn(
-                    "text-[11px] font-semibold",
+                    "text-caption font-semibold",
                     earned ? badge.color : "text-muted-foreground"
                   )}
                 >
@@ -125,7 +125,7 @@ export const BadgeDisplay = ({
                 </p>
               </div>
               {earned && (
-                <span className="ml-auto text-[10px]">✓</span>
+                <span className="ml-auto text-caption">✓</span>
               )}
             </div>
           );
