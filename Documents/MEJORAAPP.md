@@ -4,7 +4,7 @@
 > **Stack:** React 18 · TypeScript · Vite 5 · Supabase · Tailwind CSS · shadcn/ui
 > **Producción:** https://app.mejoraok.com
 > **Repo:** https://github.com/pabloeckert/MejoraApp
-> **Última actualización:** 2026-04-24 20:09 GMT+8
+> **Última actualización:** 2026-04-24 20:17 GMT+8
 
 ---
 
@@ -28,7 +28,7 @@
 
 MejoraApp es el MVP digital de **Mejora Continua**, comunidad de negocios para líderes empresariales argentinos. Funciona en producción con muro anónimo moderado por IA, contenido de valor, diagnóstico estratégico y panel admin.
 
-**Estado actual:** App funcional con seguridad completa (E1), DevOps completa (E2 6/6), UX completa (E3 6/6), Analytics Sprint 4.1 implementado (E4 1/4). **Análisis multidisciplinario completo (2026-04-24).**
+**Estado actual:** App funcional con seguridad completa (E1), DevOps completa (E2 6/6), UX completa (E3 6/6), Analytics implementado (E4 Sprint 4.1 ✅), Retención parcial (E4 Sprint 4.2 2/4). **Análisis multidisciplinario completo (2026-04-24).**
 
 ---
 
@@ -248,8 +248,8 @@ npm run lint      # Lint: eslint
 
 | Métrica | Valor |
 |---------|-------|
-| Líneas de código (TS/TSX) | ~13,300 |
-| Archivos totales | 161 |
+| Líneas de código (TS/TSX) | ~13,500 |
+| Archivos totales | 162 |
 | Tests | 103 (100% passing) |
 | Tablas DB | 13 |
 | Edge Functions | 5 |
@@ -438,8 +438,8 @@ Auditoría completa desde 18 perspectivas: UX/UI (9 roles), Negocio (4 roles), I
 **Sprint 4.2 — Retención (semanas 2-3)**
 - [ ] 4.2.1 Push notifications (Web Push API) — nuevo post en muro, respuesta a tu post, nueva novedad
 - [ ] 4.2.2 Email follow-up post-diagnóstico (Resend) — resultado + contenido recomendado + CTA consultoría
-- [ ] 4.2.3 Contenido "nuevo desde tu última visita" badge en tabs
-- [ ] 4.2.4 Notificación in-app (toast) para respuestas en muro en tiempo real
+- [x] 4.2.3 Contenido "nuevo desde tu última visita" badge en tabs (`hooks/useLastVisit.ts` + dot badge en BottomNav)
+- [x] 4.2.4 Notificación in-app (toast) para respuestas en muro en tiempo real (Realtime subscription + toast en Muro.tsx)
 
 **Sprint 4.3 — Engagement (semanas 3-4)**
 - [ ] 4.3.1 Gamificación básica: badges por actividad (primer post, 10 posts, 5 diagnósticos)
@@ -515,6 +515,7 @@ Auditoría completa desde 18 perspectivas: UX/UI (9 roles), Negocio (4 roles), I
 | 2026-04-24 | UX Sprint completo | E3 completa (6/6), 30 cambios UX en 5 sprints |
 | 2026-04-24 | Análisis multidisciplinario | 18 perspectivas, redefinición de E4 como prioridad crítica, consolidación documentación |
 | 2026-04-24 PM | Sentry + PostHog + Staging | E2 completa (6/6), E4 Sprint 4.1 completo, 25+ eventos analytics, Sentry integration, staging config |
+| 2026-04-24 PM | Retención rápida | E4 Sprint 4.2 (2/4): badges "nueva visita" + toast real-time respuestas muro |
 
 ---
 
