@@ -43,7 +43,7 @@
 |--------|--------|-------|
 | 4.1 Analytics | ✅ Completo | PostHog integrado, 25+ eventos, lib/analytics.ts |
 | 4.2 Retención | ✅ Completo | Web Push (lib/push.ts), Email Resend, Badges, Toast |
-| 4.3 Engagement | 🔴 Pendiente | Badges actividad, Ranking, Perfil completo, Contenido programado |
+| 4.3 Engagement | ✅ Completo | 8 badges + triggers automáticos, Ranking comunidad, Perfil completo, Contenido programado |
 | 4.4 Funnel | 🔴 Pendiente | Separar servicios, CTA consultoría, Diagnóstico→PDF |
 
 ### E5 — Items Pendientes

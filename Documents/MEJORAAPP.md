@@ -445,11 +445,11 @@ Auditoría completa desde 18 perspectivas: UX/UI (9 roles), Negocio (4 roles), I
 - [x] 4.2.3 Contenido "nuevo desde tu última visita" badge en tabs (`hooks/useLastVisit.ts` + dot badge en BottomNav)
 - [x] 4.2.4 Notificación in-app (toast) para respuestas en muro en tiempo real (Realtime subscription + toast en Muro.tsx)
 
-**Sprint 4.3 — Engagement (semanas 3-4)**
-- [ ] 4.3.1 Gamificación básica: badges por actividad (primer post, 10 posts, 5 diagnósticos)
-- [ ] 4.3.2 Ranking de comunidad (top contributors, visible en muro)
-- [ ] 4.3.3 Perfil de usuario completo (bio, avatar upload, empresa, links)
-- [ ] 4.3.4 Contenido programado (fecha de publicación futura desde admin)
+**Sprint 4.3 — Engagement ✅ COMPLETO (2026-04-24)**
+- [x] 4.3.1 Gamificación: 8 badges (primer post, 5 posts, 10 posts, primer comentario, primer diagnóstico, 5 diagnósticos, 10 likes, 3 días activo) + triggers automáticos SQL + hook useBadges + componente BadgeDisplay + toast al ganar badge
+- [x] 4.3.2 Ranking de comunidad: vista SQL community_ranking + hook useRanking + componente CommunityRanking expandible en muro
+- [x] 4.3.3 Perfil completo: campos bio/website/linkedin en profiles + componente UserProfile (sheet) + avatar clickeable en header + badges progreso
+- [x] 4.3.4 Contenido programado: campo scheduled_for + UI admin con datetime picker + badge "Programado" + filtro en frontend
 
 **Sprint 4.4 — Optimización del funnel (semana 4)**
 - [ ] 4.4.1 Separar servicios de novedades — sección propia con tracking de clicks
@@ -522,6 +522,7 @@ Auditoría completa desde 18 perspectivas: UX/UI (9 roles), Negocio (4 roles), I
 | 2026-04-24 PM | Retención rápida | E4 Sprint 4.2 (2/4): badges "nueva visita" + toast real-time respuestas muro |
 | 2026-04-24 PM | Push + Email | E4 Sprint 4.2 completo (4/4): Web Push + Resend email post-diagnóstico + Edge Functions |
 | 2026-04-24 PM | Análisis multidisciplinario completo | 37 perspectivas (12 Técnicas, 10 Producto, 8 Comercial, 7 Operaciones). Plan optimizado 12 semanas. Documento ANALISIS-MAESTRO.md creado. |
+| 2026-04-24 PM | Sprint 4.3 completo | Gamificación (8 badges + triggers automáticos), Ranking comunidad, Perfil completo (bio/links), Contenido programado. 7 archivos nuevos, 1276 líneas. |
 
 ---
 
