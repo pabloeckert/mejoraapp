@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { X, BookOpen, ClipboardCheck, MessageSquare, Sparkles, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { trackOnboardingComplete, trackOnboardingSkip } from "@/lib/analytics";
 
 interface OnboardingProps {
   onComplete: () => void;
@@ -51,10 +52,12 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
     try {
       localStorage.setItem(STORAGE_KEY, "true");
     } catch {}
+    trackOnboardingComplete();
     onComplete();
   };
 
   const handleSkip = () => {
+    trackOnboardingSkip(step);
     handleComplete();
   };
 

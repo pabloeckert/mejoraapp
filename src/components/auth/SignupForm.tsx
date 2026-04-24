@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { trackSignup } from "@/lib/analytics";
 
 interface SignupFormProps {
   onSwitchToLogin: () => void;
@@ -66,6 +67,7 @@ const SignupForm = ({ onSwitchToLogin }: SignupFormProps) => {
       toast({ title: "Error al registrarse", description: msg, variant: "destructive" });
     } else {
       toast({ title: "¡Registro exitoso!", description: "Revisá tu email para confirmar tu cuenta." });
+      trackSignup("email");
     }
     setLoading(false);
   };

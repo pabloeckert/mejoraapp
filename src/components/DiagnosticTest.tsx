@@ -13,6 +13,12 @@ import {
 import { cn } from "@/lib/utils";
 import { ArrowLeft, ArrowRight, MessageCircle, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  trackStartDiagnostic,
+  trackCompleteDiagnostic,
+  trackShareDiagnosticWA,
+  trackRetakeDiagnostic,
+} from "@/lib/analytics";
 
 type Step = "intro" | "question" | "loading" | "result";
 
@@ -114,7 +120,11 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
     setCurrentIdx(0);
     setAnswers({});
     setStep("question");
-  }, []);
+    if (history.length > 0) {
+      trackRetakeDiagnostic(history.length + 1);
+    }
+    trackStartDiagnostic();
+  }, [history.length]);
 
   const selectOption = useCallback((questionId: number, score: number) => {
     setAnswers((prev) => ({ ...prev, [questionId]: score }));
@@ -153,6 +163,7 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
         console.error("Error saving diagnostic:", err);
       }
     }
+    trackCompleteDiagnostic(puntajeTotal, perfil);
     setTimeout(() => setStep("result"), 2200);
   }, [answers, user]);
 
@@ -396,6 +407,10 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
             href={waLink}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => {
+              const puntaje = Object.values(answers).reduce((a, b) => a + b, 0);
+              trackShareDiagnosticWA(puntaje);
+            }}
             className="inline-flex items-center gap-2 bg-mc-diag-red hover:bg-mc-diag-red/90 text-white px-6 py-3 rounded-xl font-bold text-sm transition-colors"
           >
             <MessageCircle className="w-4 h-4" />

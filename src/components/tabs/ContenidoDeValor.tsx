@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Lightbulb,
@@ -23,6 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { trackViewContent, trackSearchContent, trackFilterCategory } from "@/lib/analytics";
 import type { Tables } from "@/integrations/supabase/types";
 
 const ICON_MAP: Record<string, typeof Lightbulb> = {
@@ -299,6 +300,7 @@ const ContenidoDeValor = () => {
     setActiveFilter(value);
     setCurrentPage(1);
     setExpandedId(null);
+    if (value !== "todos") trackFilterCategory(value);
   }, []);
 
   const handleSearchChange = useCallback((value: string) => {
@@ -307,9 +309,31 @@ const ContenidoDeValor = () => {
     setExpandedId(null);
   }, []);
 
+  // Track search when results are computed
+  const lastTrackedSearch = useRef<string>("");
+  useEffect(() => {
+    if (searchQuery.trim() && searchQuery.trim() !== lastTrackedSearch.current) {
+      lastTrackedSearch.current = searchQuery.trim();
+      trackSearchContent(searchQuery.trim(), filtered.length);
+    }
+  }, [searchQuery, filtered.length]);
+
   const handleToggle = useCallback((id: string) => {
-    setExpandedId((prev) => (prev === id ? null : id));
-  }, []);
+    setExpandedId((prev) => {
+      const opening = prev !== id;
+      if (opening) {
+        const post = posts.find((p) => p.id === id);
+        if (post) {
+          trackViewContent(
+            post.id,
+            post.content_categories?.slug ?? "unknown",
+            post.content_type
+          );
+        }
+      }
+      return prev === id ? null : id;
+    });
+  }, [posts]);
 
   const pageNumbers = useMemo(() => {
     const pages: number[] = [];

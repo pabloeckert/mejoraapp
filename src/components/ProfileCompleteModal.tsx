@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { trackProfileComplete, trackProfileSkip } from "@/lib/analytics";
 
 interface ProfileCompleteModalProps {
   userId: string;
@@ -38,6 +39,7 @@ const ProfileCompleteModal = ({ userId, onComplete }: ProfileCompleteModalProps)
       if (error) throw error;
 
       toast({ title: "¡Perfil completado!", description: "Tus datos fueron guardados." });
+      trackProfileComplete(!!phone.trim());
       onComplete();
     } catch (err) {
       console.error(err);
@@ -48,6 +50,7 @@ const ProfileCompleteModal = ({ userId, onComplete }: ProfileCompleteModalProps)
 
   const handleSkip = () => {
     setSkipped(true);
+    trackProfileSkip();
     onComplete();
   };
 

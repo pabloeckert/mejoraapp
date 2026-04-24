@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { setSentryUser } from "@/lib/sentry";
+import { identifyUser, resetUser, trackLogout } from "@/lib/analytics";
 
 interface AuthContextType {
   session: Session | null;
@@ -27,12 +29,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       (_event, session) => {
         setSession(session);
         setLoading(false);
+        setSentryUser(session?.user ?? null);
+        if (session?.user) {
+          identifyUser(session.user.id, {
+            email: session.user.email,
+            created_at: session.user.created_at,
+          });
+        } else {
+          resetUser();
+        }
       }
     );
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
+      setSentryUser(session?.user ?? null);
+      if (session?.user) {
+        identifyUser(session.user.id, {
+          email: session.user.email,
+          created_at: session.user.created_at,
+        });
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -40,6 +58,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
+    setSentryUser(null);
+    resetUser();
+    trackLogout();
   }, []);
 
   return (

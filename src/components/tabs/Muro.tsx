@@ -20,6 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { trackPublishPost, trackLikePost, trackCommentPost, trackDeletePost } from "@/lib/analytics";
 
 interface WallPost {
   id: string;
@@ -381,6 +382,7 @@ const Muro = () => {
       } else if (data?.success) {
         setNewPost("");
         toast({ title: "¡Publicado!", description: "Tu post ya está en el muro." });
+        trackPublishPost(content.length);
         refetch();
       }
     } catch (err: unknown) {
@@ -419,6 +421,7 @@ const Muro = () => {
             [postId]: [...(prev[postId] || []), data.comment as WallComment],
           }));
           toast({ title: "¡Respuesta publicada!" });
+          trackCommentPost(postId, content.length);
         }
       } catch (err) {
         console.error(err);
@@ -449,6 +452,7 @@ const Muro = () => {
         await supabase.from("wall_likes").delete().eq("post_id", postId).eq("user_id", user.id);
       } else {
         await supabase.from("wall_likes").insert({ post_id: postId, user_id: user.id });
+        trackLikePost(postId);
       }
     },
     [user, likedPosts]
@@ -476,6 +480,7 @@ const Muro = () => {
         if (error) throw error;
 
         toast({ title: "Post eliminado" });
+        trackDeletePost(postId);
         refetch();
       } catch (err) {
         console.error(err);

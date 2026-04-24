@@ -10,6 +10,7 @@ import Novedades from "@/components/tabs/Novedades";
 import DiagnosticTest from "@/components/DiagnosticTest";
 import ProfileCompleteModal from "@/components/ProfileCompleteModal";
 import Onboarding, { shouldShowOnboarding } from "@/components/Onboarding";
+import { trackPageView, trackTabSwitch } from "@/lib/analytics";
 
 const Index = () => {
   const { session, loading, user } = useAuth();
@@ -74,6 +75,17 @@ const Index = () => {
     return () => window.removeEventListener("navigate-tab", handler);
   }, []);
 
+  // Track page view on mount
+  useEffect(() => {
+    trackPageView("/");
+  }, []);
+
+  // Track tab switches
+  const handleTabChange = (tab: string) => {
+    trackTabSwitch(activeTab, tab);
+    setActiveTab(tab);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-background">
@@ -105,7 +117,7 @@ const Index = () => {
         {activeTab === "muro" && <Muro />}
         {activeTab === "novedades" && <Novedades />}
       </main>
-      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
 
       {/* Profile completion modal */}
       {!profileComplete && user && (

@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { trackLogin } from "@/lib/analytics";
 import LoginForm from "@/components/auth/LoginForm";
 import SignupForm from "@/components/auth/SignupForm";
 import GoogleButton from "@/components/auth/GoogleButton";
@@ -33,6 +34,8 @@ const Auth = () => {
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
       setGoogleLoading(false);
+    } else {
+      trackLogin("google");
     }
   };
 
