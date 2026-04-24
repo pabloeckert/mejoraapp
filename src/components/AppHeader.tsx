@@ -5,6 +5,8 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import NotificationToggle from "@/components/NotificationToggle";
+import UserProfile from "@/components/UserProfile";
+import { trackProfileViewed } from "@/lib/analytics";
 import logoComunidad from "@/assets/logo-comunidad.png";
 
 const AppHeader = () => {
@@ -12,6 +14,7 @@ const AppHeader = () => {
   const { theme, toggleTheme } = useTheme();
   const [showAdminReturn, setShowAdminReturn] = useState(false);
   const [initials, setInitials] = useState<string>("");
+  const [showProfile, setShowProfile] = useState(false);
 
   useEffect(() => {
     const unlocked = sessionStorage.getItem("admin_unlocked");
@@ -75,18 +78,26 @@ const AppHeader = () => {
               <Moon className="w-5 h-5 text-mc-dark-blue" />
             )}
           </Button>
-          <div className="h-11 w-11 rounded-full bg-primary flex items-center justify-center cursor-default" title="Tu perfil">
+          <button
+            className="h-11 w-11 rounded-full bg-primary flex items-center justify-center hover:opacity-90 transition-opacity"
+            title="Tu perfil"
+            onClick={() => {
+              trackProfileViewed();
+              setShowProfile(true);
+            }}
+          >
             {initials ? (
               <span className="text-sm font-bold text-primary-foreground">{initials}</span>
             ) : (
               <User className="w-5 h-5 text-primary-foreground" />
             )}
-          </div>
+          </button>
           <Button variant="ghost" size="icon" onClick={signOut} className="h-11 w-11" title="Cerrar sesión">
             <LogOut className="w-5 h-5" />
           </Button>
         </div>
       </div>
+      <UserProfile open={showProfile} onOpenChange={setShowProfile} />
     </header>
   );
 };

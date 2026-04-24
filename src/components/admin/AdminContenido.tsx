@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Plus, Sparkles, Loader2, Trash2, Eye, EyeOff, Settings2, Play, Image as ImageIcon, Download, BookOpen, FileText } from "lucide-react";
+import { Plus, Sparkles, Loader2, Trash2, Eye, EyeOff, Settings2, Play, Image as ImageIcon, Download, BookOpen, FileText, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,6 +56,7 @@ const AdminContenido = () => {
   const [imagenUrl, setImagenUrl] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
   const [pdfUrl, setPdfUrl] = useState("");
+  const [scheduledFor, setScheduledFor] = useState("");
   const [saving, setSaving] = useState(false);
 
   // AI generate
@@ -108,6 +110,7 @@ const AdminContenido = () => {
     setImagenUrl("");
     setVideoUrl("");
     setPdfUrl("");
+    setScheduledFor("");
   };
 
   const savePost = async (estado: string = "publicado") => {
@@ -116,6 +119,15 @@ const AdminContenido = () => {
       return;
     }
     setSaving(true);
+
+    // Handle scheduled content
+    const isScheduled = estado === "programado" && scheduledFor;
+    const publishedAt = isScheduled
+      ? new Date(scheduledFor).toISOString()
+      : estado === "publicado"
+        ? new Date().toISOString()
+        : null;
+
     const payload = {
       titulo: titulo.trim(),
       contenido: contenido.trim(),
@@ -125,12 +137,20 @@ const AdminContenido = () => {
       imagen_url: imagenUrl.trim() || null,
       video_url: videoUrl.trim() || null,
       pdf_url: pdfUrl.trim() || null,
-      estado,
+      estado: isScheduled ? "programado" : estado,
       fuente: "admin",
+      published_at: publishedAt,
+      scheduled_for: isScheduled ? new Date(scheduledFor).toISOString() : null,
     };
     try {
       await adminAction("create-post", { post: payload });
-      toast({ title: estado === "publicado" ? "Publicado" : "Guardado como borrador" });
+      toast({
+        title: isScheduled
+          ? "Programado"
+          : estado === "publicado"
+            ? "Publicado"
+            : "Guardado como borrador",
+      });
       resetForm();
       setView("posts");
       fetchData();
@@ -203,6 +223,11 @@ const AdminContenido = () => {
 
   const togglePostEstado = async (post: Post) => {
     const newEstado = post.estado === "publicado" ? "borrador" : "publicado";
+    const updates: Record<string, unknown> = { estado: newEstado };
+    if (newEstado === "publicado") {
+      updates.published_at = new Date().toISOString();
+      updates.scheduled_for = null;
+    }
     await adminAction("update-post-status", { postId: post.id, estado: newEstado });
     fetchData();
   };
@@ -262,7 +287,7 @@ const AdminContenido = () => {
               const badge = getTypeBadge(post.content_type);
               const BadgeIcon = badge.icon;
               return (
-                <Card key={post.id} className={post.estado !== "publicado" ? "opacity-60" : ""}>
+                <Card key={post.id} className={post.estado === "borrador" ? "opacity-60" : post.estado === "programado" ? "border-blue-200 dark:border-blue-800" : ""}>
                   <CardContent className="p-3 flex items-start gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -276,7 +301,13 @@ const AdminContenido = () => {
                         <span className="text-[10px] text-muted-foreground">
                           {post.fuente === "ia" ? "🤖" : "✍️"}
                         </span>
-                        {post.estado !== "publicado" && (
+                        {post.estado === "programado" && post.published_at && (
+                          <span className="text-[10px] text-blue-500 font-bold flex items-center gap-0.5">
+                            <Clock className="w-2.5 h-2.5" />
+                            Programado: {new Date(post.published_at).toLocaleDateString("es-AR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                        )}
+                        {post.estado === "borrador" && (
                           <span className="text-[10px] text-orange-500 font-bold">Borrador</span>
                         )}
                       </div>
@@ -352,11 +383,29 @@ const AdminContenido = () => {
               </>
             )}
 
-            <div className="flex gap-2">
+            {/* Scheduled publish */}
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Programar publicación (opcional)</Label>
+              <Input
+                type="datetime-local"
+                value={scheduledFor}
+                onChange={(e) => setScheduledFor(e.target.value)}
+                min={new Date().toISOString().slice(0, 16)}
+                className="w-full"
+              />
+            </div>
+
+            <div className="flex gap-2 flex-wrap">
               <Button onClick={() => savePost("publicado")} disabled={saving}>
                 {saving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
-                Publicar
+                Publicar ahora
               </Button>
+              {scheduledFor && (
+                <Button onClick={() => savePost("programado")} disabled={saving} variant="default">
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
+                  Programar
+                </Button>
+              )}
               <Button variant="outline" onClick={() => savePost("borrador")} disabled={saving}>
                 Guardar borrador
               </Button>

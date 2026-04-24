@@ -12,6 +12,7 @@ import {
   CornerDownRight,
   ArrowDown,
   Trash2,
+  Award,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { trackPublishPost, trackLikePost, trackCommentPost, trackDeletePost } from "@/lib/analytics";
+import { useBadges } from "@/hooks/useBadges";
+import { BadgeDisplay } from "@/components/BadgeDisplay";
+import { CommunityRanking } from "@/components/CommunityRanking";
+import { trackPublishPost, trackLikePost, trackCommentPost, trackDeletePost, trackBadgeEarned } from "@/lib/analytics";
 
 interface WallPost {
   id: string;
@@ -269,6 +273,21 @@ const Muro = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { earnedBadges, totalEarned } = useBadges(user?.id);
+  const prevBadgeCount = useRef(totalEarned);
+
+  // Toast when new badge is earned
+  useEffect(() => {
+    if (totalEarned > prevBadgeCount.current && earnedBadges.length > 0) {
+      const newest = earnedBadges[earnedBadges.length - 1];
+      toast({
+        title: `🎉 ¡Badge desbloqueado!`,
+        description: `${newest.emoji} ${newest.name}: ${newest.description}`,
+      });
+      trackBadgeEarned(newest.slug);
+    }
+    prevBadgeCount.current = totalEarned;
+  }, [totalEarned, earnedBadges, toast]);
 
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
   const [newPost, setNewPost] = useState("");
@@ -638,6 +657,17 @@ const Muro = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Badges del usuario */}
+      {earnedBadges.length > 0 && (
+        <div className="flex items-center gap-2">
+          <Award className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+          <BadgeDisplay earnedBadges={earnedBadges} variant="compact" maxShow={3} />
+        </div>
+      )}
+
+      {/* Ranking de comunidad */}
+      <CommunityRanking currentUserId={user?.id} limit={10} />
 
       {isLoading ? (
         <div className="space-y-2">

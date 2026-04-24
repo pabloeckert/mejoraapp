@@ -114,6 +114,7 @@ export type Database = {
           pdf_url: string | null
           published_at: string | null
           resumen: string | null
+          scheduled_for: string | null
           titulo: string
           video_url: string | null
         }
@@ -130,6 +131,7 @@ export type Database = {
           pdf_url?: string | null
           published_at?: string | null
           resumen?: string | null
+          scheduled_for?: string | null
           titulo: string
           video_url?: string | null
         }
@@ -146,6 +148,7 @@ export type Database = {
           pdf_url?: string | null
           published_at?: string | null
           resumen?: string | null
+          scheduled_for?: string | null
           titulo?: string
           video_url?: string | null
         }
@@ -261,6 +264,7 @@ export type Database = {
         Row: {
           apellido: string | null
           avatar_url: string | null
+          bio: string | null
           cargo: string | null
           created_at: string
           display_name: string | null
@@ -268,14 +272,19 @@ export type Database = {
           empresa: string | null
           has_completed_diagnostic: boolean
           id: string
+          last_badge_earned: string | null
+          last_badge_earned_at: string | null
+          linkedin: string | null
           nombre: string | null
           phone: string | null
           updated_at: string
           user_id: string
+          website: string | null
         }
         Insert: {
           apellido?: string | null
           avatar_url?: string | null
+          bio?: string | null
           cargo?: string | null
           created_at?: string
           display_name?: string | null
@@ -283,14 +292,19 @@ export type Database = {
           empresa?: string | null
           has_completed_diagnostic?: boolean
           id?: string
+          last_badge_earned?: string | null
+          last_badge_earned_at?: string | null
+          linkedin?: string | null
           nombre?: string | null
           phone?: string | null
           updated_at?: string
           user_id: string
+          website?: string | null
         }
         Update: {
           apellido?: string | null
           avatar_url?: string | null
+          bio?: string | null
           cargo?: string | null
           created_at?: string
           display_name?: string | null
@@ -298,10 +312,14 @@ export type Database = {
           empresa?: string | null
           has_completed_diagnostic?: boolean
           id?: string
+          last_badge_earned?: string | null
+          last_badge_earned_at?: string | null
+          linkedin?: string | null
           nombre?: string | null
           phone?: string | null
           updated_at?: string
           user_id?: string
+          website?: string | null
         }
         Relationships: []
       }
@@ -457,9 +475,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_badges: {
+        Row: {
+          id: string
+          user_id: string
+          badge_slug: string
+          earned_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          badge_slug: string
+          earned_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          badge_slug?: string
+          earned_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      community_ranking: {
+        Row: {
+          user_id: string
+          display_name: string
+          empresa: string
+          post_count: number
+          comment_count: number
+          total_likes_received: number
+          activity_score: number
+          badge_count: number
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {

@@ -193,3 +193,21 @@ export function trackTabSwitch(from: string, to: string) {
 export function trackCrossNavigation(from: string, to: string) {
   track("cross_navigation", { from, to });
 }
+
+// ─── Gamification ─────────────────────────────────────────────────────
+
+export function trackBadgeEarned(badgeSlug: string) {
+  track("badge_earned", { badge_slug: badgeSlug });
+}
+
+export function trackRankingViewed(position: number) {
+  track("ranking_viewed", { position });
+}
+
+export function trackProfileViewed() {
+  track("profile_viewed");
+}
+
+export function trackProfileEdited(field: string) {
+  track("profile_edited", { field });
+}
