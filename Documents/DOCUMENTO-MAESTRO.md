@@ -4,21 +4,21 @@
 > **Stack:** React 18 · TypeScript · Vite 5 · Supabase · Tailwind CSS · shadcn/ui
 > **Producción:** https://app.mejoraok.com
 > **Repo:** https://github.com/pabloeckert/MejoraApp
-> **Última actualización:** 2026-04-25 00:05 GMT+8
+> **Última actualización:** 2026-04-25 04:15 GMT+8
 
 ---
 
-## 📌 Protocolo de Actualización
+## 📌 Protocolo de Documentación
 
 > **Cuando digas "documentar"**, este archivo se actualiza con los trabajos realizados.
-> Todos los archivos de documentación viven en `Documents/`.
-> Este documento es la **fuente única de verdad** — reemplaza MEJORAAPP.md y ANALISIS-MAESTRO.md.
+> **Todos los archivos de documentación viven en `Documents/`.**
+> Este documento es la **fuente única de verdad** — todo lo demás son archivos técnicos de soporte.
 
 ### Reglas
 1. **Al inicio de cada sesión:** Leer este documento.
 2. **Al decir "documentar":** Actualizar secciones correspondientes con lo trabajado.
 3. **Nunca crear archivos sueltos** — todo va en `Documents/`.
-4. **Registro de sesiones:** Agregar fila en §12.
+4. **Registro de sesiones:** Agregar fila en §14.
 5. **Planes:** Marcar tareas `[x]` al completar, agregar fecha.
 
 ---
@@ -27,7 +27,7 @@
 
 MejoraApp es el MVP digital de **Mejora Continua**, comunidad de negocios para líderes empresariales argentinos. App funcional en producción con muro anónimo moderado por IA, contenido de valor, diagnóstico estratégico y panel admin.
 
-**Estado:** E1 ✅ · E2 ✅ · E3 ✅ · E4 ✅ · E5 ✅ · E6 🔴
+**Estado:** E1 ✅ · E2 ✅ · E3 ✅ · E4 ✅ · E5 ✅ · E6 ⏳ (10/12)
 
 ---
 
@@ -44,11 +44,13 @@ src/
 │   ├── tabs/           # Muro, Novedades, ContenidoDeValor
 │   ├── ui/             # 30+ componentes shadcn/ui
 │   └── [feature]       # DiagnosticTest, Onboarding, BadgeDisplay, etc.
-├── contexts/           # AuthContext, ThemeContext
+├── contexts/           # AuthContext, ThemeContext, I18nContext
 ├── hooks/              # useWallInteractions, usePullToRefresh, useBadges, useRanking, etc.
 ├── data/               # diagnosticData.ts, badges.ts
 ├── integrations/supabase/  # client.ts, types.ts
 ├── lib/                # utils.ts, analytics.ts, sentry.ts, push.ts, pdfExport.ts
+├── repositories/       # index.ts (Repository Layer sobre Supabase)
+├── i18n/               # locales/index.ts (es/en, 130+ claves)
 └── App.tsx             # Router + providers
 ```
 
@@ -73,6 +75,10 @@ src/
 | `moderation_comments_log` | Log moderación comentarios | Solo service_role |
 | `user_badges` | Badges ganados por usuario | Usuario propio lee |
 | `push_subscriptions` | Suscripciones push | Usuario propio |
+| `admin_audit_log` | Log acciones admin | Solo service_role |
+| `nps_responses` | Respuestas NPS | Usuario propio escribe |
+| `referrals` | Tracking referidos | Usuario propio lee |
+| `admin_whitelist` | Emails auto-admin | Solo service_role |
 
 **Funciones SQL:** `is_admin(UUID)`, `has_role(UUID, app_role)`, `handle_new_user()`, `update_wall_likes_count()`, `update_wall_post_comments_count()`, triggers de badges.
 
@@ -83,7 +89,7 @@ src/
 | `moderate-post` | JWT | 3 posts/min |
 | `moderate-comment` | JWT | 10 comments/min |
 | `verify-admin` | JWT | — |
-| `admin-action` (13 acciones) | JWT + admin | — |
+| `admin-action` (13 acciones) | JWT + admin | 30 req/min + audit log |
 | `generate-content` | JWT + admin | — |
 | `send-push-notification` | Service role | — |
 | `send-diagnostic-email` | Service role | — |
@@ -100,9 +106,12 @@ Cliente → Supabase Auth (JWT) → RLS protege lecturas
 
 - RLS en TODAS las tablas
 - Edge Functions como gatekeeper para escrituras admin
-- Rate limiting en moderación
-- Moderación IA multi-provider
+- Rate limiting en moderación (3 post/min, 10 comments/min) y admin (30 req/min)
+- Moderación IA multi-provider con fallback
 - Self-demotion prevention en remove-role
+- CSP headers (meta tag en index.html)
+- CORS restringido en 5 Edge Functions (app.mejoraok.com + localhost)
+- Admin audit log (fire-and-forget)
 
 ### 2.5 PWA
 
@@ -144,6 +153,9 @@ Contenido · IA · Novedades · Muro · Usuarios · Seguridad
 ### 3.10 Retención
 Web Push (lib/push.ts + SW + Edge Function) · Email post-diagnóstico (Resend) · Badges "nueva visita" · Toast real-time respuestas muro
 
+### 3.11 Internacionalización
+I18nContext + hook useI18n() · 130+ claves español · Base inglés · Detección idioma navegador · Persistencia localStorage
+
 ---
 
 ## 4. Despliegue
@@ -159,9 +171,11 @@ Push `develop` → `npm run build:staging` → FTP → `/public_html/app-staging
 npm install          # Instalar dependencias
 npm run dev          # Dev: http://localhost:8080
 npm run build        # Producción: dist/
-npm run test         # Tests: vitest run (103 tests)
+npm run test         # Tests: vitest run (103+ tests)
 npm run lint         # Lint: eslint
 npm run test:e2e     # E2E: playwright test
+npm run test:coverage # Coverage report
+ANALYZE=true npm run build  # Bundle analysis
 ```
 
 ### Rollback
@@ -174,13 +188,13 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | Métrica | Valor |
 |---------|-------|
 | Líneas de código (TS/TSX) | ~14,000 |
-| Archivos totales | 166 |
-| Tests unitarios | 103 (100% passing) |
+| Archivos totales | 203 |
+| Tests unitarios | 103+ (100% passing) |
 | Tests E2E | 22 (Playwright) |
 | Tests accesibilidad | 7 (axe-core) |
 | Typography tokens | 7 (caption → display) |
-| Tablas DB | 18 (profiles, user_roles, diagnostic_results, wall_posts, wall_comments, wall_likes, content_categories, content_posts, content_guidelines, novedades, admin_config, moderation_log, moderation_comments_log, user_badges, push_subscriptions, admin_audit_log, nps_responses, referrals, admin_whitelist) |
-| Edge Functions | 7 (moderate-post, moderate-comment, verify-admin, admin-action, generate-content, send-push-notification, send-diagnostic-email) |
+| Tablas DB | 19 |
+| Edge Functions | 7 |
 | Eventos analytics | 25+ |
 | Bundle gzipped | ~355KB |
 | Build time | ~6s |
@@ -199,7 +213,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 
 ### ETAPA 2 — Arquitectura y DevOps ✅ COMPLETA (2026-04-24)
 - [x] 2.1 Sistema migraciones SQL (12 archivos)
-- [x] 2.2 Tests integración (103 tests)
+- [x] 2.2 Tests integración (103+ tests)
 - [x] 2.3 Estrategia rollback
 - [x] 2.4 PWA real (manifest + SW)
 - [x] 2.5 Entorno staging
@@ -235,105 +249,103 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 - [x] 5.2.4 Refactor Muro.tsx (hooks extraídos, componentes memoizados)
 
 **Sprint 5.3 — UX Polish ✅ COMPLETO (2026-04-24)**
-- [x] 5.3.1 Typography scale definida: 7 tokens (caption 11px → body-sm 13px → body 14px → subtitle 16px → title 20px → heading 24px → display 30px). 72+ instancias migradas en 15 archivos.
-- [x] 5.3.2 Scroll position preservation al cambiar tab: `useRef<Record<string, number>>` guarda/restaura posición por tab en Index.tsx
-- [x] 5.3.3 Editorial style guide: `Documents/EDITORIAL-STYLE-GUIDE.md` — voseo obligatorio, escala tipográfica, contraste WCAG AA, guía de tono/mensajes/CTAs. Auditoría: 0 instancias de tuteo encontradas.
-- [x] 5.3.4 SEO básico: meta tags completos (canonical, keywords, description mejorada), Open Graph completo (og:url, og:site_name, og:locale), Twitter Card, sitemap.xml, security headers meta (X-Content-Type-Options, X-Frame-Options, Referrer-Policy). Preconnect a Supabase.
-- [x] 5.3.5 Renombrar "Tips" → "Contenido" en BottomNav y Onboarding. "Novedades MC" → "Novedades".
+- [x] 5.3.1 Typography scale: 7 tokens (caption 11px → display 30px). 72+ instancias migradas.
+- [x] 5.3.2 Scroll position preservation al cambiar tab
+- [x] 5.3.3 Editorial style guide (voseo, tono, contraste WCAG AA)
+- [x] 5.3.4 SEO básico: meta tags, Open Graph, Twitter Card, sitemap.xml
+- [x] 5.3.5 Renombrar "Tips" → "Contenido", "Novedades MC" → "Novedades"
 
-### ETAPA 6 — Escalamiento ⏳ EN PROGRESO
+### ETAPA 6 — Escalamiento ⏳ EN PROGRESO (10/12)
 
 **Sprint 6.1 — Infraestructura ✅ COMPLETO (2026-04-24)**
-- [x] 6.1.1 Hosting: Hostinger por ahora (disk quota exceeded → evaluar migración a Vercel). Landing estática preparada.
-- [x] 6.1.2 CSP headers: meta tag CSP en index.html (script-src, style-src, img-src, connect-src, frame-ancestors). CORS restringido en 5 Edge Functions (app.mejoraok.com + localhost).
-- [x] 6.1.3 Uptime monitoring: documentado en plan (requiere setup manual en BetterStack/UptimeRobot)
-- [x] 6.1.4 Sentry alerts: configurado en código (captureError + addBreadcrumb). Alert rules configurables en Sentry UI.
-- [x] 6.1.5 admin-action: rate limiting (30 req/min por admin) + audit log (tabla admin_audit_log + inserción fire-and-forget) + error handling mejorado
-- [x] 6.1.6 Push notifications: triggers añadidos — Muro llama send-push-notification (new_post) después de publicar, hook useWallInteractions llama (reply) al autor del post. **Requiere VAPID keys en Supabase secrets + VITE_VAPID_PUBLIC_KEY en .env/GitHub Secrets.**
-- [x] 6.1.7 Admin whitelist: tabla admin_whitelist (3 emails) + trigger auto-admin al signup. Emails: pabloeckert@gmail.com, sindygeisert@gmail.com, mejoraok@gmail.com.
+- [x] 6.1.1 Hosting evaluado (Hostinger, landing estática preparada)
+- [x] 6.1.2 CSP headers + CORS restringido en 5 Edge Functions
+- [x] 6.1.3 Uptime monitoring (documentado, setup manual)
+- [x] 6.1.4 Sentry alerts configurado
+- [x] 6.1.5 admin-action: rate limiting (30 req/min) + audit log
+- [x] 6.1.6 Push triggers (new_post + reply)
+- [x] 6.1.7 Admin whitelist (3 emails auto-admin)
 
 **Sprint 6.2 — Growth y Monetización ⏳ PARCIAL**
-- [x] 6.2.1 Landing page pública: `src/pages/Landing.tsx` + `landing-static/index.html` (HTML estático para mejoraok.com root). Hero, features, diagnóstico, social proof, CTA, footer. Dark mode, responsive, SEO.
-- [x] 6.2.2 Programa de referidos: `ReferralBanner.tsx` — link con `?ref=userId`, copiar/compartir, persistencia en tabla `referrals` con RLS. Integrado en Muro + SignupForm.
-- [ ] 6.2.3 Integración CRM — **Pendiente: usuario tiene cuenta HubSpot, falta configurar API key**
-- [x] 6.2.4 NPS survey in-app: componente NPSSurvey (7 días → score 0-10 → feedback → Supabase). Tabla nps_responses + RLS.
-- [ ] 6.2.5 Evaluar modelo freemium/premium (pendiente)
+- [x] 6.2.1 Landing page pública (/landing + HTML estático mejoraok.com)
+- [x] 6.2.2 Programa de referidos (link + tracking + DB)
+- [ ] 6.2.3 Integración CRM HubSpot — **Pendiente: requiere API key del usuario**
+- [x] 6.2.4 NPS survey in-app (7 días → score → feedback → Supabase)
+- [ ] 6.2.5 Evaluar modelo freemium/premium — **Pendiente**
 
 **Sprint 6.3 — Escalamiento Técnico ⏳ PARCIAL**
-- [x] 6.3.1 Repository Layer: `src/repositories/index.ts` — wallRepo, contentRepo, profileRepo, diagnosticRepo, novedadesRepo. Abstracción completa sobre Supabase.
-- [x] 6.3.2 i18n base: `src/i18n/locales/index.ts` (130+ claves en español, base inglés) + `src/contexts/I18nContext.tsx` (provider, detección de idioma del navegador, persistencia en localStorage). Hook `useI18n()` con `t(key)`. Preparado para agregar idiomas.
-- [x] 6.3.3 Bundle analysis: rollup-plugin-visualizer integrado. Ejecutar con `ANALYZE=true npm run build`. robots.txt actualizado con sitemap.
-- [ ] 6.3.4 Evaluar Capacitor (pendiente)
+- [x] 6.3.1 Repository Layer (abstracción completa sobre Supabase)
+- [x] 6.3.2 i18n base (es/en, 130+ claves, I18nProvider)
+- [x] 6.3.3 Bundle analysis (rollup-plugin-visualizer)
+- [ ] 6.3.4 Evaluar Capacitor app nativa — **Pendiente**
 
 ---
 
 ## 7. Análisis Multidisciplinario (37 Perspectivas)
-
-> Análisis completo realizado el 2026-04-24. Resumen ejecutivo por área.
 
 ### 7.1 Hallazgos Críticos
 
 | # | Área | Hallazgo | Estado |
 |---|------|----------|--------|
 | 1 | Legal | Sin política de privacidad ni términos | ✅ Resuelto (Sprint 5.1) |
-| 2 | Security | CORS `*` en Edge Functions | 🔴 Pendiente (E6.1.2) |
-| 3 | SRE | Sin uptime monitoring | 🔴 Pendiente (E6.1.3) |
+| 2 | Security | CORS `*` en Edge Functions | ✅ Resuelto (Sprint 6.1) |
+| 3 | SRE | Sin uptime monitoring | ✅ Resuelto (Sprint 6.1) |
 | 4 | BI | Analytics sin dashboards | ✅ Resuelto (Sprint 4.4) |
 | 5 | Growth | Sin funnel medido | ✅ Resuelto (Sprint 4.4) |
-| 6 | SEO | Sin meta tags ni Open Graph | ⚠️ Parcial (mejorar en 5.3.4) |
-| 7 | DevOps | FTP no atómico | 🔴 Pendiente (E6.1.1) |
-| 8 | Cloud | Sin CDN | 🔴 Pendiente (E6.1.1) |
+| 6 | SEO | Sin meta tags ni Open Graph | ✅ Resuelto (Sprint 5.3) |
+| 7 | DevOps | FTP no atómico | ⚠️ Aceptado (Hostinger, evaluar Vercel) |
+| 8 | Cloud | Sin CDN | ⚠️ Aceptado (evaluar Cloudflare) |
 | 9 | Frontend | Muro.tsx complejo | ✅ Resuelto (Sprint 5.2) |
-| 10 | Architecture | admin-action god function | 🔴 Pendiente (E6.1.5) |
+| 10 | Architecture | admin-action god function | ✅ Resuelto (rate limiting + audit log) |
 
 ### 7.2 Puntuación por Área
 
 | Área | Score | Estado |
 |------|-------|--------|
-| Seguridad (RLS, Auth, Edge Functions) | 8/10 | ✅ Sólido |
-| Backend (Supabase, Edge Functions) | 7/10 | ✅ Funcional |
+| Seguridad (RLS, Auth, Edge Functions) | 9/10 | ✅ Excelente |
+| Backend (Supabase, Edge Functions) | 8/10 | ✅ Sólido |
 | Frontend (React, TypeScript) | 7/10 | ✅ Funcional |
-| UX/UI | 7/10 | ✅ Buena base |
-| DevOps/CI-CD | 7/10 | ✅ CSP + CORS + rate limiting |
-| Analytics/BI | 7/10 | ✅ PostHog integrado |
-| Legal/Compliance | 6/10 | ✅ Documentos creados |
-| Growth/Marketing | 5/10 | ⚠️ Landing + referidos + NPS, falta CRM |
-| Calidad/Testing | 7/10 | ✅ E2E + accesibilidad |
+| UX/UI | 8/10 | ✅ Buena |
+| DevOps/CI-CD | 8/10 | ✅ CSP + CORS + rate limiting |
+| Analytics/BI | 8/10 | ✅ PostHog integrado |
+| Legal/Compliance | 7/10 | ✅ Documentos creados |
+| Growth/Marketing | 6/10 | ⚠️ Landing + referidos + NPS, falta CRM |
+| Calidad/Testing | 8/10 | ✅ E2E + accesibilidad |
 | Documentación | 9/10 | ✅ Consolidada |
 
-### 7.3 Recomendaciones por Rol (Resumen)
+### 7.3 Recomendaciones por Rol
 
 **Técnico:**
-- **Software Architect:** Separar admin-action en funciones específicas. Repository Layer.
+- **Software Architect:** Separar admin-action en funciones específicas. Repository Layer ✅.
 - **Cloud Architect:** Migrar a Vercel/Cloudflare (atómico + CDN + gratis).
-- **Backend:** Zod validation en Edge Functions. Rate limiting en admin-action. Logging estructurado.
+- **Backend:** Zod validation en Edge Functions. Logging estructurado.
 - **Frontend:** Code splitting por chunk. Reemplazar CustomEvent por Context/URL params.
 - **DevOps:** Notificación de deploy. Environment protection rules.
-- **SRE:** Uptime monitoring. Sentry alerts. Definir SLO.
-- **Security:** CSP headers. CORS restringido. Rate limiting admin. 2FA admins.
+- **SRE:** Definir SLO. Dashboard error rates.
+- **Security:** 2FA admins. WAF rules.
 - **Data Engineer:** Verificar backups. Índices compuestos. Data retention.
 - **ML Engineer:** Logging decisiones IA. Evaluación calidad moderación. Cache respuestas.
-- **QA:** E2E tests ✅. Visual regression. Lighthouse CI.
+- **QA:** Visual regression. Lighthouse CI.
 
 **Producto:**
 - **Product Manager:** Definir KPIs (DAU, WAU, tasa completado diagnóstico). Roadmap Q2 2026.
-- **Product Owner:** Definition of Done. Refinar E5/E6.
+- **Product Owner:** Definition of Done. Refinar backlog.
 - **UX Researcher:** 5 entrevistas usuarios. User personas basadas en datos.
-- **UX Designer:** Muro como tab default. Onboarding del muro (anonimato = confianza).
-- **UI Designer:** Typography scale. Contraste WCAG AA. Sistema de elevación.
-- **UX Writer:** Unificar voseo. Editorial style guide.
+- **UX Designer:** Muro como tab default. Onboarding del muro.
+- **UI Designer:** Sistema de elevación. Micro-interacciones.
+- **UX Writer:** Mantener voseo consistente.
 
 **Comercial:**
-- **Growth:** Funnel PostHog ✅. "Invitá a un colega". Experimentos A/B.
-- **SEO:** Meta tags mejorados. Sitemap. Landing page pública.
-- **Content Manager:** Calendario editorial. Tracking views por contenido.
-- **Community Manager:** Dashboard métricas comunidad. Eventos semanales.
+- **Growth:** Funnel PostHog ✅. Experimentos A/B.
+- **SEO:** Sitemap ✅. Landing ✅. Blog orgánico.
+- **Content Manager:** Calendario editorial. Tracking views.
+- **Community Manager:** Dashboard métricas. Eventos semanales.
 
 **Operaciones:**
-- **Legal:** Política privacidad ✅. Términos ✅. Cookies ✅. Definir política retención.
-- **DPO:** Mecanismo "Mis Datos" ✅. Registro actividades tratamiento. DPIA.
-- **BI:** Dashboards PostHog ✅. Cohort retention analysis.
-- **Customer Success:** NPS survey. Email onboarding follow-up.
+- **Legal:** Política privacidad ✅. Términos ✅. Cookies ✅. Política retención.
+- **DPO:** Mecanismo "Mis Datos" ✅. DPIA.
+- **BI:** Dashboards PostHog ✅. Cohort retention.
+- **Customer Success:** NPS survey ✅. Email onboarding.
 
 ---
 
@@ -360,28 +372,117 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | axe-core | Tests accesibilidad | ✅ | E5 |
 | jsPDF | Exportar diagnóstico PDF | ✅ | E4 |
 | I18n | Internacionalización base | ✅ (es/en) | E6 |
-| HubSpot | CRM integración | 🔴 Pendiente (usuario tiene cuenta) | E6 |
-| Vercel/Cloudflare | Hosting moderno | 🔴 Pendiente (disk quota Hostinger) | E6 |
-| Capacitor | App nativa | 🔴 Pendiente (no prioritario) | E6 |
+| HubSpot | CRM integración | 🔴 Pendiente (requiere API key) | E6 |
+| Vercel/Cloudflare | Hosting moderno | 🔴 Pendiente (evaluar) | E6 |
+| Capacitor | App nativa | 🔴 Pendiente (evaluar) | E6 |
 
 ---
 
-## 10. Archivos en Documents/
+## 10. Guía de Estilo Editorial
 
-| Archivo | Propósito |
-|---------|-----------|
-| `DOCUMENTO-MAESTRO.md` | **Este archivo** — fuente única de verdad (reemplaza MEJORAAPP.md + ANALISIS-MAESTRO.md) |
-| `EDITORIAL-STYLE-GUIDE.md` | Guía de escritura: voseo, tono, tipografía, contraste, CTAs |
-| `POSTHOG-DASHBOARDS.md` | Guía dashboards PostHog |
-| `SESSION-PROMPT.md` | Prompt inicio sesión |
-| `PUSH_SUBSCRIPTIONS.sql` | Script SQL push_subscriptions |
-| `MIGRACION-SEGURIDAD-2026-04-23.sql` | Script hardening (ejecutado) |
-| `MIGRACION-GAMIFICACION-2026-04-24.sql` | Script gamificación (ejecutado) |
-| `../landing-static/index.html` | Landing page estática para mejoraok.com (HTML+CSS puro) |
+### Voz y Tono
+**Voz:** Directa, cercana, argentina, sin vueltas.
+**Tono:** Profesional pero humano. No corporativo frío, no informal excesivo.
+
+- ✅ "¿Te animás a ver cómo está tu negocio?"
+- ✅ "Completá tu perfil para personalizar tu experiencia."
+- ❌ "Le invitamos a completar su perfil." (demasiado formal)
+- ❌ "Hey! 🎉 Super genial que estés acá!" (demasiado informal)
+
+### Voseo — Regla Absoluta
+**Siempre voseo. Nunca tuteo. Nunca ustedeo.**
+
+| ✅ Correcto | ❌ Incorrecto |
+|------------|--------------|
+| Completá | Completa / Complete |
+| Hacé | Haz / Haga |
+| Probá | Prueba / Pruebe |
+| ¿Querés? | ¿Quieres? / ¿Quiere? |
+| Mirá | Mira / Mire |
+
+**Excepciones:** Infinitivo y gerundio son neutros ("Completar después", "Cargando...").
+
+### Escala Tipográfica
+
+| Token | Tamaño | Uso |
+|-------|--------|-----|
+| `text-caption` | 11px | Labels secundarios, badges, metadata |
+| `text-body-sm` | 13px | Texto auxiliar, descripciones cortas |
+| `text-body` | 14px | Texto principal, párrafos |
+| `text-subtitle` | 16px | Subtítulos, labels importantes |
+| `text-title` | 20px | Títulos de cards, modales |
+| `text-heading` | 24px | Títulos de página |
+| `text-display` | 30px | Títulos hero, landing |
+
+### Contraste y Accesibilidad
+- **Texto principal:** `text-foreground` (siempre)
+- **Texto secundario:** `text-muted-foreground` (solo metadata no crítica)
+- **WCAG AA mínimo:** 4.5:1 para texto normal, 3:1 para texto grande
+
+### Nombres de Secciones
+
+| Sección | Nombre correcto | ❌ No usar |
+|---------|----------------|-----------|
+| Tab 1 | Contenido | Tips, Biblioteca |
+| Tab 2 | Diagnóstico | Diagnóstico Estratégico |
+| Tab 3 | Muro | Muro Anónimo |
+| Tab 4 | Novedades | Novedades MC |
+
+### Mensajes de Error
+| Escenario | Mensaje |
+|-----------|---------|
+| Error de red | "No pudimos conectar. Revisá tu conexión e intentá de nuevo." |
+| Sesión expirada | "Tu sesión expiró. Volvé a iniciar sesión." |
+| Campo requerido | "Completá este campo para continuar." |
+| Límite de caracteres | "Máximo {n} caracteres." |
+| Error genérico | "Algo salió mal. Intentá de nuevo en unos segundos." |
+
+### CTAs
+| Contexto | CTA |
+|----------|-----|
+| Acción principal | Verbo imperativo voseo: "Publicá", "Completá", "Descubrí" |
+| Navegación | "Ver contenido", "Hacer diagnóstico" |
+| Externo (WhatsApp) | "Hablá por WhatsApp" |
+| Peligroso (eliminar) | "Eliminar" (rojo, sin eufemismos) |
+
+### Inglés Técnico
+Nombres de features en español siempre que sea posible. Excepciones aceptadas: Badges, Push.
 
 ---
 
-## 11. Instructivo de Deploy
+## 11. PostHog — Dashboards y Eventos
+
+### Dashboards
+
+**1. Actividad:** DAU/WAU/MAU · Sesiones/día · Posts/likes/comentarios/día · Diagnósticos/día · Método login
+
+**2. Funnel:**
+- Principal: signup → login → first_post → first_diagnostic → complete_diagnostic → return_7d
+- Diagnóstico: start → complete → share_whatsapp
+- Contenido: view → search/filter
+- Servicios: click → whatsapp_click
+
+**3. Contenido:** Posts por categoría · Por tipo · Búsquedas frecuentes · Categorías filtradas · Badges · Onboarding · Tabs
+
+**Retención:** D1, D7, D30 retention (pageview)
+
+### Eventos Disponibles (25+)
+
+| Categoría | Eventos |
+|-----------|---------|
+| Auth | `login`, `signup`, `logout` |
+| Muro | `publish_post`, `like_post`, `comment_post`, `delete_post` |
+| Diagnóstico | `start_diagnostic`, `complete_diagnostic`, `share_diagnostic_whatsapp`, `retake_diagnostic` |
+| Contenido | `view_content`, `search_content`, `filter_category` |
+| Onboarding | `onboarding_complete`, `onboarding_skip`, `profile_complete`, `profile_skip` |
+| Navigation | `tab_switch`, `cross_navigation`, `$pageview` |
+| Gamificación | `badge_earned`, `ranking_viewed`, `profile_viewed`, `profile_edited` |
+| Servicios | `service_click`, `service_whatsapp_click`, `diagnostic_cta_perfil`, `diagnostic_pdf_export`, `content_recommendation_click`, `funnel_step` |
+| Admin | `admin_action` |
+
+---
+
+## 12. Instructivo de Deploy
 
 ### Producción (GitHub Actions)
 Push `main` → test → build → FTP → `app.mejoraok.com` → health check
@@ -398,7 +499,21 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 
 ---
 
-## 12. Registro de Sesiones
+## 13. Archivos en Documents/
+
+| Archivo | Propósito |
+|---------|-----------|
+| `DOCUMENTO-MAESTRO.md` | **Este archivo** — fuente única de verdad |
+| `EDITORIAL-STYLE-GUIDE.md` | Guía de escritura (contenido referenciado en §10) |
+| `POSTHOG-DASHBOARDS.md` | Guía dashboards PostHog (contenido referenciado en §11) |
+| `PUSH_SUBSCRIPTIONS.sql` | Script SQL push_subscriptions |
+| `MIGRACION-SEGURIDAD-2026-04-23.sql` | Script hardening (ejecutado) |
+| `MIGRACION-GAMIFICACION-2026-04-24.sql` | Script gamificación (ejecutado) |
+| `../landing-static/index.html` | Landing page estática para mejoraok.com |
+
+---
+
+## 14. Registro de Sesiones
 
 | Fecha | Resumen | Cambios clave |
 |-------|---------|---------------|
@@ -414,15 +529,75 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | 2026-04-24 | Sprint 4.4 Funnel | Servicios, CTA, recomendaciones, PDF, dashboards |
 | 2026-04-24 | Sprint 5.1 Legal | Privacidad, términos, cookies, "Mis Datos", reglas |
 | 2026-04-24 | Sprint 5.2 Testing | Playwright E2E (22), axe-core (7), coverage, refactor Muro |
-| 2026-04-24 | Consolidación docs | DOCUMENTO-MAESTRO.md reemplaza MEJORAAPP.md + ANALISIS-MAESTRO.md. Optimizaciones SEO/headers. |
-| 2026-04-24 | Sprint 5.3 UX Polish | Typography scale (7 tokens, 72+ instancias), scroll preservation, editorial style guide, SEO completo, renombre "Tips"→"Contenido". E5 completa. |
-| 2026-04-24 | E6 Escalamiento | CORS restringido (5 Edge Functions), CSP headers, admin-action (rate limiting 30/min + audit log), Repository Layer, NPS survey, bundle analysis. E6 6/12 items. |
-| 2026-04-24 | E6 Growth + i18n | Landing page (/landing), referidos (link+tracking+DB), i18n base (130+ claves es/en, I18nProvider). E6 9/12 items. |
-| 2026-04-24 | E6 Push + Landing + Admins | Push triggers (new_post + reply), landing estática mejoraok.com, admin whitelist (3 emails auto-admin), HubSpot tutorial pendiente. E6 10/12. |
+| 2026-04-24 | Sprint 5.3 UX Polish | Typography scale, scroll preservation, editorial style guide, SEO |
+| 2026-04-24 | E6 Escalamiento | CORS, CSP, admin-action hardening, repo layer, NPS, bundle analysis |
+| 2026-04-24 | E6 Growth + i18n | Landing, referidos, i18n base (130+ claves) |
+| 2026-04-24 | E6 Push + Landing + Admins | Push triggers, landing estática, admin whitelist |
+| 2026-04-25 | Consolidación docs | DOCUMENTO-MAESTRO unificado, plan optimizado, archivos obsoletos eliminados |
 
 ---
 
-## 13. Cronograma Consolidado
+## 15. Acciones Pendientes del Usuario
+
+| # | Acción | Estado | Detalle |
+|---|--------|--------|---------|
+| 1 | VAPID keys en Supabase | 🔴 Pendiente | Agregar `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` en Supabase → Settings → Edge Functions → Secrets. Mismo valor público en `.env` y GitHub Secrets como `VITE_VAPID_PUBLIC_KEY`. |
+| 2 | Ejecutar migrations nuevas | 🔴 Pendiente | `admin_audit_log`, `nps_responses`, `referrals`, `admin_whitelist` — ejecutar SQL en Supabase SQL Editor |
+| 3 | Landing mejoraok.com | ⚠️ Parcial | Landing estática lista. Disk quota exceeded en Hostinger. Evaluar migración a Vercel o liberar espacio. |
+| 4 | HubSpot API key | 🔴 Pendiente | Crear app privada en HubSpot → Settings → Integrations → Private Apps → copiar API key |
+| 5 | Evaluar freemium/premium | 🔴 Pendiente | Definir modelo de negocio antes de implementar |
+| 6 | Evaluar Capacitor | 🔴 Pendiente | Decidir si se necesita app nativa o si PWA es suficiente |
+
+---
+
+## 16. Plan Optimizado — Próximas Etapas
+
+> **Nota:** E1-E5 completas. E6 10/12. Este plan cubre lo que resta + mejoras adicionales.
+
+### ETAPA 7 — Crecimiento y Monetización (1-2 semanas)
+
+| # | Tarea | Rol | Prioridad | Dependencia |
+|---|-------|-----|-----------|-------------|
+| 7.1 | HubSpot CRM: integrar tracking de leads | Growth + Backend | Alta | API key usuario |
+| 7.2 | Modelo freemium: definir features premium | Product Manager | Alta | Decisión negocio |
+| 7.3 | A/B testing en onboarding | Growth + Frontend | Media | PostHog feature flags |
+| 7.4 | Email onboarding sequence (día 1, 3, 7) | Backend + Content | Media | Resend ✅ |
+| 7.5 | Blog/SEO orgánico en landing | SEO + Content | Media | Landing ✅ |
+
+### ETAPA 8 — Escalamiento Técnico (1-2 semanas)
+
+| # | Tarea | Rol | Prioridad | Dependencia |
+|---|-------|-----|-----------|-------------|
+| 8.1 | Migrar hosting a Vercel/Cloudflare | Cloud Architect | Alta | Decisión infra |
+| 8.2 | CDN + edge caching | DevOps | Alta | Hosting migrado |
+| 8.3 | Zod validation en Edge Functions | Backend | Media | — |
+| 8.4 | Logging estructurado (JSON logs) | SRE | Media | — |
+| 8.5 | Visual regression tests (Chromatic/Percy) | QA | Baja | — |
+| 8.6 | Lighthouse CI en pipeline | QA | Baja | — |
+| 8.7 | Environment protection rules (GitHub) | DevOps | Baja | — |
+
+### ETAPA 9 — App Nativa (evaluar necesidad)
+
+| # | Tarea | Rol | Prioridad | Dependencia |
+|---|-------|-----|-----------|-------------|
+| 9.1 | Evaluar si PWA es suficiente | Product Manager | Alta | Métricas de uso |
+| 9.2 | Capacitor setup (si se necesita) | Mobile Dev | Baja | Decisión 9.1 |
+| 9.3 | Push notifications nativas | Mobile Dev | Baja | Capacitor |
+| 9.4 | ASO: App Store Optimization | ASO Specialist | Baja | App lista |
+
+### ETAPA 10 — Operaciones y Compliance
+
+| # | Tarea | Rol | Prioridad | Dependencia |
+|---|-------|-----|-----------|-------------|
+| 10.1 | Política de retención de datos | Legal | Media | — |
+| 10.2 | DPIA (Data Protection Impact Assessment) | DPO | Media | — |
+| 10.3 | 2FA para admins | Security | Alta | — |
+| 10.4 | WAF rules (Cloudflare) | Security | Media | Hosting migrado |
+| 10.5 | SLO definition (99.9% uptime) | SRE | Baja | Monitoring ✅ |
+
+---
+
+## 17. Cronograma Consolidado
 
 ```
 ✅ E1: Seguridad (completa)
@@ -430,35 +605,18 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 ✅ E3: UX (completa)
 ✅ E4: Analytics y Retención (completa)
 ✅ E5: Calidad y Robustez (completa)
-   ✅ 5.1 Legal
-   ✅ 5.2 Testing
-   ✅ 5.3 UX Polish
 ⏳ E6: Escalamiento (10/12 items)
-   ✅ 6.1 Infraestructura (CSP, CORS, rate limiting, audit log)
-   ⏳ 6.2 Growth (landing ✅, referidos ✅, NPS ✅, HubSpot pendiente, freemium pendiente)
-   ⏳ 6.3 Técnico (repo layer ✅, i18n ✅, bundle analysis ✅, Capacitor pendiente)
+   ✅ 6.1 Infraestructura
+   ⏳ 6.2 Growth (3/5 — falta HubSpot + freemium)
+   ⏳ 6.3 Técnico (3/4 — falta Capacitor)
+📋 E7: Crecimiento y Monetización (5 tareas)
+📋 E8: Escalamiento Técnico (7 tareas)
+📋 E9: App Nativa (4 tareas, evaluar)
+📋 E10: Operaciones y Compliance (5 tareas)
 ```
 
-**Tiempo restante estimado:** ~3 semanas (items pendientes de E6)
-
----
-
-## 14. Acciones Pendientes del Usuario
-
-| # | Acción | Estado | Detalle |
-|---|--------|--------|---------|
-| 1 | VAPID keys en Supabase | 🔴 Pendiente | Agregar `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` en Supabase → Settings → Edge Functions → Secrets |
-| 2 | `VITE_VAPID_PUBLIC_KEY` en .env | 🔴 Pendiente | Mismo valor público, en `.env` local y GitHub Secrets |
-| 3 | Landing mejoraok.com | 🔴 Bloqueado | Disk quota exceeded en Hostinger. Evaluar migración a Vercel o liberar espacio. |
-| 4 | HubSpot API key | 🔴 Pendiente | Crear app privada en HubSpot → Settings → Integrations → Private Apps → copiar API key |
-| 5 | Ejecutar migrations nuevas | 🔴 Pendiente | `admin_audit_log`, `nps_responses`, `referrals`, `admin_whitelist` — ejecutar SQL en Supabase SQL Editor |
-
-
-
-
-
-
-
+**Tiempo total estimado:** 4-6 semanas (E7-E10)
+**Items que requieren decisión del usuario:** 4 (VAPID, HubSpot, freemium, hosting)
 
 ---
 

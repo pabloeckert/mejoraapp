@@ -17,6 +17,9 @@ MejoraApp es la aplicación digital del ecosistema Mejora Continua — una comun
 - 🤖 IA multi-provider (Gemini, DeepSeek, Groq) con rotación automática
 - 📱 PWA instalable
 - 🌙 Dark mode
+- 🏆 Gamificación (8 badges + ranking comunidad)
+- 📊 Analytics (PostHog, 25+ eventos)
+- 🌐 i18n (español/inglés)
 
 ## Documentación
 
@@ -29,10 +32,13 @@ Arquitectura, plan de desarrollo, análisis UX, estado actual, y registro de ses
 
 ```bash
 npm install
-npm run dev      # Dev server en http://localhost:8080
-npm run build    # Build de producción en dist/
-npm run test     # Tests (103 passing)
-npm run lint     # Lint: eslint
+npm run dev          # Dev server en http://localhost:8080
+npm run build        # Build de producción en dist/
+npm run test         # Tests (103+ passing)
+npm run lint         # Lint: eslint
+npm run test:e2e     # E2E: playwright test
+npm run test:coverage # Coverage report
+ANALYZE=true npm run build  # Bundle analysis
 ```
 
 ## Despliegue
@@ -40,7 +46,7 @@ npm run lint     # Lint: eslint
 ### Automático (GitHub Actions)
 Push a `main` → build automático → deploy a Hostinger via FTP.
 
-### Manual (SmartFTP)
+### Manual
 1. `npm run build`
 2. Subir contenido de `dist/` a `/public_html/app/` en Hostinger
 
@@ -55,9 +61,22 @@ Desde GitHub Actions → workflow `rollback.yml` → especificar commit SHA + ra
 | Build | Vite 5 |
 | Styling | Tailwind CSS + shadcn/ui |
 | Backend | Supabase (Auth + DB + Edge Functions) |
-| Database | PostgreSQL (RLS habilitado) |
+| Database | PostgreSQL (RLS habilitado, 19 tablas) |
 | IA | Gemini + DeepSeek + Groq |
-| Testing | Vitest (103 tests) |
+| Testing | Vitest (103+) + Playwright (22 E2E) + axe-core (7) |
+| Analytics | PostHog (25+ eventos) |
+| Error Tracking | Sentry |
+| Email | Resend |
+| Push | Web Push API |
+
+## Métricas
+
+- **Líneas de código:** ~14,000
+- **Archivos totales:** 203
+- **Tests:** 103+ unitarios + 22 E2E + 7 accesibilidad
+- **Tablas DB:** 19
+- **Edge Functions:** 7
+- **Bundle gzipped:** ~355KB
 
 ## Estructura
 
@@ -69,20 +88,11 @@ src/
 │   ├── auth/        # Login, Signup, Google, AdminLogin
 │   ├── tabs/        # Muro, Novedades, Contenido
 │   └── ui/          # 30+ componentes shadcn/ui
-├── contexts/        # AuthContext, ThemeContext
-├── hooks/           # use-toast, useAdminAction, use-mobile
-├── data/            # Datos del diagnóstico
+├── contexts/        # AuthContext, ThemeContext, I18nContext
+├── hooks/           # useWallInteractions, useBadges, useRanking, etc.
+├── repositories/    # Repository Layer (abstracción Supabase)
+├── i18n/            # Internacionalización (es/en)
+├── data/            # Datos del diagnóstico + badges
+├── lib/             # analytics, sentry, push, pdfExport, utils
 └── integrations/    # Supabase client + tipos
 ```
-
-## Acceso Admin
-
-En la pantalla de login (`/auth`) hay un **botón con icono Shield**. Click → modo admin (usuario + contraseña). Click otra vez → login normal.
-
-## Métricas
-
-- **Líneas de código:** ~11,900
-- **Archivos TS/TSX:** 93
-- **Tests:** 103 (100% passing)
-- **Bundle gzipped:** ~350KB
-- **Build time:** ~4 segundos
