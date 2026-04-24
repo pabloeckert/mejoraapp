@@ -4,7 +4,7 @@
 > **Stack:** React 18 · TypeScript · Vite 5 · Supabase · Tailwind CSS · shadcn/ui
 > **Producción:** https://app.mejoraok.com
 > **Repo:** https://github.com/pabloeckert/MejoraApp
-> **Última actualización:** 2026-04-24 07:06 GMT+8
+> **Última actualización:** 2026-04-24 20:09 GMT+8
 
 ---
 
@@ -28,7 +28,7 @@
 
 MejoraApp es el MVP digital de **Mejora Continua**, comunidad de negocios para líderes empresariales argentinos. Funciona en producción con muro anónimo moderado por IA, contenido de valor, diagnóstico estratégico y panel admin.
 
-**Estado actual:** App funcional con seguridad completa (E1), DevOps al 67% (E2), UX completa (E3 6/6). **Análisis multidisciplinario completo (2026-04-24).** Contenido y Engagement (E4) redefinido como prioridad crítica.
+**Estado actual:** App funcional con seguridad completa (E1), DevOps completa (E2 6/6), UX completa (E3 6/6), Analytics Sprint 4.1 implementado (E4 1/4). **Análisis multidisciplinario completo (2026-04-24).**
 
 ---
 
@@ -59,7 +59,7 @@ src/
 ├── data/               # diagnosticData.ts
 ├── integrations/
 │   └── supabase/       # client.ts, types.ts (auto-generado)
-├── lib/                # utils.ts
+├── lib/                # utils.ts, analytics.ts, sentry.ts
 ├── assets/             # Logo, avatars
 ├── App.tsx             # Router + providers
 └── vite-env.d.ts
@@ -238,8 +238,9 @@ npm run lint      # Lint: eslint
 ```
 
 ### Staging
-- Rama `develop` creada
-- Pendiente: segundo proyecto Supabase para staging real
+- Rama `develop` + workflow `deploy-staging.yml`
+- Config: `.env.staging.example` (copiar a `.env.staging` con Supabase staging)
+- Deploy automático a `/public_html/app-staging/` en Hostinger
 
 ---
 
@@ -247,14 +248,15 @@ npm run lint      # Lint: eslint
 
 | Métrica | Valor |
 |---------|-------|
-| Líneas de código (TS/TSX) | ~12,300 |
-| Archivos totales | 156 |
+| Líneas de código (TS/TSX) | ~13,300 |
+| Archivos totales | 161 |
 | Tests | 103 (100% passing) |
 | Tablas DB | 13 |
 | Edge Functions | 5 |
-| Commits | 122+ |
+| Commits | 123+ |
 | Bundle gzipped | ~350KB |
-| Build time | ~3.8s |
+| Build time | ~4.4s |
+| Eventos analytics | 25+ |
 
 ---
 
@@ -361,8 +363,8 @@ Auditoría completa desde 18 perspectivas: UX/UI (9 roles), Negocio (4 roles), I
 ### 6.15 DevOps Engineer
 - ✅ CI/CD via GitHub Actions
 - ⚠️ **FTP sin atomic deploys** — riesgo de estado inconsistente
-- ⚠️ **Sin staging real**
-- ⚠️ **Sin monitoring** (Sentry)
+- ✅ Staging config (workflow + env)
+- ✅ Sentry integration (error tracking + user context)
 
 ### 6.16 Security Specialist
 - ✅ RLS en todas las tablas + Edge Functions con JWT
@@ -387,7 +389,7 @@ Auditoría completa desde 18 perspectivas: UX/UI (9 roles), Negocio (4 roles), I
 | Muro | ⭐⭐⭐⭐ | Falta háptica, menú contextual |
 | Diagnóstico | ⭐⭐⭐ | Sin follow-up, sin recomendaciones |
 | Admin | ⭐⭐ | No auditado en profundidad |
-| Retención | ⭐⭐ | Sin push, sin gamificación, sin analytics |
+| Retención | ⭐⭐ | Sin push, sin gamificación, analytics implementado |
 | Performance | ⭐⭐⭐ | Bundle OK, sin CDN |
 
 ---
@@ -404,13 +406,15 @@ Auditoría completa desde 18 perspectivas: UX/UI (9 roles), Negocio (4 roles), I
 - [x] 1.5 Auditoría de RLS policies (7 tablas mejoradas)
 - [x] 1.6 Eliminar código muerto ai.ts (IAs 100% server-side)
 
-### ETAPA 2 — Arquitectura y DevOps ⏳ (4/6)
+### ETAPA 2 — Arquitectura y DevOps ✅ COMPLETA
+**Fecha de cierre:** 2026-04-24
+
 - [x] 2.1 Sistema de migraciones SQL (12 archivos incrementales)
 - [x] 2.2 Tests de integración (103 tests, 7 archivos)
 - [x] 2.3 Estrategia de rollback (workflow + health check)
 - [x] 2.4 PWA real (manifest + service worker network-first)
-- [ ] 2.5 Entorno de staging (rama `develop` creada, pendiente segundo proyecto Supabase)
-- [ ] 2.6 Monitoring y alertas (Sentry)
+- [x] 2.5 Entorno de staging (`.env.staging.example` + workflow `deploy-staging.yml` + script `build:staging`)
+- [x] 2.6 Monitoring y alertas (Sentry — `lib/sentry.ts`, user tracking, ErrorBoundary integration)
 
 ### ETAPA 3 — Experiencia de Usuario ✅ COMPLETA
 **Fecha de cierre:** 2026-04-24
@@ -425,11 +429,11 @@ Auditoría completa desde 18 perspectivas: UX/UI (9 roles), Negocio (4 roles), I
 ### ETAPA 4 — Analytics y Retención ⚡ PRIORIDAD CRÍTICA
 > **Re-definida a partir del análisis multidisciplinario.** Sin datos no se puede optimizar. Sin retención no hay producto.
 
-**Sprint 4.1 — Analytics (semana 1)**
-- [ ] 4.1.1 Integrar PostHog (o Plausible) — tracking de pageviews, eventos, sesiones
-- [ ] 4.1.2 Eventos custom: login, publicar_post, like, comentario, iniciar_diagnostico, completar_diagnostico, compartir_wa, ver_contenido
-- [ ] 4.1.3 Dashboard básico: DAU, WAU, posts/día, diagnósticos/día, tasa completado diagnóstico
-- [ ] 4.1.4 Funnel: registro → primer post → primer diagnóstico → retorno en 7 días
+**Sprint 4.1 — Analytics ✅ COMPLETO (2026-04-24)**
+- [x] 4.1.1 Integrar PostHog — tracking de pageviews, eventos, sesiones (`lib/analytics.ts`)
+- [x] 4.1.2 Eventos custom: login (email/google/admin), signup, logout, publish_post, like_post, comment_post, delete_post, start_diagnostic, complete_diagnostic, share_diagnostic_whatsapp, retake_diagnostic, view_content, search_content, filter_category, onboarding_complete, onboarding_skip, profile_complete, profile_skip, tab_switch, page_view, admin_action, cross_navigation (25+ eventos)
+- [ ] 4.1.3 Dashboard básico: DAU, WAU, posts/día, diagnósticos/día, tasa completado diagnóstico (configurar en PostHog UI)
+- [ ] 4.1.4 Funnel: registro → primer post → primer diagnóstico → retorno en 7 días (configurar en PostHog UI)
 
 **Sprint 4.2 — Retención (semanas 2-3)**
 - [ ] 4.2.1 Push notifications (Web Push API) — nuevo post en muro, respuesta a tu post, nueva novedad
@@ -484,19 +488,19 @@ Auditoría completa desde 18 perspectivas: UX/UI (9 roles), Negocio (4 roles), I
 
 ---
 
-## 9. Tecnologías Pendientes de Evaluar
+## 9. Tecnologías Integradas / Pendientes
 
-| Tech | Uso potencial | Etapa | Prioridad |
-|------|--------------|-------|-----------|
-| PostHog | Analytics + feature flags | E4 | 🔴 Crítica |
-| Resend | Emails transaccionales | E4 | 🔴 Crítica |
-| Web Push API | Push notifications PWA | E4 | 🟡 Alta |
-| Sentry | Error tracking | E5 | 🟡 Alta |
-| Playwright | Tests E2E | E5 | 🟡 Alta |
-| Plausible | Analytics alternativo (más simple) | E4 | 🟢 Media |
-| Meilisearch | Búsqueda full-text | E5 | 🟢 Media |
-| Vercel | Hosting moderno | E6 | ⚪ Futuro |
-| Capacitor | App nativa | E6 | ⚪ Futuro |
+| Tech | Uso | Estado | Etapa |
+|------|-----|--------|-------|
+| PostHog | Analytics + feature flags | ✅ Integrado (lib/analytics.ts) | E4 |
+| Sentry | Error tracking + user context | ✅ Integrado (lib/sentry.ts) | E2 |
+| Resend | Emails transaccionales | 🔴 Pendiente | E4 |
+| Web Push API | Push notifications PWA | 🔴 Pendiente | E4 |
+| Playwright | Tests E2E | 🔴 Pendiente | E5 |
+| Plausible | Analytics alternativo | ⚪ Reemplazado por PostHog | — |
+| Meilisearch | Búsqueda full-text | 🟢 Media | E5 |
+| Vercel | Hosting moderno | ⚪ Futuro | E6 |
+| Capacitor | App nativa | ⚪ Futuro | E6 |
 
 ---
 
@@ -510,6 +514,7 @@ Auditoría completa desde 18 perspectivas: UX/UI (9 roles), Negocio (4 roles), I
 | 2026-04-24 AM | Auditoría UX | 9 perspectivas UX, consolidación documentación |
 | 2026-04-24 | UX Sprint completo | E3 completa (6/6), 30 cambios UX en 5 sprints |
 | 2026-04-24 | Análisis multidisciplinario | 18 perspectivas, redefinición de E4 como prioridad crítica, consolidación documentación |
+| 2026-04-24 PM | Sentry + PostHog + Staging | E2 completa (6/6), E4 Sprint 4.1 completo, 25+ eventos analytics, Sentry integration, staging config |
 
 ---
 
@@ -524,8 +529,12 @@ Auditoría completa desde 18 perspectivas: UX/UI (9 roles), Negocio (4 roles), I
 
 ## 12. Instructivo de Deploy
 
-### Automático (GitHub Actions)
-Push a `main` → build automático → deploy a Hostinger via FTP.
+### Producción (GitHub Actions)
+Push a `main` → build automático → deploy a Hostinger via FTP → `/public_html/app/`.
+
+### Staging (GitHub Actions)
+Push a `develop` → `npm run build:staging` → deploy a Hostinger via FTP → `/public_html/app-staging/`.
+Requiere secrets: `VITE_STAGING_SUPABASE_URL`, `VITE_STAGING_SUPABASE_PUBLISHABLE_KEY`.
 
 ### Manual (SmartFTP)
 1. `npm run build`
