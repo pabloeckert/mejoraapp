@@ -191,7 +191,7 @@ FROM crm_clients c;
 CREATE OR REPLACE VIEW crm_seller_ranking AS
 SELECT
   p.user_id,
-  p.full_name,
+  COALESCE(p.nombre || ' ' || p.apellido, p.nombre, 'Sin nombre') AS full_name,
   COUNT(*) AS total_interactions,
   COUNT(*) FILTER (WHERE i.result = 'venta') AS ventas_count,
   COUNT(*) FILTER (WHERE i.result = 'presupuesto') AS presupuestos_count,
@@ -200,30 +200,39 @@ SELECT
 FROM crm_interactions i
 JOIN profiles p ON p.user_id = i.user_id
 WHERE i.interaction_date >= date_trunc('month', now())
-GROUP BY p.user_id, p.full_name;
+GROUP BY p.user_id, p.nombre, p.apellido;
 
 -- 11. RPC: datos del dashboard CRM
 CREATE OR REPLACE FUNCTION get_crm_dashboard()
-RETURNS JSON AS $$
-SELECT json_build_object(
-  'clients', (SELECT json_agg(row_to_json(c)) FROM crm_clients c),
-  'interactions', (
-    SELECT json_agg(row_to_json(i) || json_build_object(
-      'client_name', cl.name,
-      'interaction_lines', (
-        SELECT json_agg(row_to_json(l) || json_build_object('product_name', pr.name))
-        FROM crm_interaction_lines l
-        LEFT JOIN crm_products pr ON pr.id = l.product_id
-        WHERE l.interaction_id = i.id
-      )
-    ))
-    FROM crm_interactions i
-    LEFT JOIN crm_clients cl ON cl.id = i.client_id
-    ORDER BY i.interaction_date DESC
-    LIMIT 200
+RETURNS JSONB AS $$
+SELECT jsonb_build_object(
+  'clients', (
+    SELECT jsonb_agg(row_to_json(c)) FROM crm_clients c
   ),
-  'products', (SELECT json_agg(row_to_json(p)) FROM crm_products p WHERE p.active = true),
-  'stats', json_build_object(
+  'interactions', (
+    SELECT jsonb_agg(sub.*)
+    FROM (
+      SELECT
+        i.*,
+        cl.name AS client_name,
+        (
+          SELECT jsonb_agg(
+            row_to_json(l)::jsonb || jsonb_build_object('product_name', pr.name)
+          )
+          FROM crm_interaction_lines l
+          LEFT JOIN crm_products pr ON pr.id = l.product_id
+          WHERE l.interaction_id = i.id
+        ) AS interaction_lines
+      FROM crm_interactions i
+      LEFT JOIN crm_clients cl ON cl.id = i.client_id
+      ORDER BY i.interaction_date DESC
+      LIMIT 200
+    ) sub
+  ),
+  'products', (
+    SELECT jsonb_agg(row_to_json(p)) FROM crm_products p WHERE p.active = true
+  ),
+  'stats', jsonb_build_object(
     'total_clients', (SELECT COUNT(*) FROM crm_clients),
     'active_clients', (SELECT COUNT(*) FROM crm_clients WHERE status = 'activo'),
     'total_ventas', (SELECT COUNT(*) FROM crm_interactions WHERE result = 'venta' AND interaction_date >= date_trunc('month', now())),

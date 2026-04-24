@@ -367,7 +367,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | PostHog | Analytics + feature flags | ✅ | E4 |
 | Sentry | Error tracking + user context | ✅ | E2 |
 | Resend | Emails transaccionales | ✅ | E4 |
-| Web Push API | Push notifications PWA | ✅ (triggers listos, falta VAPID) | E4/E6 |
+| Web Push API | Push notifications PWA | ✅ | E4/E6 |
 | Playwright | Tests E2E | ✅ | E5 |
 | axe-core | Tests accesibilidad | ✅ | E5 |
 | jsPDF | Exportar diagnóstico PDF | ✅ | E4 |
@@ -534,6 +534,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | 2026-04-24 | E6 Growth + i18n | Landing, referidos, i18n base (130+ claves) |
 | 2026-04-24 | E6 Push + Landing + Admins | Push triggers, landing estática, admin whitelist |
 | 2026-04-25 | Consolidación docs | DOCUMENTO-MAESTRO unificado, plan optimizado, archivos obsoletos eliminados |
+| 2026-04-25 | CRM integrado | Módulo AdminCRM (Dashboard, Clientes, Interacciones, Productos), 4 tablas CRM, vistas, RPC, RLS admin-only. DB migrations ejecutadas (admin_audit_log, nps_responses, referrals, admin_whitelist). VAPID keys configuradas. |
 
 ---
 
@@ -541,10 +542,10 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 
 | # | Acción | Estado | Detalle |
 |---|--------|--------|---------|
-| 1 | VAPID keys en Supabase | 🔴 Pendiente | Agregar `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` en Supabase → Settings → Edge Functions → Secrets. Mismo valor público en `.env` y GitHub Secrets como `VITE_VAPID_PUBLIC_KEY`. |
-| 2 | Ejecutar migrations nuevas | 🔴 Pendiente | `admin_audit_log`, `nps_responses`, `referrals`, `admin_whitelist` — ejecutar SQL en Supabase SQL Editor |
+| 1 | VAPID keys en Supabase | ✅ Listo | Keys configuradas en Supabase Secrets + GitHub Secrets (2026-04-25) |
+| 2 | Ejecutar migrations nuevas | ✅ Listo | Todas ejecutadas en Supabase SQL Editor (2026-04-25) |
 | 3 | Landing mejoraok.com | ⚠️ Parcial | Landing estática lista. Disk quota exceeded en Hostinger. Evaluar migración a Vercel o liberar espacio. |
-| 4 | HubSpot API key | 🔴 Pendiente | Crear app privada en HubSpot → Settings → Integrations → Private Apps → copiar API key |
+| 4 | HubSpot API key | ✅ Reemplazado | CRM propio integrado como módulo admin-only (2026-04-25) |
 | 5 | Evaluar freemium/premium | 🔴 Pendiente | Definir modelo de negocio antes de implementar |
 | 6 | Evaluar Capacitor | 🔴 Pendiente | Decidir si se necesita app nativa o si PWA es suficiente |
 
