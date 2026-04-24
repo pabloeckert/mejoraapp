@@ -1,3 +1,16 @@
+/**
+ * Muro — Muro anónimo de MejoraApp
+ *
+ * Refactorizado con hooks extraídos:
+ * - useWallInteractions: likes, comments, expand, delete
+ * - usePullToRefresh: pull-to-refresh gesture
+ * - useBadges: badge display
+ *
+ * Componentes extraídos:
+ * - PostCard: tarjeta de post individual
+ * - CommentItem: comentario individual
+ */
+
 import { useState, useCallback, memo, useRef, useEffect } from "react";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -22,25 +35,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useBadges } from "@/hooks/useBadges";
+import { useWallInteractions, type WallComment } from "@/hooks/useWallInteractions";
+import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { BadgeDisplay } from "@/components/BadgeDisplay";
 import { CommunityRanking } from "@/components/CommunityRanking";
 import { CommunityRules } from "@/components/CommunityRules";
-import { trackPublishPost, trackLikePost, trackCommentPost, trackDeletePost, trackBadgeEarned } from "@/lib/analytics";
+import { trackPublishPost, trackBadgeEarned } from "@/lib/analytics";
 
 interface WallPost {
   id: string;
   content: string;
   likes_count: number;
   comments_count: number;
-  created_at: string;
-  user_id: string;
-  status: string;
-}
-
-interface WallComment {
-  id: string;
-  post_id: string;
-  content: string;
   created_at: string;
   user_id: string;
   status: string;
@@ -61,15 +67,14 @@ const timeAgo = (date: string) => {
   return `hace ${days}d`;
 };
 
-const formatFullDate = (date: string) => {
-  return new Date(date).toLocaleString("es-AR", {
+const formatFullDate = (date: string) =>
+  new Date(date).toLocaleString("es-AR", {
     day: "numeric",
     month: "long",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
   });
-};
 
 const fetchWallPosts = async ({ pageParam }: { pageParam: number }) => {
   const from = pageParam * POSTS_PER_PAGE;
@@ -84,26 +89,7 @@ const fetchWallPosts = async ({ pageParam }: { pageParam: number }) => {
   return (data as WallPost[]) ?? [];
 };
 
-const fetchComments = async (postId: string): Promise<WallComment[]> => {
-  const { data, error } = await supabase
-    .from("wall_comments")
-    .select("id, post_id, content, created_at, user_id, status")
-    .eq("post_id", postId)
-    .eq("status", "approved")
-    .order("created_at", { ascending: true });
-  if (error) throw error;
-  return (data as WallComment[]) ?? [];
-};
-
-const fetchUserLikes = async (userId: string): Promise<Set<string>> => {
-  const { data } = await supabase
-    .from("wall_likes")
-    .select("post_id")
-    .eq("user_id", userId);
-  return new Set((data ?? []).map((l) => l.post_id));
-};
-
-// --- Comment component ---
+// ─── Comment component ────────────────────────────────────────────────
 const CommentItem = memo(({ comment, isOwn }: { comment: WallComment; isOwn: boolean }) => (
   <div className="flex gap-2 items-start py-1.5">
     <CornerDownRight className="w-3 h-3 text-muted-foreground/50 mt-1 shrink-0" />
@@ -117,7 +103,7 @@ const CommentItem = memo(({ comment, isOwn }: { comment: WallComment; isOwn: boo
 ));
 CommentItem.displayName = "CommentItem";
 
-// --- Post card with collapsible comments ---
+// ─── Post card ─────────────────────────────────────────────────────────
 const PostCard = memo(
   ({
     post,
@@ -192,11 +178,7 @@ const PostCard = memo(
             >
               <MessageSquare className="w-3.5 h-3.5" />
               {post.comments_count > 0 && <span>{post.comments_count}</span>}
-              {expanded ? (
-                <ChevronUp className="w-3 h-3" />
-              ) : (
-                <ChevronDown className="w-3 h-3" />
-              )}
+              {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
             </button>
           </div>
         </div>
@@ -241,11 +223,7 @@ const PostCard = memo(
                 onClick={() => onComment(post.id)}
                 disabled={!commentText.trim() || submittingComment}
               >
-                {submittingComment ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <Send className="w-3.5 h-3.5" />
-                )}
+                {submittingComment ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
               </Button>
             </div>
             <span className="text-[10px] text-muted-foreground">{commentText.length}/{COMMENT_MAX_LENGTH}</span>
@@ -270,12 +248,29 @@ const PostSkeleton = () => (
   </Card>
 );
 
+// ─── Main Muro component ──────────────────────────────────────────────
 const Muro = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { earnedBadges, totalEarned } = useBadges(user?.id);
   const prevBadgeCount = useRef(totalEarned);
+
+  const {
+    likedPosts,
+    expandedPosts,
+    commentsMap,
+    loadingComments,
+    commentTexts,
+    submittingComment,
+    confirmingDelete,
+    toggleExpand,
+    toggleLike,
+    handleComment,
+    handleDelete,
+    updateCommentText,
+    setCommentsMap,
+  } = useWallInteractions(user?.id);
 
   // Toast when new badge is earned
   useEffect(() => {
@@ -290,19 +285,9 @@ const Muro = () => {
     prevBadgeCount.current = totalEarned;
   }, [totalEarned, earnedBadges, toast]);
 
-  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
   const [newPost, setNewPost] = useState("");
   const [posting, setPosting] = useState(false);
 
-  const [expandedPosts, setExpandedPosts] = useState<Set<string>>(new Set());
-  const [commentsMap, setCommentsMap] = useState<Record<string, WallComment[]>>({});
-  const [loadingComments, setLoadingComments] = useState<Set<string>>(new Set());
-
-  const [commentTexts, setCommentTexts] = useState<Record<string, string>>({});
-  const [submittingComment, setSubmittingComment] = useState<Set<string>>(new Set());
-  const [confirmingDelete, setConfirmingDelete] = useState<string | null>(null);
-
-  // Ref for posts data — used in realtime callback to avoid stale closure
   const postsDataRef = useRef<WallPost[]>([]);
   const {
     data,
@@ -323,11 +308,6 @@ const Muro = () => {
     staleTime: 30_000,
   });
 
-  useEffect(() => {
-    if (!user) return;
-    fetchUserLikes(user.id).then(setLikedPosts);
-  }, [user]);
-
   // Realtime subscription
   useEffect(() => {
     const channel = supabase
@@ -335,83 +315,54 @@ const Muro = () => {
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "wall_posts", filter: "status=eq.approved" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["wall-posts"] });
-        }
+        () => queryClient.invalidateQueries({ queryKey: ["wall-posts"] })
       )
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "wall_comments", filter: "status=eq.approved" },
         (payload) => {
           const comment = payload.new as WallComment;
-
-          // Notify if someone comments on YOUR post (and it's not you)
           const userPost = postsDataRef.current.find((p) => p.id === comment.post_id && p.user_id === user?.id);
           if (userPost && comment.user_id !== user?.id) {
             toast({
               title: "💬 Nueva respuesta en tu post",
-              description: comment.content.length > 60
-                ? comment.content.slice(0, 60) + "…"
-                : comment.content,
+              description: comment.content.length > 60 ? comment.content.slice(0, 60) + "…" : comment.content,
             });
           }
-
           if (expandedPosts.has(comment.post_id)) {
-            fetchComments(comment.post_id).then((c) => {
-              setCommentsMap((prev) => ({ ...prev, [comment.post_id]: c }));
-            });
+            supabase
+              .from("wall_comments")
+              .select("id, post_id, content, created_at, user_id, status")
+              .eq("post_id", comment.post_id)
+              .eq("status", "approved")
+              .order("created_at", { ascending: true })
+              .then(({ data }) => {
+                setCommentsMap((prev) => ({ ...prev, [comment.post_id]: (data as WallComment[]) ?? [] }));
+              });
           }
           queryClient.invalidateQueries({ queryKey: ["wall-posts"] });
         }
       )
       .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient, expandedPosts, user, toast]);
+    return () => { supabase.removeChannel(channel); };
+  }, [queryClient, expandedPosts, user, toast, setCommentsMap]);
 
   const allPosts = data?.pages.flat() ?? [];
-
-  // Keep ref in sync for realtime callback
   useEffect(() => { postsDataRef.current = allPosts; }, [allPosts]);
 
-  const toggleExpand = useCallback(
-    async (postId: string) => {
-      setExpandedPosts((prev) => {
-        const next = new Set(prev);
-        if (next.has(postId)) {
-          next.delete(postId);
-        } else {
-          next.add(postId);
-        }
-        return next;
-      });
+  // Pull-to-refresh
+  const { pullDistance, isRefreshing, isReady, handlers } = usePullToRefresh({
+    onRefresh: () => refetch(),
+  });
 
-      if (!expandedPosts.has(postId) && !commentsMap[postId]) {
-        setLoadingComments((prev) => new Set(prev).add(postId));
-        const comments = await fetchComments(postId);
-        setCommentsMap((prev) => ({ ...prev, [postId]: comments }));
-        setLoadingComments((prev) => {
-          const next = new Set(prev);
-          next.delete(postId);
-          return next;
-        });
-      }
-    },
-    [expandedPosts, commentsMap]
-  );
-
-  // POST via Edge Function (server-side moderation + rate limit)
+  // POST via Edge Function
   const handlePost = useCallback(async () => {
     const content = newPost.trim();
     if (!content || posting || !user) return;
 
     setPosting(true);
     try {
-      const { data, error } = await supabase.functions.invoke("moderate-post", {
-        body: { content },
-      });
-
+      const { data, error } = await supabase.functions.invoke("moderate-post", { body: { content } });
       if (error) throw error;
 
       if (data?.rejected) {
@@ -431,111 +382,14 @@ const Muro = () => {
     }
   }, [newPost, posting, user, toast, refetch]);
 
-  // COMMENT via Edge Function (server-side moderation + rate limit)
-  const handleComment = useCallback(
-    async (postId: string) => {
-      const content = (commentTexts[postId] || "").trim();
-      if (!content || !user || submittingComment.has(postId)) return;
-
-      setSubmittingComment((prev) => new Set(prev).add(postId));
-
-      try {
-        const { data, error } = await supabase.functions.invoke("moderate-comment", {
-          body: { post_id: postId, content },
-        });
-
-        if (error) throw error;
-
-        if (data?.rejected) {
-          toast({ title: "Comentario no publicado", description: data.reason, variant: "destructive" });
-          return;
-        }
-
-        if (data?.success && data?.comment) {
-          setCommentTexts((prev) => ({ ...prev, [postId]: "" }));
-          setCommentsMap((prev) => ({
-            ...prev,
-            [postId]: [...(prev[postId] || []), data.comment as WallComment],
-          }));
-          toast({ title: "¡Respuesta publicada!" });
-          trackCommentPost(postId, content.length);
-        }
-      } catch (err) {
-        console.error(err);
-        toast({ title: "Error", description: "No se pudo publicar la respuesta.", variant: "destructive" });
-      } finally {
-        setSubmittingComment((prev) => {
-          const next = new Set(prev);
-          next.delete(postId);
-          return next;
-        });
-      }
-    },
-    [commentTexts, user, submittingComment, toast]
-  );
-
-  const toggleLike = useCallback(
-    async (postId: string) => {
-      if (!user) return;
-      const isLiked = likedPosts.has(postId);
-
-      setLikedPosts((prev) => {
-        const next = new Set(prev);
-        isLiked ? next.delete(postId) : next.add(postId);
-        return next;
-      });
-
-      if (isLiked) {
-        await supabase.from("wall_likes").delete().eq("post_id", postId).eq("user_id", user.id);
-      } else {
-        await supabase.from("wall_likes").insert({ post_id: postId, user_id: user.id });
-        trackLikePost(postId);
-      }
-    },
-    [user, likedPosts]
-  );
-
-  // Delete own post — first tap shows confirm, second tap deletes
-  const handleDelete = useCallback(
-    async (postId: string) => {
-      if (confirmingDelete !== postId) {
-        setConfirmingDelete(postId);
-        // Auto-cancel after 5 seconds
-        setTimeout(() => setConfirmingDelete((prev) => (prev === postId ? null : prev)), 5000);
-        return;
-      }
-
-      // Confirmed — delete
-      setConfirmingDelete(null);
-      try {
-        const { error } = await supabase
-          .from("wall_posts")
-          .delete()
-          .eq("id", postId)
-          .eq("user_id", user?.id ?? "");
-
-        if (error) throw error;
-
-        toast({ title: "Post eliminado" });
-        trackDeletePost(postId);
-        refetch();
-      } catch (err) {
-        console.error(err);
-        toast({ title: "Error", description: "No se pudo eliminar el post.", variant: "destructive" });
-      }
-    },
-    [confirmingDelete, user, toast, refetch]
-  );
-
+  // Infinite scroll sentinel
   const sentinelRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) fetchNextPage();
       },
       { rootMargin: "200px" }
     );
@@ -543,65 +397,31 @@ const Muro = () => {
     return () => observer.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  // Pull-to-refresh
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [pullDistance, setPullDistance] = useState(0);
-  const [isPulling, setIsPulling] = useState(false);
-  const touchStartY = useRef(0);
-  const PULL_THRESHOLD = 80;
-
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    if (window.scrollY === 0) {
-      touchStartY.current = e.touches[0].clientY;
-      setIsPulling(true);
-    }
-  }, []);
-
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!isPulling) return;
-    const diff = e.touches[0].clientY - touchStartY.current;
-    if (diff > 0) {
-      setPullDistance(Math.min(diff * 0.5, 120));
-    }
-  }, [isPulling]);
-
-  const handleTouchEnd = useCallback(() => {
-    if (pullDistance >= PULL_THRESHOLD && !isRefetching) {
-      refetch();
-    }
-    setPullDistance(0);
-    setIsPulling(false);
-  }, [pullDistance, isRefetching, refetch]);
-
   return (
-    <div
-      ref={containerRef}
-      className="space-y-4 animate-fade-in touch-pan-y"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-    >
+    <div className="space-y-4 animate-fade-in touch-pan-y" {...handlers}>
       {/* Pull-to-refresh indicator */}
-      {(pullDistance > 0 || isRefetching) && (
+      {(pullDistance > 0 || isRefreshing) && (
         <div
           className="flex justify-center transition-all duration-200 overflow-hidden"
-          style={{ height: isRefetching ? 40 : pullDistance }}
+          style={{ height: isRefreshing ? 40 : pullDistance }}
         >
           <div className="flex items-center gap-2 text-muted-foreground">
-            {isRefetching ? (
+            {isRefreshing ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
               <ArrowDown
                 className="w-4 h-4 transition-transform duration-200"
-                style={{ transform: pullDistance >= PULL_THRESHOLD ? "rotate(180deg)" : "rotate(0deg)" }}
+                style={{ transform: isReady ? "rotate(180deg)" : "rotate(0deg)" }}
               />
             )}
             <span className="text-xs">
-              {isRefetching ? "Actualizando…" : pullDistance >= PULL_THRESHOLD ? "Soltá para actualizar" : "Jalá para actualizar"}
+              {isRefreshing ? "Actualizando…" : isReady ? "Soltá para actualizar" : "Jalá para actualizar"}
             </span>
           </div>
         </div>
       )}
+
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <h1 className="text-xl font-bold text-foreground">Muro Anónimo</h1>
@@ -611,17 +431,12 @@ const Muro = () => {
               : "Compartí tus dudas y experiencias. Sin nombres, sin ventas."}
           </p>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={() => refetch()}
-          disabled={isRefetching}
-        >
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => refetch()} disabled={isRefetching}>
           <RefreshCw className={`w-4 h-4 ${isRefetching ? "animate-spin" : ""}`} />
         </Button>
       </div>
 
+      {/* New post form */}
       <Card>
         <CardContent className="p-3 space-y-2">
           <Textarea
@@ -638,10 +453,15 @@ const Muro = () => {
             }}
           />
           <div className="flex items-center justify-between">
-            <span className={`text-xs transition-colors ${
-              newPost.length >= 480 ? "text-destructive font-medium" :
-              newPost.length >= 400 ? "text-amber-500" : "text-muted-foreground"
-            }`}>
+            <span
+              className={`text-xs transition-colors ${
+                newPost.length >= 480
+                  ? "text-destructive font-medium"
+                  : newPost.length >= 400
+                    ? "text-amber-500"
+                    : "text-muted-foreground"
+              }`}
+            >
               {newPost.length}/{MAX_LENGTH}
             </span>
             <div className="flex items-center gap-2">
@@ -659,10 +479,10 @@ const Muro = () => {
         </CardContent>
       </Card>
 
-      {/* Reglas de la comunidad */}
+      {/* Community rules */}
       <CommunityRules />
 
-      {/* Badges del usuario */}
+      {/* Badges */}
       {earnedBadges.length > 0 && (
         <div className="flex items-center gap-2">
           <Award className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
@@ -670,9 +490,10 @@ const Muro = () => {
         </div>
       )}
 
-      {/* Ranking de comunidad */}
+      {/* Ranking */}
       <CommunityRanking currentUserId={user?.id} limit={10} />
 
+      {/* Posts list */}
       {isLoading ? (
         <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -697,8 +518,8 @@ const Muro = () => {
                 className="text-mc-diag-blue font-semibold hover:underline"
               >
                 diagnóstico estratégico
-              </button>
-              {" "}para entender mejor tu negocio.
+              </button>{" "}
+              para entender mejor tu negocio.
             </p>
           </CardContent>
         </Card>
@@ -711,7 +532,7 @@ const Muro = () => {
               isLiked={likedPosts.has(post.id)}
               isOwn={post.user_id === user?.id}
               onLike={toggleLike}
-              onDelete={handleDelete}
+              onDelete={(id) => handleDelete(id, refetch)}
               confirmingDelete={confirmingDelete === post.id}
               expanded={expandedPosts.has(post.id)}
               onToggle={toggleExpand}
@@ -719,7 +540,7 @@ const Muro = () => {
               loadingComments={loadingComments.has(post.id)}
               onComment={handleComment}
               commentText={commentTexts[post.id] || ""}
-              onCommentTextChange={(id, text) => setCommentTexts((prev) => ({ ...prev, [id]: text }))}
+              onCommentTextChange={updateCommentText}
               submittingComment={submittingComment.has(post.id)}
               userId={user?.id}
             />

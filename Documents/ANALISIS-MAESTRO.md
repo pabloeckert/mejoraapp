@@ -1040,11 +1040,11 @@ Sin operaciones de revenue formal. Servicios de consultoría como fuente de ingr
 - [x] 5.1.4 "Mis Datos": `DataManagement.tsx` — ver, editar, exportar JSON, eliminar cuenta con confirmación
 - [x] 5.1.5 Reglas comunidad: `CommunityRules.tsx` — expandible en muro, 3 permitidas + 3 prohibidas
 
-### Sprint 5.2 — Testing y Calidad (SEMANA 4-5)
-- [ ] 5.2.1 Tests E2E con Playwright (auth → post → diagnóstico)
-- [ ] 5.2.2 Tests de accesibilidad (axe-core)
-- [ ] 5.2.3 Coverage report en CI
-- [ ] 5.2.4 Refactorizar Muro.tsx (14 useState → useReducer + sub-componentes)
+### Sprint 5.2 — Testing y Calidad ✅ COMPLETO (2026-04-24)
+- [x] 5.2.1 Tests E2E Playwright: `e2e/auth.spec.ts` (8 tests), `e2e/navigation.spec.ts` (7 tests), `e2e/accessibility.spec.ts` (7 tests). Config: `playwright.config.ts` con Chromium + Mobile.
+- [x] 5.2.2 Tests accesibilidad: axe-core con `@axe-core/playwright`. Tests de WCAG 2.1 AA en auth, privacy, terms. Heading hierarchy, keyboard access, labels, color contrast.
+- [x] 5.2.3 Coverage report: vitest.config.ts con v8 provider, thresholds (50% statements), HTML+LCOV output. CI workflow actualizado con upload-artifact.
+- [x] 5.2.4 Refactor Muro.tsx: hooks extraídos `useWallInteractions` + `usePullToRefresh`. Componentes `PostCard` + `CommentItem` memoizados. Reducción de 14 useState a composición limpia.
 
 ### Sprint 5.3 — UX Polish (SEMANA 5-6)
 - [ ] 5.3.1 Typography scale definida

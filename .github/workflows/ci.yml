@@ -28,8 +28,8 @@ jobs:
       - name: Lint
         run: npm run lint --if-present
 
-      - name: Run tests
-        run: npm run test
+      - name: Run tests with coverage
+        run: npm run test:coverage
 
       - name: Build (verify compilation)
         run: npm run build
@@ -37,10 +37,19 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
 
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
+
       - name: Build summary
         if: always()
         run: |
           echo "## CI Summary" >> $GITHUB_STEP_SUMMARY
           echo "- Status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
           echo "- Branch: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Tests: 39 expected" >> $GITHUB_STEP_SUMMARY
+          echo "- Tests: 103+ expected" >> $GITHUB_STEP_SUMMARY
+          echo "- Coverage: see artifacts" >> $GITHUB_STEP_SUMMARY
