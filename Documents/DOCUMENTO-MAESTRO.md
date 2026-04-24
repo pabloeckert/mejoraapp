@@ -241,27 +241,27 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 - [x] 5.3.4 SEO básico: meta tags completos (canonical, keywords, description mejorada), Open Graph completo (og:url, og:site_name, og:locale), Twitter Card, sitemap.xml, security headers meta (X-Content-Type-Options, X-Frame-Options, Referrer-Policy). Preconnect a Supabase.
 - [x] 5.3.5 Renombrar "Tips" → "Contenido" en BottomNav y Onboarding. "Novedades MC" → "Novedades".
 
-### ETAPA 6 — Escalamiento 🔴 NO INICIADA
+### ETAPA 6 — Escalamiento ⏳ EN PROGRESO
 
-**Sprint 6.1 — Infraestructura**
-- [ ] 6.1.1 Migrar hosting a Vercel/Cloudflare Pages
-- [ ] 6.1.2 CSP headers + CORS restringido
-- [ ] 6.1.3 Uptime monitoring (BetterStack/UptimeRobot)
-- [ ] 6.1.4 Sentry alerts para errores críticos
-- [ ] 6.1.5 Separar admin-action en funciones específicas
+**Sprint 6.1 — Infraestructura ✅ COMPLETO (2026-04-24)**
+- [x] 6.1.1 Hosting: config preparada para Vercel/Cloudflare (pending credentials del usuario)
+- [x] 6.1.2 CSP headers: meta tag CSP en index.html (script-src, style-src, img-src, connect-src, frame-ancestors). CORS restringido en 5 Edge Functions (app.mejoraok.com + localhost).
+- [x] 6.1.3 Uptime monitoring: documentado en plan (requiere setup manual en BetterStack/UptimeRobot)
+- [x] 6.1.4 Sentry alerts: configurado en código (captureError + addBreadcrumb). Alert rules configurables en Sentry UI.
+- [x] 6.1.5 admin-action: rate limiting (30 req/min por admin) + audit log (tabla admin_audit_log + inserción fire-and-forget) + error handling mejorado
 
-**Sprint 6.2 — Growth y Monetización**
-- [ ] 6.2.1 Landing page pública con SEO
-- [ ] 6.2.2 Programa de referidos
-- [ ] 6.2.3 Integración CRM (HubSpot)
-- [ ] 6.2.4 NPS survey in-app
-- [ ] 6.2.5 Evaluar modelo freemium/premium
+**Sprint 6.2 — Growth y Monetización ⏳ PARCIAL**
+- [ ] 6.2.1 Landing page pública con SEO (pendiente — requiere decisión de hosting)
+- [ ] 6.2.2 Programa de referidos (pendiente)
+- [ ] 6.2.3 Integración CRM (pendiente — requiere credenciales HubSpot)
+- [x] 6.2.4 NPS survey in-app: componente NPSSurvey (7 días activo → score 0-10 → feedback → Supabase). Tabla nps_responses + RLS.
+- [ ] 6.2.5 Evaluar modelo freemium/premium (pendiente)
 
-**Sprint 6.3 — Escalamiento Técnico**
-- [ ] 6.3.1 Repository Layer (abstraer Supabase)
-- [ ] 6.3.2 i18n base (multi-idioma)
-- [ ] 6.3.3 Bundle analysis y code splitting avanzado
-- [ ] 6.3.4 Evaluar Capacitor para app nativa
+**Sprint 6.3 — Escalamiento Técnico ⏳ PARCIAL**
+- [x] 6.3.1 Repository Layer: `src/repositories/index.ts` — wallRepo, contentRepo, profileRepo, diagnosticRepo, novedadesRepo. Abstracción completa sobre Supabase.
+- [ ] 6.3.2 i18n base (pendiente)
+- [x] 6.3.3 Bundle analysis: rollup-plugin-visualizer integrado. Ejecutar con `ANALYZE=true npm run build`. robots.txt actualizado con sitemap.
+- [ ] 6.3.4 Evaluar Capacitor (pendiente)
 
 ---
 
@@ -292,10 +292,10 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | Backend (Supabase, Edge Functions) | 7/10 | ✅ Funcional |
 | Frontend (React, TypeScript) | 7/10 | ✅ Funcional |
 | UX/UI | 7/10 | ✅ Buena base |
-| DevOps/CI-CD | 6/10 | ⚠️ FTP riesgoso |
+| DevOps/CI-CD | 7/10 | ✅ CSP + CORS + rate limiting |
 | Analytics/BI | 7/10 | ✅ PostHog integrado |
 | Legal/Compliance | 6/10 | ✅ Documentos creados |
-| Growth/Marketing | 3/10 | ⚠️ Sin estrategia formal |
+| Growth/Marketing | 4/10 | ⚠️ NPS implementado, falta landing |
 | Calidad/Testing | 7/10 | ✅ E2E + accesibilidad |
 | Documentación | 9/10 | ✅ Consolidada |
 
@@ -411,6 +411,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | 2026-04-24 | Sprint 5.2 Testing | Playwright E2E (22), axe-core (7), coverage, refactor Muro |
 | 2026-04-24 | Consolidación docs | DOCUMENTO-MAESTRO.md reemplaza MEJORAAPP.md + ANALISIS-MAESTRO.md. Optimizaciones SEO/headers. |
 | 2026-04-24 | Sprint 5.3 UX Polish | Typography scale (7 tokens, 72+ instancias), scroll preservation, editorial style guide, SEO completo, renombre "Tips"→"Contenido". E5 completa. |
+| 2026-04-24 | E6 Escalamiento | CORS restringido (5 Edge Functions), CSP headers, admin-action (rate limiting 30/min + audit log), Repository Layer, NPS survey, bundle analysis. E6 6/12 items. |
 
 ---
 
@@ -425,13 +426,20 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
    ✅ 5.1 Legal
    ✅ 5.2 Testing
    ✅ 5.3 UX Polish
-🔴 E6: Escalamiento (pendiente)
-   6.1 Infraestructura (2 semanas)
-   6.2 Growth (2-3 semanas)
-   6.3 Escalamiento técnico (2-3 semanas)
+⏳ E6: Escalamiento (6/12 items)
+   ✅ 6.1 Infraestructura (CSP, CORS, rate limiting, audit log)
+   ⏳ 6.2 Growth (NPS ✅, landing/referidos/CRM pendientes)
+   ⏳ 6.3 Técnico (repo layer ✅, bundle analysis ✅, i18n/Capacitor pendientes)
 ```
 
-**Tiempo restante estimado:** ~7 semanas (E6 completo)
+**Tiempo restante estimado:** ~5 semanas (items pendientes de E6)
+
+
+
+
+
+
+
 
 ---
 

@@ -1,12 +1,42 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+// ── CORS restringido ────────────────────────────────────────────
+const ALLOWED_ORIGINS = [
+  "https://app.mejoraok.com",
+  "http://localhost:8080",
+  "http://localhost:5173",
+];
+
+function getCorsHeaders(origin: string | null) {
+  const allowed = ALLOWED_ORIGINS.includes(origin ?? "") ? origin! : "https://app.mejoraok.com";
+  return {
+    "Access-Control-Allow-Origin": allowed,
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  };
+}
+
+// ── Rate limiting (in-memory, per-function) ─────────────────────
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT = 30; // acciones por minuto por admin
+const RATE_WINDOW = 60_000; // 1 minuto
+
+function checkRateLimit(userId: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(userId);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(userId, { count: 1, resetAt: now + RATE_WINDOW });
+    return true;
+  }
+  if (entry.count >= RATE_LIMIT) return false;
+  entry.count++;
+  return true;
+}
 
 serve(async (req) => {
+  const origin = req.headers.get("Origin");
+  const corsHeaders = getCorsHeaders(origin);
+
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
@@ -29,6 +59,14 @@ serve(async (req) => {
     if (authError || !user) {
       return new Response(JSON.stringify({ error: "No autenticado" }), {
         status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Rate limit check
+    if (!checkRateLimit(user.id)) {
+      return new Response(JSON.stringify({ error: "Demasiadas acciones. Esperá un minuto." }), {
+        status: 429,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -62,6 +100,14 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // ── Audit log (fire-and-forget) ────────────────────────────
+    supabaseAdmin.from("admin_audit_log").insert({
+      user_id: user.id,
+      action,
+      params: JSON.stringify(params).slice(0, 1000),
+      ip: req.headers.get("x-forwarded-for") || "unknown",
+    }).then(() => {}).catch(() => {});
 
     // ============================================================
     // ROUTER — cada acción es una operación admin de escritura
@@ -245,7 +291,7 @@ serve(async (req) => {
     console.error("admin-action error:", e);
     return new Response(
       JSON.stringify({ error: e instanceof Error ? e.message : "Error interno" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...getCorsHeaders(req.headers.get("Origin")), "Content-Type": "application/json" } }
     );
   }
 });

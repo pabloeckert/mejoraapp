@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    // Security headers for production
+    // Security headers for development server
     {
       name: "security-headers",
       configureServer(server) {
@@ -26,6 +26,19 @@ export default defineConfig(({ mode }) => ({
         });
       },
     },
+    // Bundle analysis — run with ANALYZE=true npm run build
+    ...(process.env.ANALYZE
+      ? [
+          (() => {
+            const { visualizer } = require("rollup-plugin-visualizer");
+            return visualizer({
+              filename: "dist/bundle-analysis.html",
+              open: true,
+              gzipSize: true,
+            });
+          })(),
+        ]
+      : []),
   ].filter(Boolean),
   resolve: {
     alias: {

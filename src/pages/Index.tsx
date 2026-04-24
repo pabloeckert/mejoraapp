@@ -10,6 +10,7 @@ import Novedades from "@/components/tabs/Novedades";
 import DiagnosticTest from "@/components/DiagnosticTest";
 import ProfileCompleteModal from "@/components/ProfileCompleteModal";
 import Onboarding, { shouldShowOnboarding } from "@/components/Onboarding";
+import { NPSSurvey } from "@/components/NPSSurvey";
 import { trackPageView, trackTabSwitch } from "@/lib/analytics";
 import { useLastVisit } from "@/hooks/useLastVisit";
 
@@ -142,6 +143,9 @@ const Index = () => {
       {showOnboarding && (
         <Onboarding onComplete={() => setShowOnboarding(false)} />
       )}
+
+      {/* NPS survey — shows after 7 days of use */}
+      <NPSSurvey />
     </div>
   );
 };
