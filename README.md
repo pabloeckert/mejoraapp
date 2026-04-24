@@ -20,8 +20,10 @@ MejoraApp es la aplicación digital del ecosistema Mejora Continua — una comun
 
 ## Documentación
 
-**📄 Fuente única de verdad:** [`Documents/MEJORAAPP.md`](Documents/MEJORAAPP.md)  
+**📄 Fuente única de verdad:** [`Documents/DOCUMENTO-MAESTRO.md`](Documents/DOCUMENTO-MAESTRO.md)  
 Arquitectura, plan de desarrollo, análisis UX, estado actual, y registro de sesiones.
+
+> **Cuando digas "documentar"** — el DOCUMENTO-MAESTRO.md se actualiza con los trabajos realizados.
 
 ## Desarrollo Local
 

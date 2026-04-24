@@ -11,7 +11,22 @@ export default defineConfig(({ mode }) => ({
       overlay: false,
     },
   },
-  plugins: [react()].filter(Boolean),
+  plugins: [
+    react(),
+    // Security headers for production
+    {
+      name: "security-headers",
+      configureServer(server) {
+        server.middlewares.use((_req, res, next) => {
+          res.setHeader("X-Content-Type-Options", "nosniff");
+          res.setHeader("X-Frame-Options", "DENY");
+          res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+          res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+          next();
+        });
+      },
+    },
+  ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
