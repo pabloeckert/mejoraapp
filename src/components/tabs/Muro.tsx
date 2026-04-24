@@ -40,6 +40,7 @@ import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { BadgeDisplay } from "@/components/BadgeDisplay";
 import { CommunityRanking } from "@/components/CommunityRanking";
 import { CommunityRules } from "@/components/CommunityRules";
+import { ReferralBanner } from "@/components/ReferralBanner";
 import { trackPublishPost, trackBadgeEarned } from "@/lib/analytics";
 
 interface WallPost {
@@ -492,6 +493,9 @@ const Muro = () => {
 
       {/* Ranking */}
       <CommunityRanking currentUserId={user?.id} limit={10} />
+
+      {/* Referral */}
+      <ReferralBanner />
 
       {/* Posts list */}
       {isLoading ? (

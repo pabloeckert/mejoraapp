@@ -251,15 +251,15 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 - [x] 6.1.5 admin-action: rate limiting (30 req/min por admin) + audit log (tabla admin_audit_log + inserción fire-and-forget) + error handling mejorado
 
 **Sprint 6.2 — Growth y Monetización ⏳ PARCIAL**
-- [ ] 6.2.1 Landing page pública con SEO (pendiente — requiere decisión de hosting)
-- [ ] 6.2.2 Programa de referidos (pendiente)
+- [x] 6.2.1 Landing page pública: `src/pages/Landing.tsx` — Hero, features (4 cards), diagnóstico preview, social proof, CTA final, footer. Lazy-loaded, SEO en sitemap. Ruta: `/landing`.
+- [x] 6.2.2 Programa de referidos: `ReferralBanner.tsx` — link con `?ref=userId`, copiar/compartir, persistencia en tabla `referrals` con RLS. Integrado en Muro + SignupForm (detecta ref al registrarse).
 - [ ] 6.2.3 Integración CRM (pendiente — requiere credenciales HubSpot)
 - [x] 6.2.4 NPS survey in-app: componente NPSSurvey (7 días activo → score 0-10 → feedback → Supabase). Tabla nps_responses + RLS.
 - [ ] 6.2.5 Evaluar modelo freemium/premium (pendiente)
 
 **Sprint 6.3 — Escalamiento Técnico ⏳ PARCIAL**
 - [x] 6.3.1 Repository Layer: `src/repositories/index.ts` — wallRepo, contentRepo, profileRepo, diagnosticRepo, novedadesRepo. Abstracción completa sobre Supabase.
-- [ ] 6.3.2 i18n base (pendiente)
+- [x] 6.3.2 i18n base: `src/i18n/locales/index.ts` (130+ claves en español, base inglés) + `src/contexts/I18nContext.tsx` (provider, detección de idioma del navegador, persistencia en localStorage). Hook `useI18n()` con `t(key)`. Preparado para agregar idiomas.
 - [x] 6.3.3 Bundle analysis: rollup-plugin-visualizer integrado. Ejecutar con `ANALYZE=true npm run build`. robots.txt actualizado con sitemap.
 - [ ] 6.3.4 Evaluar Capacitor (pendiente)
 
@@ -295,7 +295,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | DevOps/CI-CD | 7/10 | ✅ CSP + CORS + rate limiting |
 | Analytics/BI | 7/10 | ✅ PostHog integrado |
 | Legal/Compliance | 6/10 | ✅ Documentos creados |
-| Growth/Marketing | 4/10 | ⚠️ NPS implementado, falta landing |
+| Growth/Marketing | 5/10 | ⚠️ Landing + referidos + NPS, falta CRM |
 | Calidad/Testing | 7/10 | ✅ E2E + accesibilidad |
 | Documentación | 9/10 | ✅ Consolidada |
 
@@ -412,6 +412,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | 2026-04-24 | Consolidación docs | DOCUMENTO-MAESTRO.md reemplaza MEJORAAPP.md + ANALISIS-MAESTRO.md. Optimizaciones SEO/headers. |
 | 2026-04-24 | Sprint 5.3 UX Polish | Typography scale (7 tokens, 72+ instancias), scroll preservation, editorial style guide, SEO completo, renombre "Tips"→"Contenido". E5 completa. |
 | 2026-04-24 | E6 Escalamiento | CORS restringido (5 Edge Functions), CSP headers, admin-action (rate limiting 30/min + audit log), Repository Layer, NPS survey, bundle analysis. E6 6/12 items. |
+| 2026-04-24 | E6 Growth + i18n | Landing page (/landing), referidos (link+tracking+DB), i18n base (130+ claves es/en, I18nProvider). E6 9/12 items. |
 
 ---
 
@@ -426,13 +427,13 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
    ✅ 5.1 Legal
    ✅ 5.2 Testing
    ✅ 5.3 UX Polish
-⏳ E6: Escalamiento (6/12 items)
+⏳ E6: Escalamiento (9/12 items)
    ✅ 6.1 Infraestructura (CSP, CORS, rate limiting, audit log)
-   ⏳ 6.2 Growth (NPS ✅, landing/referidos/CRM pendientes)
-   ⏳ 6.3 Técnico (repo layer ✅, bundle analysis ✅, i18n/Capacitor pendientes)
+   ⏳ 6.2 Growth (landing ✅, referidos ✅, NPS ✅, CRM/freemium pendientes)
+   ⏳ 6.3 Técnico (repo layer ✅, i18n ✅, bundle analysis ✅, Capacitor pendiente)
 ```
 
-**Tiempo restante estimado:** ~5 semanas (items pendientes de E6)
+**Tiempo restante estimado:** ~3 semanas (items pendientes de E6)
 
 
 

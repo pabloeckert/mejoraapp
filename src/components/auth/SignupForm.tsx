@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { trackSignup } from "@/lib/analytics";
+import { trackReferral, getReferralFromURL } from "@/components/ReferralBanner";
 
 interface SignupFormProps {
   onSwitchToLogin: () => void;
@@ -68,6 +69,13 @@ const SignupForm = ({ onSwitchToLogin }: SignupFormProps) => {
     } else {
       toast({ title: "¡Registro exitoso!", description: "Revisá tu email para confirmar tu cuenta." });
       trackSignup("email");
+      // Track referral if present
+      const referrerId = getReferralFromURL();
+      if (referrerId) {
+        // Get the newly created user ID
+        const { data: { user: newUser } } = await supabase.auth.getUser();
+        if (newUser) trackReferral(referrerId, newUser.id);
+      }
     }
     setLoading(false);
   };
