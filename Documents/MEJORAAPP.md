@@ -4,7 +4,7 @@
 > **Stack:** React 18 · TypeScript · Vite 5 · Supabase · Tailwind CSS · shadcn/ui
 > **Producción:** https://app.mejoraok.com
 > **Repo:** https://github.com/pabloeckert/MejoraApp
-> **Última actualización:** 2026-04-24 20:17 GMT+8
+> **Última actualización:** 2026-04-24 20:31 GMT+8
 
 ---
 
@@ -28,7 +28,7 @@
 
 MejoraApp es el MVP digital de **Mejora Continua**, comunidad de negocios para líderes empresariales argentinos. Funciona en producción con muro anónimo moderado por IA, contenido de valor, diagnóstico estratégico y panel admin.
 
-**Estado actual:** App funcional con seguridad completa (E1), DevOps completa (E2 6/6), UX completa (E3 6/6), Analytics implementado (E4 Sprint 4.1 ✅), Retención parcial (E4 Sprint 4.2 2/4). **Análisis multidisciplinario completo (2026-04-24).**
+**Estado actual:** App funcional con seguridad completa (E1), DevOps completa (E2 6/6), UX completa (E3 6/6), Analytics implementado (E4 Sprint 4.1 ✅), Retención completa (E4 Sprint 4.2 ✅). **Análisis multidisciplinario completo (2026-04-24).**
 
 ---
 
@@ -101,6 +101,8 @@ src/
 | `verify-admin` | Verifica rol admin del usuario actual | JWT requerido | — |
 | `admin-action` | Router de 13 acciones admin (CRUD completo) | JWT + rol admin | — |
 | `generate-content` | Genera contenido con IA (Gemini/Groq) | JWT + rol admin | — |
+| `send-push-notification` | Envía push a suscriptores (new_post, reply, novedad) | Service role | — |
+| `send-diagnostic-email` | Email follow-up post-diagnóstico vía Resend | Service role | — |
 
 **Cadena de fallback IA:** Gemini → Groq → OpenRouter (DeepSeek) → null (auto-aprobado)
 
@@ -248,11 +250,11 @@ npm run lint      # Lint: eslint
 
 | Métrica | Valor |
 |---------|-------|
-| Líneas de código (TS/TSX) | ~13,500 |
-| Archivos totales | 162 |
+| Líneas de código (TS/TSX) | ~14,000 |
+| Archivos totales | 166 |
 | Tests | 103 (100% passing) |
 | Tablas DB | 13 |
-| Edge Functions | 5 |
+| Edge Functions | 7 |
 | Commits | 123+ |
 | Bundle gzipped | ~350KB |
 | Build time | ~4.4s |
@@ -435,9 +437,9 @@ Auditoría completa desde 18 perspectivas: UX/UI (9 roles), Negocio (4 roles), I
 - [ ] 4.1.3 Dashboard básico: DAU, WAU, posts/día, diagnósticos/día, tasa completado diagnóstico (configurar en PostHog UI)
 - [ ] 4.1.4 Funnel: registro → primer post → primer diagnóstico → retorno en 7 días (configurar en PostHog UI)
 
-**Sprint 4.2 — Retención (semanas 2-3)**
-- [ ] 4.2.1 Push notifications (Web Push API) — nuevo post en muro, respuesta a tu post, nueva novedad
-- [ ] 4.2.2 Email follow-up post-diagnóstico (Resend) — resultado + contenido recomendado + CTA consultoría
+**Sprint 4.2 — Retención ✅ COMPLETO (2026-04-24)**
+- [x] 4.2.1 Push notifications (Web Push API) — `lib/push.ts` + SW push handler + `NotificationToggle` + Edge Function `send-push-notification`
+- [x] 4.2.2 Email follow-up post-diagnóstico (Resend) — Edge Function `send-diagnostic-email` con perfil + recomendación
 - [x] 4.2.3 Contenido "nuevo desde tu última visita" badge en tabs (`hooks/useLastVisit.ts` + dot badge en BottomNav)
 - [x] 4.2.4 Notificación in-app (toast) para respuestas en muro en tiempo real (Realtime subscription + toast en Muro.tsx)
 
@@ -494,8 +496,8 @@ Auditoría completa desde 18 perspectivas: UX/UI (9 roles), Negocio (4 roles), I
 |------|-----|--------|-------|
 | PostHog | Analytics + feature flags | ✅ Integrado (lib/analytics.ts) | E4 |
 | Sentry | Error tracking + user context | ✅ Integrado (lib/sentry.ts) | E2 |
-| Resend | Emails transaccionales | 🔴 Pendiente | E4 |
-| Web Push API | Push notifications PWA | 🔴 Pendiente | E4 |
+| Resend | Emails transaccionales | ✅ Integrado (Edge Function send-diagnostic-email) | E4 |
+| Web Push API | Push notifications PWA | ✅ Integrado (lib/push.ts + SW + Edge Function) | E4 |
 | Playwright | Tests E2E | 🔴 Pendiente | E5 |
 | Plausible | Analytics alternativo | ⚪ Reemplazado por PostHog | — |
 | Meilisearch | Búsqueda full-text | 🟢 Media | E5 |
@@ -516,6 +518,7 @@ Auditoría completa desde 18 perspectivas: UX/UI (9 roles), Negocio (4 roles), I
 | 2026-04-24 | Análisis multidisciplinario | 18 perspectivas, redefinición de E4 como prioridad crítica, consolidación documentación |
 | 2026-04-24 PM | Sentry + PostHog + Staging | E2 completa (6/6), E4 Sprint 4.1 completo, 25+ eventos analytics, Sentry integration, staging config |
 | 2026-04-24 PM | Retención rápida | E4 Sprint 4.2 (2/4): badges "nueva visita" + toast real-time respuestas muro |
+| 2026-04-24 PM | Push + Email | E4 Sprint 4.2 completo (4/4): Web Push + Resend email post-diagnóstico + Edge Functions |
 
 ---
 
