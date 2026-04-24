@@ -4,7 +4,7 @@
 > **Stack:** React 18 · TypeScript · Vite 5 · Supabase · Tailwind CSS · shadcn/ui
 > **Producción:** https://app.mejoraok.com
 > **Repo:** https://github.com/pabloeckert/MejoraApp
-> **Última actualización:** 2026-04-24 20:31 GMT+8
+> **Última actualización:** 2026-04-24 21:09 GMT+8
 
 ---
 
@@ -266,6 +266,8 @@ npm run lint      # Lint: eslint
 
 Auditoría completa desde 18 perspectivas: UX/UI (9 roles), Negocio (4 roles), Ingeniería (4 roles), Calidad/Operaciones (4 roles), Datos (3 roles).
 
+> **Análisis expandido disponible en [`Documents/ANALISIS-MAESTRO.md`](/pabloeckert/MejoraApp/blob/main/Documents/ANALISIS-MAESTRO.md)** — 37 perspectivas profesionales con plan optimizado por etapas de 12 semanas.
+
 ### 6.1 UX Designer
 - ✅ Flujo de autenticación completo (email + Google + recuperación)
 - ✅ Onboarding progresivo con skip inteligente
@@ -519,6 +521,7 @@ Auditoría completa desde 18 perspectivas: UX/UI (9 roles), Negocio (4 roles), I
 | 2026-04-24 PM | Sentry + PostHog + Staging | E2 completa (6/6), E4 Sprint 4.1 completo, 25+ eventos analytics, Sentry integration, staging config |
 | 2026-04-24 PM | Retención rápida | E4 Sprint 4.2 (2/4): badges "nueva visita" + toast real-time respuestas muro |
 | 2026-04-24 PM | Push + Email | E4 Sprint 4.2 completo (4/4): Web Push + Resend email post-diagnóstico + Edge Functions |
+| 2026-04-24 PM | Análisis multidisciplinario completo | 37 perspectivas (12 Técnicas, 10 Producto, 8 Comercial, 7 Operaciones). Plan optimizado 12 semanas. Documento ANALISIS-MAESTRO.md creado. |
 
 ---
 
@@ -527,6 +530,7 @@ Auditoría completa desde 18 perspectivas: UX/UI (9 roles), Negocio (4 roles), I
 | Archivo | Propósito |
 |---------|-----------|
 | `MEJORAAPP.md` | Este documento — fuente única de verdad |
+| `ANALISIS-MAESTRO.md` | Análisis multidisciplinario completo (37 perspectivas) + plan optimizado por etapas |
 | `SESSION-PROMPT.md` | ⚠️ Prompt de inicio para próxima sesión — LEER PRIMERO |
 | `PUSH_SUBSCRIPTIONS.sql` | Script SQL tabla push_subscriptions + RLS |
 | `MIGRACION-SEGURIDAD-2026-04-23.sql` | Script SQL de hardening de seguridad (ejecutado) |
