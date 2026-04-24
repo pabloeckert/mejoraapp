@@ -33,7 +33,7 @@
 | E1 | Seguridad y Estabilización | ✅ Completa (6/6) |
 | E2 | Arquitectura y DevOps | ✅ Completa (6/6) |
 | E3 | Experiencia de Usuario | ✅ Completa (6/6) |
-| E4 | Analytics y Retención | ⏳ 2/4 sprints completados |
+| E4 | Analytics y Retención | ✅ Completa (4/4 sprints) |
 | E5 | Calidad y Robustez | 🔴 No iniciada |
 | E6 | Escalamiento | 🔴 No iniciada |
 
@@ -44,7 +44,7 @@
 | 4.1 Analytics | ✅ Completo | PostHog integrado, 25+ eventos, lib/analytics.ts |
 | 4.2 Retención | ✅ Completo | Web Push (lib/push.ts), Email Resend, Badges, Toast |
 | 4.3 Engagement | ✅ Completo | 8 badges + triggers automáticos, Ranking comunidad, Perfil completo, Contenido programado |
-| 4.4 Funnel | 🔴 Pendiente | Separar servicios, CTA consultoría, Diagnóstico→PDF |
+| 4.4 Funnel | ✅ Completo | Servicios separados, CTA consultoría con tracking, Recomendaciones contenido, PDF export, Dashboards PostHog |
 
 ### E5 — Items Pendientes
 

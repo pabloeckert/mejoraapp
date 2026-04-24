@@ -1,10 +1,11 @@
 import { useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ExternalLink, Calendar, Loader2, MessageCircle, Users, Monitor } from "lucide-react";
+import { ExternalLink, Calendar, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
+import { Servicios } from "@/components/Servicios";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Novedad = Tables<"novedades">;
@@ -17,29 +18,7 @@ const formatDate = (date: string) => {
   });
 };
 
-const servicios = [
-  {
-    icon: Users,
-    title: "Consultoría Estratégica",
-    desc: "Sesiones personalizadas para destrabar tu negocio con un plan de acción concreto.",
-  },
-  {
-    icon: Calendar,
-    title: "Eventos & Workshops",
-    desc: "Capacitaciones prácticas sobre ventas, liderazgo y procesos.",
-  },
-  {
-    icon: Monitor,
-    title: "CRM Mejora Continua",
-    desc: "Software propio para gestionar clientes, ventas y seguimiento comercial.",
-  },
-  {
-    icon: MessageCircle,
-    title: "Contacto Directo",
-    desc: "¿Necesitás hablar con un especialista? Estamos a un mensaje.",
-    cta: true,
-  },
-];
+
 
 const fetchNovedades = async (): Promise<Novedad[]> => {
   const { data, error } = await supabase
@@ -161,39 +140,8 @@ const Novedades = () => {
         </Card>
       )}
 
-      {/* Static services section */}
-      <div className="space-y-1 pt-2">
-        <h2 className="text-sm font-semibold text-muted-foreground">Herramientas y servicios</h2>
-      </div>
-      <div className="space-y-2">
-        {servicios.map((item) => {
-          const Icon = item.icon;
-          return (
-            <Card key={item.title} className="hover:shadow-sm transition-shadow">
-              <CardContent className="flex items-start gap-3 p-3">
-                <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center shrink-0">
-                  <Icon className="w-4 h-4 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-sm text-foreground">{item.title}</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{item.desc}</p>
-                  {item.cta && (
-                    <a
-                      href="https://wa.me/543764358152?text=Hola%2C%20quiero%20info%20de%20Mejora%20Continua"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 mt-2 text-xs font-semibold bg-primary/10 text-primary px-3 py-1.5 rounded-full hover:bg-primary/20 transition-colors"
-                    >
-                      <MessageCircle className="w-3.5 h-3.5" />
-                      Escribinos por WhatsApp
-                    </a>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+      {/* Servicios — sección separada con tracking propio */}
+      <Servicios />
     </div>
   );
 };

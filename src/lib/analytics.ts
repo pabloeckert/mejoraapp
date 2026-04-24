@@ -211,3 +211,29 @@ export function trackProfileViewed() {
 export function trackProfileEdited(field: string) {
   track("profile_edited", { field });
 }
+
+// ─── Services & Funnel ────────────────────────────────────────────────
+
+export function trackServiceClick(serviceId: string) {
+  track("service_click", { service_id: serviceId });
+}
+
+export function trackServiceWhatsApp() {
+  track("service_whatsapp_click");
+}
+
+export function trackDiagnosticCTAPerfil(perfil: string, puntaje: number) {
+  track("diagnostic_cta_perfil", { perfil, puntaje });
+}
+
+export function trackDiagnosticPDFExport(perfil: string) {
+  track("diagnostic_pdf_export", { perfil });
+}
+
+export function trackContentRecommendationClick(contentId: string, perfil: string) {
+  track("content_recommendation_click", { content_id: contentId, perfil });
+}
+
+export function trackFunnelStep(step: string, data?: Record<string, string | number | boolean>) {
+  track("funnel_step", { step, ...data });
+}

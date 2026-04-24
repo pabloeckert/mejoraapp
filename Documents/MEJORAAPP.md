@@ -28,7 +28,7 @@
 
 MejoraApp es el MVP digital de **Mejora Continua**, comunidad de negocios para líderes empresariales argentinos. Funciona en producción con muro anónimo moderado por IA, contenido de valor, diagnóstico estratégico y panel admin.
 
-**Estado actual:** App funcional con seguridad completa (E1), DevOps completa (E2 6/6), UX completa (E3 6/6), Analytics implementado (E4 Sprint 4.1 ✅), Retención completa (E4 Sprint 4.2 ✅). **Análisis multidisciplinario completo (2026-04-24).**
+**Estado actual:** App funcional con seguridad completa (E1), DevOps completa (E2 6/6), UX completa (E3 6/6), **E4 Analytics y Retención COMPLETA (4/4 sprints)**. **Análisis multidisciplinario completo (2026-04-24).**
 
 ---
 
@@ -451,11 +451,12 @@ Auditoría completa desde 18 perspectivas: UX/UI (9 roles), Negocio (4 roles), I
 - [x] 4.3.3 Perfil completo: campos bio/website/linkedin en profiles + componente UserProfile (sheet) + avatar clickeable en header + badges progreso
 - [x] 4.3.4 Contenido programado: campo scheduled_for + UI admin con datetime picker + badge "Programado" + filtro en frontend
 
-**Sprint 4.4 — Optimización del funnel (semana 4)**
-- [ ] 4.4.1 Separar servicios de novedades — sección propia con tracking de clicks
-- [ ] 4.4.2 CTA de consultoría post-diagnóstico con tracking de conversión
-- [ ] 4.4.3 Diagnóstico con recomendación de contenido basada en perfil
-- [ ] 4.4.4 Exportar resultados de diagnóstico a PDF
+**Sprint 4.4 — Funnel y Optimización ✅ COMPLETO (2026-04-24)**
+- [x] 4.4.1 Servicios separados de novedades: componente `Servicios.tsx` dedicado con tracking por servicio (`trackServiceClick`, `trackServiceWhatsApp`), variante compact/full
+- [x] 4.4.2 CTA consultoría post-diagnóstico con tracking: `trackDiagnosticCTAPerfil` + `trackFunnelStep("diagnostic_whatsapp_cta")` con perfil y puntaje
+- [x] 4.4.3 Recomendaciones de contenido por perfil: hook `useContentRecommendations` que mapea perfil → categorías/keywords → posts relevantes, mostrados en resultado del diagnóstico
+- [x] 4.4.4 Exportar diagnóstico a PDF: `lib/pdfExport.ts` con jsPDF dinámico, incluye perfil, puntaje, síntomas, CTA. Botón "Descargar PDF" en resultado
+- [x] 4.4.5 Dashboards PostHog: guía de configuración en `Documents/POSTHOG-DASHBOARDS.md` con 3 dashboards (Actividad, Funnel, Contenido) + retención + 25+ eventos documentados
 
 ### ETAPA 5 — Calidad y Robustez
 > **Depende de E4 (analytics) para priorizar qué arreglar primero.**
@@ -523,6 +524,7 @@ Auditoría completa desde 18 perspectivas: UX/UI (9 roles), Negocio (4 roles), I
 | 2026-04-24 PM | Push + Email | E4 Sprint 4.2 completo (4/4): Web Push + Resend email post-diagnóstico + Edge Functions |
 | 2026-04-24 PM | Análisis multidisciplinario completo | 37 perspectivas (12 Técnicas, 10 Producto, 8 Comercial, 7 Operaciones). Plan optimizado 12 semanas. Documento ANALISIS-MAESTRO.md creado. |
 | 2026-04-24 PM | Sprint 4.3 completo | Gamificación (8 badges + triggers automáticos), Ranking comunidad, Perfil completo (bio/links), Contenido programado. 7 archivos nuevos, 1276 líneas. |
+| 2026-04-24 PM | Sprint 4.4 completo | Servicios separados con tracking, CTA consultoría post-diagnóstico, recomendaciones contenido por perfil, PDF export (jsPDF), dashboards PostHog. E4 completa. |
 
 ---
 
@@ -532,9 +534,11 @@ Auditoría completa desde 18 perspectivas: UX/UI (9 roles), Negocio (4 roles), I
 |---------|-----------|
 | `MEJORAAPP.md` | Este documento — fuente única de verdad |
 | `ANALISIS-MAESTRO.md` | Análisis multidisciplinario completo (37 perspectivas) + plan optimizado por etapas |
+| `POSTHOG-DASHBOARDS.md` | Guía de configuración de dashboards PostHog (Actividad, Funnel, Contenido, Retención) |
 | `SESSION-PROMPT.md` | ⚠️ Prompt de inicio para próxima sesión — LEER PRIMERO |
 | `PUSH_SUBSCRIPTIONS.sql` | Script SQL tabla push_subscriptions + RLS |
 | `MIGRACION-SEGURIDAD-2026-04-23.sql` | Script SQL de hardening de seguridad (ejecutado) |
+| `MIGRACION-GAMIFICACION-2026-04-24.sql` | Script SQL gamificación (user_badges, triggers, ranking, profile fields, scheduled_for) |
 
 ---
 
