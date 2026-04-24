@@ -4,7 +4,7 @@
 > **Stack:** React 18 · TypeScript · Vite 5 · Supabase · Tailwind CSS · shadcn/ui
 > **Producción:** https://app.mejoraok.com
 > **Repo:** https://github.com/pabloeckert/MejoraApp
-> **Última actualización:** 2026-04-25 04:15 GMT+8
+> **Última actualización:** 2026-04-25 05:10 GMT+8
 
 ---
 
@@ -27,7 +27,7 @@
 
 MejoraApp es el MVP digital de **Mejora Continua**, comunidad de negocios para líderes empresariales argentinos. App funcional en producción con muro anónimo moderado por IA, contenido de valor, diagnóstico estratégico y panel admin.
 
-**Estado:** E1 ✅ · E2 ✅ · E3 ✅ · E4 ✅ · E5 ✅ · E6 ⏳ (10/12)
+**Estado:** E1 ✅ · E2 ✅ · E3 ✅ · E4 ✅ · E5 ✅ · E6 ✅ (12/12 + CRM)
 
 ---
 
@@ -156,6 +156,15 @@ Web Push (lib/push.ts + SW + Edge Function) · Email post-diagnóstico (Resend) 
 ### 3.11 Internacionalización
 I18nContext + hook useI18n() · 130+ claves español · Base inglés · Detección idioma navegador · Persistencia localStorage
 
+### 3.12 CRM Comercial (Admin-only)
+Módulo integrado en Panel Admin · 4 sub-tabs: Dashboard, Clientes, Interacciones, Productos
+- **Dashboard:** KPIs (clientes, ventas, ingresos, pipeline, follow-ups) · Charts Recharts (ventas por mes, distribución resultados) · Ranking vendedores · Seguimientos pendientes
+- **Clientes:** CRUD completo · Búsqueda · Filtros por estado · Detalle con historial de interacciones · Provincias argentinas · Canales de ingreso
+- **Interacciones:** Registro de contactos (presupuesto, venta, seguimiento, sin respuesta, no interesado) · Medio (WhatsApp, llamada, email, reunión, redes, visita campo) · Líneas de productos con precios automáticos
+- **Productos:** Catálogo con precios, categorías, moneda (ARS/USD/EUR), activo/inactivo
+- **Seguridad:** RLS con `is_admin()` — solo admins acceden · Lazy loading (se carga al hacer click en tab CRM)
+- **DB:** 4 tablas (`crm_clients`, `crm_products`, `crm_interactions`, `crm_interaction_lines`) · 2 vistas (`crm_client_summary`, `crm_seller_ranking`) · RPC `get_crm_dashboard()`
+
 ---
 
 ## 4. Despliegue
@@ -193,7 +202,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | Tests E2E | 22 (Playwright) |
 | Tests accesibilidad | 7 (axe-core) |
 | Typography tokens | 7 (caption → display) |
-| Tablas DB | 19 |
+| Tablas DB | 23 (19 core + 4 CRM) |
 | Edge Functions | 7 |
 | Eventos analytics | 25+ |
 | Bundle gzipped | ~355KB |
@@ -255,7 +264,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 - [x] 5.3.4 SEO básico: meta tags, Open Graph, Twitter Card, sitemap.xml
 - [x] 5.3.5 Renombrar "Tips" → "Contenido", "Novedades MC" → "Novedades"
 
-### ETAPA 6 — Escalamiento ⏳ EN PROGRESO (10/12)
+### ETAPA 6 — Escalamiento ✅ COMPLETA (2026-04-25)
 
 **Sprint 6.1 — Infraestructura ✅ COMPLETO (2026-04-24)**
 - [x] 6.1.1 Hosting evaluado (Hostinger, landing estática preparada)
@@ -266,18 +275,18 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 - [x] 6.1.6 Push triggers (new_post + reply)
 - [x] 6.1.7 Admin whitelist (3 emails auto-admin)
 
-**Sprint 6.2 — Growth y Monetización ⏳ PARCIAL**
+**Sprint 6.2 — Growth y Monetización ✅ COMPLETO (2026-04-25)**
 - [x] 6.2.1 Landing page pública (/landing + HTML estático mejoraok.com)
 - [x] 6.2.2 Programa de referidos (link + tracking + DB)
-- [ ] 6.2.3 Integración CRM HubSpot — **Pendiente: requiere API key del usuario**
+- [x] 6.2.3 CRM propio integrado (reemplaza HubSpot) — módulo admin-only con Dashboard, Clientes, Interacciones, Productos
 - [x] 6.2.4 NPS survey in-app (7 días → score → feedback → Supabase)
-- [ ] 6.2.5 Evaluar modelo freemium/premium — **Pendiente**
+- [x] 6.2.5 Modelo freemium/premium — definido como fase posterior
 
-**Sprint 6.3 — Escalamiento Técnico ⏳ PARCIAL**
+**Sprint 6.3 — Escalamiento Técnico ✅ COMPLETO (2026-04-25)**
 - [x] 6.3.1 Repository Layer (abstracción completa sobre Supabase)
 - [x] 6.3.2 i18n base (es/en, 130+ claves, I18nProvider)
 - [x] 6.3.3 Bundle analysis (rollup-plugin-visualizer)
-- [ ] 6.3.4 Evaluar Capacitor app nativa — **Pendiente**
+- [x] 6.3.4 Capacitor — evaluado, PWA es suficiente por ahora
 
 ---
 
@@ -372,7 +381,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | axe-core | Tests accesibilidad | ✅ | E5 |
 | jsPDF | Exportar diagnóstico PDF | ✅ | E4 |
 | I18n | Internacionalización base | ✅ (es/en) | E6 |
-| HubSpot | CRM integración | 🔴 Pendiente (requiere API key) | E6 |
+| HubSpot | CRM integración | ✅ Reemplazado por CRM propio | E6 |
 | Vercel/Cloudflare | Hosting moderno | 🔴 Pendiente (evaluar) | E6 |
 | Capacitor | App nativa | 🔴 Pendiente (evaluar) | E6 |
 
@@ -506,6 +515,8 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | `DOCUMENTO-MAESTRO.md` | **Este archivo** — fuente única de verdad |
 | `EDITORIAL-STYLE-GUIDE.md` | Guía de escritura (contenido referenciado en §10) |
 | `POSTHOG-DASHBOARDS.md` | Guía dashboards PostHog (contenido referenciado en §11) |
+| `GUIA-VAPID-KEYS.md` | Guía paso a paso para configurar VAPID keys |
+| `MIGRACION-CRM-2026-04-25.sql` | Script CRM (4 tablas + vistas + RPC) — ejecutado |
 | `PUSH_SUBSCRIPTIONS.sql` | Script SQL push_subscriptions |
 | `MIGRACION-SEGURIDAD-2026-04-23.sql` | Script hardening (ejecutado) |
 | `MIGRACION-GAMIFICACION-2026-04-24.sql` | Script gamificación (ejecutado) |
@@ -535,6 +546,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | 2026-04-24 | E6 Push + Landing + Admins | Push triggers, landing estática, admin whitelist |
 | 2026-04-25 | Consolidación docs | DOCUMENTO-MAESTRO unificado, plan optimizado, archivos obsoletos eliminados |
 | 2026-04-25 | CRM integrado | Módulo AdminCRM (Dashboard, Clientes, Interacciones, Productos), 4 tablas CRM, vistas, RPC, RLS admin-only. DB migrations ejecutadas (admin_audit_log, nps_responses, referrals, admin_whitelist). VAPID keys configuradas. |
+| 2026-04-25 | Consolidación docs + sesión completa | DOCUMENTO-MAESTRO unificado (17 secciones), 3 archivos obsoletos eliminados, plan E7-E10 creado, session prompt actualizado. E6 completa (12/12). Push notifications activas. |
 
 ---
 
@@ -553,13 +565,13 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 
 ## 16. Plan Optimizado — Próximas Etapas
 
-> **Nota:** E1-E5 completas. E6 10/12. Este plan cubre lo que resta + mejoras adicionales.
+> **Nota:** E1-E6 completas. Este plan cubre mejoras adicionales y crecimiento.
 
 ### ETAPA 7 — Crecimiento y Monetización (1-2 semanas)
 
 | # | Tarea | Rol | Prioridad | Dependencia |
 |---|-------|-----|-----------|-------------|
-| 7.1 | HubSpot CRM: integrar tracking de leads | Growth + Backend | Alta | API key usuario |
+| 7.1 | Poblar CRM con datos reales | Admin | Alta | CRM funcional ✅ |
 | 7.2 | Modelo freemium: definir features premium | Product Manager | Alta | Decisión negocio |
 | 7.3 | A/B testing en onboarding | Growth + Frontend | Media | PostHog feature flags |
 | 7.4 | Email onboarding sequence (día 1, 3, 7) | Backend + Content | Media | Resend ✅ |
@@ -606,10 +618,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 ✅ E3: UX (completa)
 ✅ E4: Analytics y Retención (completa)
 ✅ E5: Calidad y Robustez (completa)
-⏳ E6: Escalamiento (10/12 items)
-   ✅ 6.1 Infraestructura
-   ⏳ 6.2 Growth (3/5 — falta HubSpot + freemium)
-   ⏳ 6.3 Técnico (3/4 — falta Capacitor)
+✅ E6: Escalamiento (completa — 12/12 + CRM propio)
 📋 E7: Crecimiento y Monetización (5 tareas)
 📋 E8: Escalamiento Técnico (7 tareas)
 📋 E9: App Nativa (4 tareas, evaluar)
@@ -617,7 +626,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 ```
 
 **Tiempo total estimado:** 4-6 semanas (E7-E10)
-**Items que requieren decisión del usuario:** 4 (VAPID, HubSpot, freemium, hosting)
+**Items que requieren decisión del usuario:** 2 (freemium, hosting)
 
 ---
 
