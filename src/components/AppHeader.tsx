@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import NotificationToggle from "@/components/NotificationToggle";
 import logoComunidad from "@/assets/logo-comunidad.png";
 
 const AppHeader = () => {
@@ -60,6 +61,7 @@ const AppHeader = () => {
               </a>
             </Button>
           )}
+          <NotificationToggle variant="icon" />
           <Button
             variant="ghost"
             size="icon"

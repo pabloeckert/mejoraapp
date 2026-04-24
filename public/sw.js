@@ -1,4 +1,4 @@
-const CACHE_NAME = "mejoraapp-v2";
+const CACHE_NAME = "mejoraapp-v3";
 const STATIC_ASSETS = ["/app/", "/app/index.html"];
 
 self.addEventListener("install", (event) => {
@@ -34,5 +34,52 @@ self.addEventListener("fetch", (event) => {
         return res;
       })
       .catch(() => caches.match(req))
+  );
+});
+
+// ─── Push Notifications ───────────────────────────────────────────────────────
+
+self.addEventListener("push", (event) => {
+  if (!event.data) return;
+
+  let payload;
+  try {
+    payload = event.data.json();
+  } catch {
+    payload = { title: "MejoraApp", body: event.data.text() };
+  }
+
+  const title = payload.title || "MejoraApp";
+  const options = {
+    body: payload.body || "",
+    icon: payload.icon || "/app/icon-192.png",
+    badge: payload.badge || "/app/icon-192.png",
+    data: { url: payload.url || "/" },
+    tag: payload.tag || "mejoraapp-notification",
+    renotify: true,
+    vibrate: [100, 50, 100],
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+
+  const url = event.notification.data?.url || "/";
+
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      // Focus existing window if open
+      for (const client of clients) {
+        if (client.url.includes(self.location.origin) && "focus" in client) {
+          client.focus();
+          client.navigate(url);
+          return;
+        }
+      }
+      // Open new window
+      self.clients.openWindow(url);
+    })
   );
 });
