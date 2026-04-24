@@ -11,6 +11,7 @@ import DiagnosticTest from "@/components/DiagnosticTest";
 import ProfileCompleteModal from "@/components/ProfileCompleteModal";
 import Onboarding, { shouldShowOnboarding } from "@/components/Onboarding";
 import { trackPageView, trackTabSwitch } from "@/lib/analytics";
+import { useLastVisit } from "@/hooks/useLastVisit";
 
 const Index = () => {
   const { session, loading, user } = useAuth();
@@ -25,6 +26,7 @@ const Index = () => {
   });
   const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const { badges, markVisited } = useLastVisit();
 
   useEffect(() => {
     if (!user) {
@@ -75,14 +77,16 @@ const Index = () => {
     return () => window.removeEventListener("navigate-tab", handler);
   }, []);
 
-  // Track page view on mount
+  // Track page view on mount and mark initial tab visited
   useEffect(() => {
     trackPageView("/");
-  }, []);
+    markVisited(activeTab);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Track tab switches
+  // Track tab switches and mark visited
   const handleTabChange = (tab: string) => {
     trackTabSwitch(activeTab, tab);
+    markVisited(tab);
     setActiveTab(tab);
   };
 
@@ -117,7 +121,7 @@ const Index = () => {
         {activeTab === "muro" && <Muro />}
         {activeTab === "novedades" && <Novedades />}
       </main>
-      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badges={badges} />
 
       {/* Profile completion modal */}
       {!profileComplete && user && (

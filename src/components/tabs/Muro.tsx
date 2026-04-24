@@ -282,6 +282,8 @@ const Muro = () => {
   const [submittingComment, setSubmittingComment] = useState<Set<string>>(new Set());
   const [confirmingDelete, setConfirmingDelete] = useState<string | null>(null);
 
+  // Ref for posts data — used in realtime callback to avoid stale closure
+  const postsDataRef = useRef<WallPost[]>([]);
   const {
     data,
     fetchNextPage,
@@ -322,6 +324,18 @@ const Muro = () => {
         { event: "INSERT", schema: "public", table: "wall_comments", filter: "status=eq.approved" },
         (payload) => {
           const comment = payload.new as WallComment;
+
+          // Notify if someone comments on YOUR post (and it's not you)
+          const userPost = postsDataRef.current.find((p) => p.id === comment.post_id && p.user_id === user?.id);
+          if (userPost && comment.user_id !== user?.id) {
+            toast({
+              title: "💬 Nueva respuesta en tu post",
+              description: comment.content.length > 60
+                ? comment.content.slice(0, 60) + "…"
+                : comment.content,
+            });
+          }
+
           if (expandedPosts.has(comment.post_id)) {
             fetchComments(comment.post_id).then((c) => {
               setCommentsMap((prev) => ({ ...prev, [comment.post_id]: c }));
@@ -334,9 +348,12 @@ const Muro = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient, expandedPosts]);
+  }, [queryClient, expandedPosts, user, toast]);
 
   const allPosts = data?.pages.flat() ?? [];
+
+  // Keep ref in sync for realtime callback
+  useEffect(() => { postsDataRef.current = allPosts; }, [allPosts]);
 
   const toggleExpand = useCallback(
     async (postId: string) => {
