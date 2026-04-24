@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { CookieConsent } from "@/components/CookieConsent";
 
 // Lazy-loaded pages — each route only downloads its code when needed
 const Index = lazy(() => import("./pages/Index"));
@@ -54,6 +55,7 @@ const App = () => (
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
+    <CookieConsent />
   </ErrorBoundary>
 );
 

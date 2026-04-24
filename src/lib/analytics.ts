@@ -20,8 +20,21 @@ const ENVIRONMENT = import.meta.env.MODE === "production" ? "production" : impor
 let posthog: typeof import("posthog-js").default | null = null;
 
 /**
+ * Check if user has given cookie consent.
+ * Returns true if accepted, false if rejected or not yet decided.
+ */
+function hasConsent(): boolean {
+  try {
+    return localStorage.getItem("mc-cookie-consent") === "accepted";
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Initialize PostHog. Call once at app startup.
  * In development, it logs events to console instead of sending them.
+ * Respects cookie consent (Ley 25.326).
  */
 export async function initAnalytics() {
   if (ENVIRONMENT === "development" && !import.meta.env.VITE_ANALYTICS_DEBUG) {
@@ -31,6 +44,12 @@ export async function initAnalytics() {
 
   if (!POSTHOG_KEY) {
     console.info("[Analytics] No PostHog key configured — analytics disabled");
+    return;
+  }
+
+  // Respect cookie consent — don't initialize if user rejected
+  if (!hasConsent()) {
+    console.info("[Analytics] Cookie consent not given — analytics disabled");
     return;
   }
 

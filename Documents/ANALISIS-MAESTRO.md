@@ -1033,12 +1033,12 @@ Sin operaciones de revenue formal. Servicios de consultoría como fuente de ingr
 
 ## ETAPA 5 — Calidad, Robustez y Legal
 
-### Sprint 5.1 — Legal y Compliance (SEMANA 3-4) ⚠️ PRIORIDAD
-- [ ] 5.1.1 Política de privacidad (Ley 25.326 argentina)
-- [ ] 5.1.2 Términos de servicio
-- [ ] 5.1.3 Banner de consentimiento de cookies/tracking
-- [ ] 5.1.4 Mecanismo de "Mis Datos" (ver, editar, eliminar perfil)
-- [ ] 5.1.5 Reglas de la comunidad visibles en el muro
+### Sprint 5.1 — Legal y Compliance ✅ COMPLETO (2026-04-24)
+- [x] 5.1.1 Política de privacidad: `public/politica-privacidad.html` — Ley 25.326, 12 secciones, derechos ARCO, contacto AAIP
+- [x] 5.1.2 Términos de servicio: `public/terminos-servicio.html` — 12 secciones, uso aceptable, jurisdicción Argentina
+- [x] 5.1.3 Banner cookies: `CookieConsent.tsx` — bloquea PostHog hasta aceptar, persiste en localStorage
+- [x] 5.1.4 "Mis Datos": `DataManagement.tsx` — ver, editar, exportar JSON, eliminar cuenta con confirmación
+- [x] 5.1.5 Reglas comunidad: `CommunityRules.tsx` — expandible en muro, 3 permitidas + 3 prohibidas
 
 ### Sprint 5.2 — Testing y Calidad (SEMANA 4-5)
 - [ ] 5.2.1 Tests E2E con Playwright (auth → post → diagnóstico)

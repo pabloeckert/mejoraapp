@@ -24,6 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useBadges } from "@/hooks/useBadges";
 import { BadgeDisplay } from "@/components/BadgeDisplay";
 import { CommunityRanking } from "@/components/CommunityRanking";
+import { CommunityRules } from "@/components/CommunityRules";
 import { trackPublishPost, trackLikePost, trackCommentPost, trackDeletePost, trackBadgeEarned } from "@/lib/analytics";
 
 interface WallPost {
@@ -657,6 +658,9 @@ const Muro = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Reglas de la comunidad */}
+      <CommunityRules />
 
       {/* Badges del usuario */}
       {earnedBadges.length > 0 && (

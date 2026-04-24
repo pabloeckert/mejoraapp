@@ -28,6 +28,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBadges } from "@/hooks/useBadges";
 import { BadgeDisplay } from "@/components/BadgeDisplay";
+import { DataManagement } from "@/components/DataManagement";
 import { cn } from "@/lib/utils";
 
 interface UserProfileProps {
@@ -284,6 +285,29 @@ export const UserProfile = ({ open, onOpenChange }: UserProfileProps) => {
                 </div>
                 <div className="text-[10px] text-muted-foreground">Completado</div>
               </div>
+            </div>
+
+            {/* Mis Datos — Ley 25.326 */}
+            <div className="pt-4 border-t border-border">
+              <DataManagement />
+            </div>
+
+            {/* Legal links */}
+            <div className="flex items-center justify-center gap-4 pt-2">
+              <a
+                href="/politica-privacidad.html"
+                target="_blank"
+                className="text-[10px] text-muted-foreground hover:text-foreground underline"
+              >
+                Privacidad
+              </a>
+              <a
+                href="/terminos-servicio.html"
+                target="_blank"
+                className="text-[10px] text-muted-foreground hover:text-foreground underline"
+              >
+                Términos
+              </a>
             </div>
           </div>
         )}

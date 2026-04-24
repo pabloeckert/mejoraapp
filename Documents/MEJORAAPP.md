@@ -525,6 +525,7 @@ Auditoría completa desde 18 perspectivas: UX/UI (9 roles), Negocio (4 roles), I
 | 2026-04-24 PM | Análisis multidisciplinario completo | 37 perspectivas (12 Técnicas, 10 Producto, 8 Comercial, 7 Operaciones). Plan optimizado 12 semanas. Documento ANALISIS-MAESTRO.md creado. |
 | 2026-04-24 PM | Sprint 4.3 completo | Gamificación (8 badges + triggers automáticos), Ranking comunidad, Perfil completo (bio/links), Contenido programado. 7 archivos nuevos, 1276 líneas. |
 | 2026-04-24 PM | Sprint 4.4 completo | Servicios separados con tracking, CTA consultoría post-diagnóstico, recomendaciones contenido por perfil, PDF export (jsPDF), dashboards PostHog. E4 completa. |
+| 2026-04-24 PM | Sprint 5.1 Legal completo | Política de privacidad + Términos de servicio (HTML), CookieConsent (bloquea tracking), DataManagement (ver/editar/exportar/eliminar), CommunityRules en muro. E5 1/3. |
 
 ---
 

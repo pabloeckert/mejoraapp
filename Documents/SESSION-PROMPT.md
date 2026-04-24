@@ -34,7 +34,7 @@
 | E2 | Arquitectura y DevOps | ✅ Completa (6/6) |
 | E3 | Experiencia de Usuario | ✅ Completa (6/6) |
 | E4 | Analytics y Retención | ✅ Completa (4/4 sprints) |
-| E5 | Calidad y Robustez | 🔴 No iniciada |
+| E5 | Calidad y Robustez | ⏳ 1/3 sprints completados |
 | E6 | Escalamiento | 🔴 No iniciada |
 
 ### E4 — Estado por Sprint
