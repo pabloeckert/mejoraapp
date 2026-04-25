@@ -4,7 +4,7 @@
 > **Stack:** React 18 · TypeScript · Vite 5 · Supabase · Tailwind CSS · shadcn/ui
 > **Producción:** https://app.mejoraok.com
 > **Repo:** https://github.com/pabloeckert/MejoraApp
-> **Última actualización:** 2026-04-25 05:10 GMT+8
+> **Última actualización:** 2026-04-25 21:30 GMT+8
 
 ---
 
@@ -20,6 +20,7 @@
 3. **Nunca crear archivos sueltos** — todo va en `Documents/`.
 4. **Registro de sesiones:** Agregar fila en §14.
 5. **Planes:** Marcar tareas `[x]` al completar, agregar fecha.
+6. **Al culminar cada sprint:** Pushear y verificar deploy en vivo.
 
 ---
 
@@ -39,13 +40,13 @@ MejoraApp es el MVP digital de **Mejora Continua**, comunidad de negocios para l
 src/
 ├── pages/              # 5 páginas lazy-loaded (Index, Auth, Admin, ResetPassword, NotFound)
 ├── components/
-│   ├── admin/          # 6 módulos (Contenido, IA, Muro, Novedades, Usuarios, Seguridad)
+│   ├── admin/          # 7 módulos (Contenido, IA, Muro, Novedades, Usuarios, Seguridad, CRM)
 │   ├── auth/           # LoginForm, SignupForm, GoogleButton, AdminLoginForm
 │   ├── tabs/           # Muro, Novedades, ContenidoDeValor
 │   ├── ui/             # 30+ componentes shadcn/ui
 │   └── [feature]       # DiagnosticTest, Onboarding, BadgeDisplay, etc.
 ├── contexts/           # AuthContext, ThemeContext, I18nContext
-├── hooks/              # useWallInteractions, usePullToRefresh, useBadges, useRanking, etc.
+├── hooks/              # useWallInteractions, usePullToRefresh, useBadges, useRanking, useCRM, etc.
 ├── data/               # diagnosticData.ts, badges.ts
 ├── integrations/supabase/  # client.ts, types.ts
 ├── lib/                # utils.ts, analytics.ts, sentry.ts, push.ts, pdfExport.ts
@@ -79,7 +80,13 @@ src/
 | `nps_responses` | Respuestas NPS | Usuario propio escribe |
 | `referrals` | Tracking referidos | Usuario propio lee |
 | `admin_whitelist` | Emails auto-admin | Solo service_role |
+| `crm_clients` | Clientes CRM | Solo admin |
+| `crm_products` | Productos CRM | Solo admin |
+| `crm_interactions` | Interacciones comerciales | Solo admin |
+| `crm_interaction_lines` | Líneas por interacción | Solo admin |
 
+**Vistas:** `crm_client_summary`, `crm_seller_ranking`
+**RPC:** `get_crm_dashboard()`
 **Funciones SQL:** `is_admin(UUID)`, `has_role(UUID, app_role)`, `handle_new_user()`, `update_wall_likes_count()`, `update_wall_post_comments_count()`, triggers de badges.
 
 ### 2.3 Edge Functions (Supabase Deno)
@@ -138,8 +145,8 @@ CRUD admin · Fecha publicación · Imagen + enlace · Empty state "Próximament
 ### 3.5 Servicios
 Componente dedicado separado de novedades · Tracking por servicio · WhatsApp CTA · Variante compact/full
 
-### 3.6 Panel Admin (6 módulos)
-Contenido · IA · Novedades · Muro · Usuarios · Seguridad
+### 3.6 Panel Admin (7 módulos)
+Contenido · IA · Novedades · Muro · Usuarios · Seguridad · CRM
 
 ### 3.7 Onboarding
 4 pasos con skip · Persistencia localStorage · Overlay modal · Secuencia correcta con ProfileCompleteModal
@@ -318,43 +325,72 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | DevOps/CI-CD | 8/10 | ✅ CSP + CORS + rate limiting |
 | Analytics/BI | 8/10 | ✅ PostHog integrado |
 | Legal/Compliance | 7/10 | ✅ Documentos creados |
-| Growth/Marketing | 6/10 | ⚠️ Landing + referidos + NPS, falta CRM |
+| Growth/Marketing | 6/10 | ⚠️ Landing + referidos + NPS, falta CRM poblado |
 | Calidad/Testing | 8/10 | ✅ E2E + accesibilidad |
 | Documentación | 9/10 | ✅ Consolidada |
 
-### 7.3 Recomendaciones por Rol
+### 7.3 Recomendaciones por Rol (37 perspectivas)
 
-**Técnico:**
-- **Software Architect:** Separar admin-action en funciones específicas. Repository Layer ✅.
-- **Cloud Architect:** Migrar a Vercel/Cloudflare (atómico + CDN + gratis).
-- **Backend:** Zod validation en Edge Functions. Logging estructurado.
-- **Frontend:** Code splitting por chunk. Reemplazar CustomEvent por Context/URL params.
-- **DevOps:** Notificación de deploy. Environment protection rules.
-- **SRE:** Definir SLO. Dashboard error rates.
-- **Security:** 2FA admins. WAF rules.
-- **Data Engineer:** Verificar backups. Índices compuestos. Data retention.
-- **ML Engineer:** Logging decisiones IA. Evaluación calidad moderación. Cache respuestas.
-- **QA:** Visual regression. Lighthouse CI.
+#### Técnico (10 roles)
 
-**Producto:**
-- **Product Manager:** Definir KPIs (DAU, WAU, tasa completado diagnóstico). Roadmap Q2 2026.
-- **Product Owner:** Definition of Done. Refinar backlog.
-- **UX Researcher:** 5 entrevistas usuarios. User personas basadas en datos.
-- **UX Designer:** Muro como tab default. Onboarding del muro.
-- **UI Designer:** Sistema de elevación. Micro-interacciones.
-- **UX Writer:** Mantener voseo consistente.
+| Rol | Recomendación | Prioridad | Estado |
+|-----|--------------|-----------|--------|
+| **Software Architect** | Separar admin-action en funciones específicas. Repository Layer implementado. | Media | ✅ Repo Layer hecho |
+| **Cloud Architect** | Migrar a Vercel/Cloudflare (atómico + CDN + gratis). | Alta | 📋 E8.1 |
+| **Backend Developer** | Zod validation en Edge Functions. Logging estructurado JSON. | Media | 📋 E8.3-E8.4 |
+| **Frontend Developer** | Code splitting por chunk. Reemplazar CustomEvent por Context/URL params. | Baja | 📋 E8 |
+| **iOS Developer** | PWA es suficiente por ahora. Capacitor si se necesita nativo. | Baja | 📋 E9 |
+| **Android Developer** | PWA es suficiente por ahora. Capacitor si se necesita nativo. | Baja | 📋 E9 |
+| **DevOps Engineer** | Notificación de deploy. Environment protection rules en GitHub. | Baja | 📋 E8.7 |
+| **SRE** | Definir SLO (99.9%). Dashboard error rates. Structured logging. | Media | 📋 E10.5 |
+| **Cybersecurity Architect** | 2FA admins. WAF rules. Security headers audit. | Alta | 📋 E10.3-E10.4 |
+| **Data Engineer** | Verificar backups automáticos. Índices compuestos. Data retention policy. | Media | 📋 E10.1 |
 
-**Comercial:**
-- **Growth:** Funnel PostHog ✅. Experimentos A/B.
-- **SEO:** Sitemap ✅. Landing ✅. Blog orgánico.
-- **Content Manager:** Calendario editorial. Tracking views.
-- **Community Manager:** Dashboard métricas. Eventos semanales.
+#### Producto (6 roles)
 
-**Operaciones:**
-- **Legal:** Política privacidad ✅. Términos ✅. Cookies ✅. Política retención.
-- **DPO:** Mecanismo "Mis Datos" ✅. DPIA.
-- **BI:** Dashboards PostHog ✅. Cohort retention.
-- **Customer Success:** NPS survey ✅. Email onboarding.
+| Rol | Recomendación | Prioridad | Estado |
+|-----|--------------|-----------|--------|
+| **Product Manager** | Definir KPIs (DAU, WAU, tasa completado diagnóstico). Roadmap Q2 2026. | Alta | 📋 E7 |
+| **Product Owner** | Definition of Done. Refinar backlog E7-E10. | Media | 📋 E7 |
+| **Scrum Master** | Sprints de 1 semana. Daily async. Retros al cerrar etapa. | Baja | Proceso interno |
+| **UX Researcher** | 5 entrevistas usuarios. User personas basadas en datos reales. | Alta | 📋 E7 |
+| **UX Designer** | Muro como tab default. Onboarding del muro. Flows de re-engagement. | Media | 📋 E7 |
+| **UI Designer** | Sistema de elevación. Micro-interacciones. Motion design. | Baja | Futuro |
+
+#### Comercial (7 roles)
+
+| Rol | Recomendación | Prioridad | Estado |
+|-----|--------------|-----------|--------|
+| **UX Writer** | Mantener voseo consistente. Copy de onboarding iterar con datos. | Media | Continuo |
+| **Localization Manager** | i18n base ✅. Traducir 130+ claves a inglés. Evaluar PT-BR. | Baja | 📋 i18n extendido |
+| **Delivery Manager** | Pipeline CI/CD ✅. Automatizar changelog. Release notes. | Baja | 📋 E8 |
+| **Growth Manager** | Funnel PostHog ✅. Experimentos A/B onboarding. Referidos activos. | Alta | 📋 E7.3 |
+| **ASO Specialist** | PWA es suficiente. Si Capacitor: screenshots, keywords, descripción. | Baja | 📋 E9 |
+| **Performance Marketing** | Landing ✅. Facebook Pixel / Google Ads tag. Retargeting. | Media | 📋 E7 |
+| **SEO Specialist** | Sitemap ✅. Landing ✅. Blog orgánico. Backlinks comunidad. | Media | 📋 E7.5 |
+
+#### Contenido y Comunidad (3 roles)
+
+| Rol | Recomendación | Prioridad | Estado |
+|-----|--------------|-----------|--------|
+| **Business Development** | CRM propio ✅. Poblar con datos reales. Pipeline comercial. | Alta | 📋 E7.1 |
+| **Account Manager** | CRM ✅. Seguimiento automático. Alertas de follow-up. | Media | 📋 E7.1 |
+| **Content Manager** | Calendario editorial. Tracking views por contenido. IA genera borrador. | Media | 📋 E7.5 |
+| **Community Manager** | Dashboard métricas muro. Eventos semanales. Moderación manual fallback. | Media | Continuo |
+
+#### Operaciones, Legal y Análisis (8 roles)
+
+| Rol | Recomendación | Prioridad | Estado |
+|-----|--------------|-----------|--------|
+| **BI Analyst** | Dashboards PostHog ✅. Cohort retention. Revenue tracking (futuro). | Media | 📋 PostHog avanzado |
+| **Data Scientist** | Scoring diagnóstico. Clustering usuarios. Predictive churn. | Baja | Futuro |
+| **Legal & Compliance** | Privacidad ✅. Términos ✅. Cookies ✅. Política retención datos. | Media | 📋 E10.1 |
+| **DPO** | "Mis Datos" ✅. DPIA (Data Protection Impact Assessment). | Media | 📋 E10.2 |
+| **Customer Success** | NPS survey ✅. Email onboarding sequence. In-app guidance. | Alta | 📋 E7.4 |
+| **Tech Support T1** | FAQ in-app. Chatbot básico. | Baja | Futuro |
+| **Tech Support T2** | Logs estructurados para troubleshooting. Sentry ✅. | Media | 📋 E8.4 |
+| **Tech Support T3** | Admin tools para debug. Edge Function logs. Database queries. | Baja | Futuro |
+| **RevOps** | CRM + Analytics integrados. Pipeline → Revenue tracking. | Media | 📋 E7 |
 
 ---
 
@@ -381,9 +417,9 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | axe-core | Tests accesibilidad | ✅ | E5 |
 | jsPDF | Exportar diagnóstico PDF | ✅ | E4 |
 | I18n | Internacionalización base | ✅ (es/en) | E6 |
-| HubSpot | CRM integración | ✅ Reemplazado por CRM propio | E6 |
-| Vercel/Cloudflare | Hosting moderno | 🔴 Pendiente (evaluar) | E6 |
-| Capacitor | App nativa | 🔴 Pendiente (evaluar) | E6 |
+| CRM propio | CRM integrado admin-only | ✅ | E6 |
+| Vercel/Cloudflare | Hosting moderno | 🔴 Pendiente (evaluar) | E8 |
+| Capacitor | App nativa | 🔴 Pendiente (evaluar) | E9 |
 
 ---
 
@@ -489,6 +525,46 @@ Nombres de features en español siempre que sea posible. Excepciones aceptadas: 
 | Servicios | `service_click`, `service_whatsapp_click`, `diagnostic_cta_perfil`, `diagnostic_pdf_export`, `content_recommendation_click`, `funnel_step` |
 | Admin | `admin_action` |
 
+### Configuración Dashboards (PostHog)
+
+**Dashboard Actividad — Insights:**
+| Insight | Tipo | Configuración |
+|---------|------|---------------|
+| DAU | Trends | `$pageview` · Unique users · Daily |
+| WAU | Trends | `$pageview` · Unique users · Weekly |
+| MAU | Trends | `$pageview` · Unique users · Monthly |
+| Posts/día | Trends | `publish_post` · Total count · Daily |
+| Likes/día | Trends | `like_post` · Total count · Daily |
+| Comentarios/día | Trends | `comment_post` · Total count · Daily |
+| Diagnósticos/día | Trends | `complete_diagnostic` · Total count · Daily |
+| Método login | Pie | `login` · Breakdown: `method` |
+
+**Dashboard Funnel — Funnels:**
+- **Principal:** signup → login → first_post → first_diagnostic → complete_diagnostic → return_7d
+- **Diagnóstico:** start_diagnostic → complete_diagnostic → share_diagnostic_whatsapp
+- **Contenido:** view_content → search_content / filter_category
+- **Servicios:** service_click → service_whatsapp_click
+
+**Dashboard Contenido — Insights:**
+| Insight | Tipo | Configuración |
+|---------|------|---------------|
+| Posts por categoría | Pie | `view_content` · Breakdown: `category` |
+| Contenido por tipo | Pie | `view_content` · Breakdown: `content_type` |
+| Búsquedas frecuentes | Table | `search_content` · Breakdown: `query` · Top 20 |
+| Categorías filtradas | Bar | `filter_category` · Breakdown: `category` |
+| Badges ganados | Bar | `badge_earned` · Breakdown: `badge_slug` |
+| Onboarding completado vs skip | Pie | `onboarding_complete` vs `onboarding_skip` |
+| Tabs más visitados | Bar | `tab_switch` · Breakdown: `to_tab` |
+
+**Retención:**
+| Retención | Configuración |
+|-----------|---------------|
+| D1 | `$pageview` · Retention type: Day 1 |
+| D7 | `$pageview` · Retention type: Day 7 |
+| D30 | `$pageview` · Retention type: Day 30 |
+
+**Filtros recomendados:** `$environment` = `production` · Últimos 30 días · Excluir `localhost`
+
 ---
 
 ## 12. Instructivo de Deploy
@@ -512,9 +588,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 
 | Archivo | Propósito |
 |---------|-----------|
-| `DOCUMENTO-MAESTRO.md` | **Este archivo** — fuente única de verdad |
-| `EDITORIAL-STYLE-GUIDE.md` | Guía de escritura (contenido referenciado en §10) |
-| `POSTHOG-DASHBOARDS.md` | Guía dashboards PostHog (contenido referenciado en §11) |
+| `DOCUMENTO-MAESTRO.md` | **Este archivo** — fuente única de verdad (todo integrado) |
 | `GUIA-VAPID-KEYS.md` | Guía paso a paso para configurar VAPID keys |
 | `MIGRACION-CRM-2026-04-25.sql` | Script CRM (4 tablas + vistas + RPC) — ejecutado |
 | `PUSH_SUBSCRIPTIONS.sql` | Script SQL push_subscriptions |
@@ -545,8 +619,8 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | 2026-04-24 | E6 Growth + i18n | Landing, referidos, i18n base (130+ claves) |
 | 2026-04-24 | E6 Push + Landing + Admins | Push triggers, landing estática, admin whitelist |
 | 2026-04-25 | Consolidación docs | DOCUMENTO-MAESTRO unificado, plan optimizado, archivos obsoletos eliminados |
-| 2026-04-25 | CRM integrado | Módulo AdminCRM (Dashboard, Clientes, Interacciones, Productos), 4 tablas CRM, vistas, RPC, RLS admin-only. DB migrations ejecutadas (admin_audit_log, nps_responses, referrals, admin_whitelist). VAPID keys configuradas. |
-| 2026-04-25 | Consolidación docs + sesión completa | DOCUMENTO-MAESTRO unificado (17 secciones), 3 archivos obsoletos eliminados, plan E7-E10 creado, session prompt actualizado. E6 completa (12/12). Push notifications activas. |
+| 2026-04-25 | CRM integrado | Módulo AdminCRM (Dashboard, Clientes, Interacciones, Productos), 4 tablas CRM, vistas, RPC, RLS admin-only. DB migrations ejecutadas. VAPID keys configuradas. |
+| 2026-04-25 | Consolidación docs v2 | DOCUMENTO-MAESTRO unificado (18 secciones), style guide + dashboards integrados, SESSION-PROMPT eliminado. E6 completa (12/12). |
 
 ---
 
@@ -563,50 +637,50 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 
 ---
 
-## 16. Plan Optimizado — Próximas Etapas
+## 16. Plan Optimizado — Próximas Etapas (E7-E10)
 
-> **Nota:** E1-E6 completas. Este plan cubre mejoras adicionales y crecimiento.
+> **Nota:** E1-E6 completas. Este plan fue revisado con las 37 perspectivas multidisciplinarias.
 
-### ETAPA 7 — Crecimiento y Monetización (1-2 semanas)
+### ETAPA 7 — Crecimiento y Monetización (Sprint 1 semana)
 
-| # | Tarea | Rol | Prioridad | Dependencia |
-|---|-------|-----|-----------|-------------|
-| 7.1 | Poblar CRM con datos reales | Admin | Alta | CRM funcional ✅ |
-| 7.2 | Modelo freemium: definir features premium | Product Manager | Alta | Decisión negocio |
-| 7.3 | A/B testing en onboarding | Growth + Frontend | Media | PostHog feature flags |
-| 7.4 | Email onboarding sequence (día 1, 3, 7) | Backend + Content | Media | Resend ✅ |
-| 7.5 | Blog/SEO orgánico en landing | SEO + Content | Media | Landing ✅ |
+| # | Tarea | Rol(es) | Prioridad | Dependencia |
+|---|-------|---------|-----------|-------------|
+| 7.1 | Poblar CRM con datos reales | Business Dev + Account Mgr | 🔴 Alta | CRM funcional ✅ |
+| 7.2 | Modelo freemium: definir features premium | Product Manager + PM | 🔴 Alta | Decisión negocio |
+| 7.3 | A/B testing en onboarding | Growth + Frontend + UX Researcher | 🟡 Media | PostHog feature flags |
+| 7.4 | Email onboarding sequence (día 1, 3, 7) | Backend + Content + Customer Success | 🟡 Media | Resend ✅ |
+| 7.5 | Blog/SEO orgánico en landing | SEO Specialist + Content Manager | 🟡 Media | Landing ✅ |
 
-### ETAPA 8 — Escalamiento Técnico (1-2 semanas)
+### ETAPA 8 — Escalamiento Técnico (Sprint 1-2 semanas)
 
-| # | Tarea | Rol | Prioridad | Dependencia |
-|---|-------|-----|-----------|-------------|
-| 8.1 | Migrar hosting a Vercel/Cloudflare | Cloud Architect | Alta | Decisión infra |
-| 8.2 | CDN + edge caching | DevOps | Alta | Hosting migrado |
-| 8.3 | Zod validation en Edge Functions | Backend | Media | — |
-| 8.4 | Logging estructurado (JSON logs) | SRE | Media | — |
-| 8.5 | Visual regression tests (Chromatic/Percy) | QA | Baja | — |
-| 8.6 | Lighthouse CI en pipeline | QA | Baja | — |
-| 8.7 | Environment protection rules (GitHub) | DevOps | Baja | — |
+| # | Tarea | Rol(es) | Prioridad | Dependencia |
+|---|-------|---------|-----------|-------------|
+| 8.1 | Migrar hosting a Vercel/Cloudflare | Cloud Architect + DevOps | 🔴 Alta | Decisión infra |
+| 8.2 | CDN + edge caching | DevOps + SRE | 🔴 Alta | 8.1 |
+| 8.3 | Zod validation en Edge Functions | Backend Developer | 🟡 Media | — |
+| 8.4 | Logging estructurado (JSON logs) | SRE + Tech Support T2 | 🟡 Media | — |
+| 8.5 | Visual regression tests (Chromatic/Percy) | QA Automation | 🟢 Baja | — |
+| 8.6 | Lighthouse CI en pipeline | QA Automation + DevOps | 🟢 Baja | — |
+| 8.7 | Environment protection rules (GitHub) | DevOps Engineer | 🟢 Baja | — |
 
 ### ETAPA 9 — App Nativa (evaluar necesidad)
 
-| # | Tarea | Rol | Prioridad | Dependencia |
-|---|-------|-----|-----------|-------------|
-| 9.1 | Evaluar si PWA es suficiente | Product Manager | Alta | Métricas de uso |
-| 9.2 | Capacitor setup (si se necesita) | Mobile Dev | Baja | Decisión 9.1 |
-| 9.3 | Push notifications nativas | Mobile Dev | Baja | Capacitor |
-| 9.4 | ASO: App Store Optimization | ASO Specialist | Baja | App lista |
+| # | Tarea | Rol(es) | Prioridad | Dependencia |
+|---|-------|---------|-----------|-------------|
+| 9.1 | Evaluar si PWA es suficiente | Product Manager + iOS/Android Dev | 🔴 Alta | Métricas de uso |
+| 9.2 | Capacitor setup (si se necesita) | iOS + Android Developer | 🟢 Baja | 9.1 |
+| 9.3 | Push notifications nativas | iOS + Android Developer | 🟢 Baja | 9.2 |
+| 9.4 | ASO: App Store Optimization | ASO Specialist | 🟢 Baja | 9.2 |
 
 ### ETAPA 10 — Operaciones y Compliance
 
-| # | Tarea | Rol | Prioridad | Dependencia |
-|---|-------|-----|-----------|-------------|
-| 10.1 | Política de retención de datos | Legal | Media | — |
-| 10.2 | DPIA (Data Protection Impact Assessment) | DPO | Media | — |
-| 10.3 | 2FA para admins | Security | Alta | — |
-| 10.4 | WAF rules (Cloudflare) | Security | Media | Hosting migrado |
-| 10.5 | SLO definition (99.9% uptime) | SRE | Baja | Monitoring ✅ |
+| # | Tarea | Rol(es) | Prioridad | Dependencia |
+|---|-------|---------|-----------|-------------|
+| 10.1 | Política de retención de datos | Legal + DPO + Data Engineer | 🟡 Media | — |
+| 10.2 | DPIA (Data Protection Impact Assessment) | DPO + Legal | 🟡 Media | — |
+| 10.3 | 2FA para admins | Cybersecurity Architect | 🔴 Alta | — |
+| 10.4 | WAF rules (Cloudflare) | Cybersecurity + DevOps | 🟡 Media | 8.1 |
+| 10.5 | SLO definition (99.9% uptime) | SRE + Product Manager | 🟢 Baja | Monitoring ✅ |
 
 ---
 
@@ -619,14 +693,14 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 ✅ E4: Analytics y Retención (completa)
 ✅ E5: Calidad y Robustez (completa)
 ✅ E6: Escalamiento (completa — 12/12 + CRM propio)
-📋 E7: Crecimiento y Monetización (5 tareas)
-📋 E8: Escalamiento Técnico (7 tareas)
-📋 E9: App Nativa (4 tareas, evaluar)
-📋 E10: Operaciones y Compliance (5 tareas)
+📋 E7: Crecimiento y Monetización (5 tareas) — Sprint 1 semana
+📋 E8: Escalamiento Técnico (7 tareas) — Sprint 1-2 semanas
+📋 E9: App Nativa (4 tareas, evaluar) — Baja prioridad
+📋 E10: Operaciones y Compliance (5 tareas) — Sprint 1 semana
 ```
 
 **Tiempo total estimado:** 4-6 semanas (E7-E10)
-**Items que requieren decisión del usuario:** 2 (freemium, hosting)
+**Items que requieren decisión del usuario:** 3 (freemium, hosting, app nativa)
 
 ---
 
