@@ -16,7 +16,7 @@
 
 ### Reglas
 1. **Al inicio de cada sesión:** Leer este documento completo antes de tocar código.
-2. **Al decir "documentar":** Actualizar §14 (Registro de Sesiones), §15 (Acciones Pendientes) y §16 (Plan) con lo trabajado.
+2. **Al decir "documentar":** Actualizar §15 (Registro de Sesiones), §16 (Acciones Pendientes) y §17 (Plan) con lo trabajado.
 3. **Nunca crear archivos sueltos** — todo va en `Documents/`.
 4. **Al culminar cada sprint:** Pushear a `main` → GitHub Actions despliega automáticamente a producción.
 5. **Planes:** Marcar tareas `✅` al completar con fecha, `🔄` en progreso, `🔴` pendiente, `⏳` esperando decisión.
@@ -597,12 +597,82 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 
 ---
 
-## 13. Archivos en Documents/
+## 13. Guía VAPID Keys — Push Notifications
+
+> Configuración completa de las keys para push notifications en MejoraApp.
+
+### ¿Qué son?
+
+VAPID (Voluntary Application Server Identification) permite al servidor enviar push notifications a los navegadores. Se necesita un par de claves:
+- **Pública** — se comparte con el navegador (frontend)
+- **Privada** — se queda en el servidor (Supabase Edge Functions)
+
+### Paso 1: Generar las claves
+
+**Opción A — Node.js (recomendado):**
+```bash
+npx web-push generate-vapid-keys
+```
+
+**Opción B — Online:**
+Ir a https://vapidkeys.com/ → Generate → copiar ambas claves.
+
+### Paso 2: Configurar en Supabase (Backend)
+
+En Supabase Dashboard → Edge Functions → Secrets, agregar:
+
+| Secret | Valor |
+|--------|-------|
+| `VAPID_PUBLIC_KEY` | Clave pública |
+| `VAPID_PRIVATE_KEY` | Clave privada |
+| `VAPID_SUBJECT` | `mailto:hola@mejoraok.com` |
+
+### Paso 3: Configurar en GitHub Secrets (CI/CD)
+
+En repo Settings → Secrets → Actions:
+
+| Secret | Valor |
+|--------|-------|
+| `VITE_VAPID_PUBLIC_KEY` | Clave pública (misma que Supabase) |
+
+### Paso 4: Entorno local (desarrollo)
+
+En `.env`:
+```
+VITE_VAPID_PUBLIC_KEY=tu-clave-publica
+```
+
+### Paso 5: Verificar
+
+1. Push a `main` (o esperar próximo deploy)
+2. Abrir `app.mejoraok.com` → header → ícono campana
+3. Aceptar permisos de notificación
+4. Verificar en Supabase → Table Editor → `push_subscriptions`
+
+### Notas
+
+- La clave pública es pública — se puede ver en el navegador, no es sensible
+- La clave privada es secreta — nunca compartirla ni ponerla en frontend
+- Si se pierden las claves, generar un par nuevo y actualizar los 3 secrets
+
+### Troubleshooting
+
+| Problema | Solución |
+|----------|----------|
+| "VAPID key not found" | Verificar `VITE_VAPID_PUBLIC_KEY` en `.env` y GitHub Secrets |
+| "Push subscription failed" | Verificar los 3 secrets en Supabase Edge Functions → Secrets |
+| No llegan notificaciones | Verificar que `send-push-notification` esté deployado y que la suscripción exista en la tabla |
+| "Permission denied" | El usuario debe aceptar los permisos del navegador |
+
+---
+
+## 14. Archivos en Documents/
+
+> **Regla:** Todos los archivos de documentación y SQL viven en `Documents/`. No crear archivos sueltos en la raíz.
 
 | Archivo | Propósito |
 |---------|-----------|
-| `DOCUMENTO-MAESTRO.md` | **Este archivo** — fuente única de verdad (todo integrado: arquitectura, style guide, dashboards, plan, 37 perspectivas) |
-| `GUIA-VAPID-KEYS.md` | Guía paso a paso para configurar VAPID keys |
+| `DOCUMENTO-MAESTRO.md` | **Este archivo** — fuente única de verdad (todo integrado: arquitectura, style guide, dashboards, plan, 37 perspectivas, VAPID) |
 | `MIGRACION-CRM-2026-04-25.sql` | Script CRM (4 tablas + vistas + RPC) — ejecutado |
 | `PUSH_SUBSCRIPTIONS.sql` | Script SQL push_subscriptions |
 | `MIGRACION-SEGURIDAD-2026-04-23.sql` | Script hardening (ejecutado) |
@@ -622,7 +692,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 
 ---
 
-## 14. Registro de Sesiones
+## 15. Registro de Sesiones
 
 | Fecha | Resumen | Cambios clave |
 |-------|---------|---------------|
@@ -654,7 +724,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 
 ---
 
-## 15. Acciones Pendientes del Usuario
+## 16. Acciones Pendientes del Usuario
 
 | # | Acción | Estado | Detalle |
 |---|--------|--------|---------|
@@ -672,7 +742,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 
 ---
 
-## 16. Plan Optimizado — Próximas Etapas (E7-E10)
+## 17. Plan Optimizado — Próximas Etapas (E7-E10)
 
 > **Nota:** E1-E6 completas. Plan revisado con las 37 perspectivas multidisciplinarias.
 > **Regla de ejecución:** Completar siempre las tareas 🔴 Alta primero. Las tareas que requieren decisión del usuario se marcan con ⏳ y no bloquean el progreso.
@@ -748,7 +818,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 
 ---
 
-## 17. Cronograma Consolidado
+## 18. Cronograma Consolidado
 
 ```
 ✅ E1: Seguridad (completa)
