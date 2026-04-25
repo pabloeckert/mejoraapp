@@ -4,7 +4,7 @@
 > **Stack:** React 18 · TypeScript · Vite 5 · Supabase · Tailwind CSS · shadcn/ui
 > **Producción:** https://app.mejoraok.com
 > **Repo:** https://github.com/pabloeckert/MejoraApp
-> **Última actualización:** 2026-04-25 22:37 GMT+8
+> **Última actualización:** 2026-04-26 05:46 GMT+8
 
 ---
 
@@ -607,6 +607,8 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | `PUSH_SUBSCRIPTIONS.sql` | Script SQL push_subscriptions |
 | `MIGRACION-SEGURIDAD-2026-04-23.sql` | Script hardening (ejecutado) |
 | `MIGRACION-GAMIFICACION-2026-04-24.sql` | Script gamificación (ejecutado) |
+| `CLEAN_SETUP.sql` | Setup limpio completo de DB (migrado desde raíz) |
+| `SECURITY_HARDENING.sql` | Hardening pre-launch (migrado desde raíz) |
 | `../landing-static/index.html` | Landing page estática para mejoraok.com |
 
 **Archivos compartidos Edge Functions (`supabase/functions/_shared/`):**
@@ -615,6 +617,8 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 |---------|-----------|
 | `cors.ts` | CORS centralizado: `handleCors()`, `jsonHeaders()`, `getCorsHeaders()` |
 | `log.ts` | Logging estructurado JSON: `logInfo()`, `logWarn()`, `logError()` |
+
+> **Regla:** Todos los archivos de documentación y SQL viven en `Documents/`. No crear archivos sueltos en la raíz.
 
 ---
 
@@ -645,6 +649,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | 2026-04-25 | Freemium infrastructure | Sistema feature flags: plans.ts (8 features free/premium), FeatureGate, UpgradePrompt, useFeatureAccess. Gates en historial, recomendaciones IA, PDF. Modo ALL_FREE (todo habilitado). Analytics: feature_blocked, upgrade_prompt_shown, upgrade_cta_click. Deploy automático a producción. |
 | 2026-04-26 | E7 — Onboarding email + Bug fix CRM | **Fix bug CRM:** AdminCRM usaba `role` de useAuth() que no existe → módulo bloqueado. Fix: removido check redundante (parent Admin.tsx ya verifica). **Onboarding emails:** migración SQL (onboarding_emails + RPC get_users_needing_onboarding_email), Edge Function send-onboarding-email con templates día 1/3/7 vía Resend. **Revisión código completa:** 103 tests ✅, build ✅. |
 | 2026-04-26 | Fix Realtime channel collision | **Bug crítico en producción:** `cannot add postgres_changes callbacks for realtime:user_badges_changes after subscribe()`. Causa: canales Realtime con nombre fijo colisionaban al re-ejecutar effects. Fix: nombres únicos por userId (`user_badges_{id}`, `wall_realtime_{id}`). **Deploy FTP:** GitHub Actions falló por timeout FTP Hostinger. Deploy manual via FileZilla pendiente (usuario en Windows). Commit `943bf42` en main. |
+| 2026-04-26 | Optimización plan + consolidación docs | **Plan reestructurado:** E7→Deploy inmediato, E8→Crecimiento, E9→Técnico, E10→App Nativa, E11→Compliance. **Docs consolidados:** CLEAN_SETUP.sql + SECURITY_HARDENING.sql movidos a Documents/. Regla: todo文档 vive en Documents/. Deploy FTP automático via GitHub Actions verificado. |
 
 ---
 
@@ -658,7 +663,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | 4 | HubSpot API key | ✅ Reemplazado | CRM propio integrado como módulo admin-only (2026-04-25) |
 | 5 | Evaluar freemium/premium | ✅ Listo | Infraestructura feature flags implementada. Modo ALL_FREE activo. Definir features premium y activar cuando se defina modelo de negocio (cambiar CURRENT_PLAN_ID a "free"). |
 | 6 | Evaluar Capacitor | 🔴 Pendiente | Decidir si se necesita app nativa o si PWA es suficiente |
-| 7 | Deploy fix Realtime | 🔄 En proceso | Commit `943bf42` en main. Build local hecho. Subir `dist/` a `/public_html/app/` via FileZilla (desde PC Windows). |
+| 7 | Deploy fix Realtime | 🔄 En proceso | Commit `943bf42` en main. Push a main → deploy automático via GitHub Actions. |
 | 8 | Ejecutar migración onboarding_emails | 🔴 Pendiente | SQL en `supabase/migrations/20260426000000_onboarding_emails.sql`. Ejecutar en Supabase SQL Editor. |
 | 9 | Desplegar EF send-onboarding-email | 🔴 Pendiente | `supabase functions deploy send-onboarding-email`. Requiere RESEND_API_KEY en Supabase Secrets. |
 | 10 | Configurar cron onboarding emails | 🔴 Pendiente | Invocar `send-onboarding-email` cada 6-12h via pg_cron o externo. |
@@ -667,48 +672,77 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 
 ## 16. Plan Optimizado — Próximas Etapas (E7-E10)
 
-> **Nota:** E1-E6 completas. Este plan fue revisado con las 37 perspectivas multidisciplinarias.
+> **Nota:** E1-E6 completas. Plan revisado con las 37 perspectivas multidisciplinarias.
+> **Regla de ejecución:** Completar siempre las tareas 🔴 Alta primero. Las tareas que requieren decisión del usuario se marcan con ⏳ y no bloquean el progreso.
 
-### ETAPA 7 — Crecimiento y Monetización (Sprint 1 semana)
+---
 
-| # | Tarea | Rol(es) | Prioridad | Dependencia |
-|---|-------|---------|-----------|-------------|
-| 7.1 | Poblar CRM con datos reales | Business Dev + Account Mgr | 🔴 Alta | CRM funcional ✅ |
-| 7.2 | Modelo freemium: definir features premium | Product Manager + PM | 🔴 Alta | ✅ Infra lista (2026-04-25). Falta definir corte free/premium y activar. |
-| 7.3 | A/B testing en onboarding | Growth + Frontend + UX Researcher | 🟡 Media | PostHog feature flags |
-| 7.4 | Email onboarding sequence (día 1, 3, 7) | Backend + Content + Customer Success | 🟡 Media | ✅ **Implementado** (2026-04-26): migración SQL + Edge Function + templates HTML. Pendiente: ejecutar migración + desplegar EF + configurar cron. |
-| 7.5 | Blog/SEO orgánico en landing | SEO Specialist + Content Manager | 🟡 Media | Landing ✅ |
+### 🚀 ETAPA 7 — Deploy y Activación Inmediata (esta sesión)
 
-### ETAPA 8 — Escalamiento Técnico (Sprint 1-2 semanas)
+> Tareas que YA están implementadas y solo necesitan deploy/activación.
 
-| # | Tarea | Rol(es) | Prioridad | Dependencia |
-|---|-------|---------|-----------|-------------|
-| 8.1 | Migrar hosting a Vercel/Cloudflare | Cloud Architect + DevOps | 🔴 Alta | Decisión infra |
-| 8.2 | CDN + edge caching | DevOps + SRE | 🔴 Alta | 8.1 |
-| 8.3 | Validación en Edge Functions | Backend Developer | 🟡 Media | ✅ Hecho (helpers requireString/requireObject en admin-action, validación body en moderate-post/comment) |
-| 8.4 | Logging estructurado (JSON logs) | SRE + Tech Support T2 | 🟡 Media | ✅ Hecho (_shared/log.ts con logInfo/logWarn/logError en 7 funciones) |
-| 8.5 | Visual regression tests (Chromatic/Percy) | QA Automation | 🟢 Baja | — |
-| 8.6 | Lighthouse CI en pipeline | QA Automation + DevOps | 🟢 Baja | — |
-| 8.7 | Environment protection rules (GitHub) | DevOps Engineer | 🟢 Baja | — |
+| # | Tarea | Estado | Acción requerida |
+|---|-------|--------|------------------|
+| 7.1 | Fix Realtime channel collision | ✅ Código listo | Deploy FTP del build (`dist/` → `/public_html/app/`) |
+| 7.2 | Onboarding emails — migración SQL | ✅ SQL listo | Ejecutar `20260426000000_onboarding_emails.sql` en Supabase SQL Editor |
+| 7.3 | Onboarding emails — Edge Function | ✅ EF lista | `supabase functions deploy send-onboarding-email` + RESEND_API_KEY en Secrets |
+| 7.4 | Onboarding emails — cron | ⏳ Espera 7.2+7.3 | Configurar invocación cada 6-12h (pg_cron o externo) |
+| 7.5 | Consolidar documentos huérfanos | ✅ Hecho | CLEAN_SETUP.sql + SECURITY_HARDENING.sql movidos a Documents/ |
 
-### ETAPA 9 — App Nativa (evaluar necesidad)
+---
 
-| # | Tarea | Rol(es) | Prioridad | Dependencia |
-|---|-------|---------|-----------|-------------|
-| 9.1 | Evaluar si PWA es suficiente | Product Manager + iOS/Android Dev | 🔴 Alta | Métricas de uso |
-| 9.2 | Capacitor setup (si se necesita) | iOS + Android Developer | 🟢 Baja | 9.1 |
-| 9.3 | Push notifications nativas | iOS + Android Developer | 🟢 Baja | 9.2 |
-| 9.4 | ASO: App Store Optimization | ASO Specialist | 🟢 Baja | 9.2 |
+### 📈 ETAPA 8 — Crecimiento y Monetización (Sprint 1 semana)
 
-### ETAPA 10 — Operaciones y Compliance
+> Tareas que requieren trabajo nuevo o decisión del negocio.
 
-| # | Tarea | Rol(es) | Prioridad | Dependencia |
-|---|-------|---------|-----------|-------------|
-| 10.1 | Política de retención de datos | Legal + DPO + Data Engineer | 🟡 Media | — |
-| 10.2 | DPIA (Data Protection Impact Assessment) | DPO + Legal | 🟡 Media | — |
-| 10.3 | 2FA para admins | Cybersecurity Architect | 🔴 Alta | — |
-| 10.4 | WAF rules (Cloudflare) | Cybersecurity + DevOps | 🟡 Media | 8.1 |
-| 10.5 | SLO definition (99.9% uptime) | SRE + Product Manager | 🟢 Baja | Monitoring ✅ |
+| # | Tarea | Prioridad | Rol(es) | Dependencia |
+|---|-------|-----------|---------|-------------|
+| 8.1 | Poblar CRM con datos reales | 🔴 Alta | Business Dev + Account Mgr | CRM funcional ✅ |
+| 8.2 | Definir corte free/premium y activar | 🔴 Alta | Product Manager | Infra lista ✅ (cambiar `CURRENT_PLAN_ID` en plans.ts) |
+| 8.3 | A/B testing en onboarding | 🟡 Media | Growth + UX Researcher | PostHog feature flags |
+| 8.4 | Blog/SEO orgánico en landing | 🟡 Media | SEO + Content Manager | Landing ✅ |
+| 8.5 | Email onboarding: poblar templates finales | 🟡 Media | Content Manager | EF desplegada ✅ |
+
+---
+
+### 🔧 ETAPA 9 — Escalamiento Técnico (Sprint 1-2 semanas)
+
+> Mejoras técnicas que no bloquean funcionalidad.
+
+| # | Tarea | Prioridad | Rol(es) | Estado |
+|---|-------|-----------|---------|--------|
+| 9.1 | Migrar hosting a Vercel/Cloudflare | 🔴 Alta | Cloud Architect + DevOps | 📋 Pendiente (decisión infra) |
+| 9.2 | CDN + edge caching | 🔴 Alta | DevOps + SRE | 📋 Depende de 9.1 |
+| 9.3 | 2FA para admins | 🔴 Alta | Cybersecurity | 📋 Pendiente |
+| 9.4 | Visual regression tests | 🟢 Baja | QA Automation | 📋 Futuro |
+| 9.5 | Lighthouse CI en pipeline | 🟢 Baja | QA + DevOps | 📋 Futuro |
+| 9.6 | Environment protection rules | 🟢 Baja | DevOps | 📋 Futuro |
+
+---
+
+### 📱 ETAPA 10 — App Nativa (evaluar)
+
+> Solo si las métricas justifican la inversión.
+
+| # | Tarea | Prioridad | Dependencia |
+|---|-------|-----------|-------------|
+| 10.1 | Evaluar si PWA es suficiente | 🔴 Alta | Métricas de uso (30+ DAU) |
+| 10.2 | Capacitor setup | 🟢 Baja | 10.1 |
+| 10.3 | Push notifications nativas | 🟢 Baja | 10.2 |
+| 10.4 | ASO: App Store Optimization | 🟢 Baja | 10.2 |
+
+---
+
+### 🛡️ ETAPA 11 — Operaciones y Compliance (Sprint 1 semana)
+
+> Seguridad avanzada y cumplimiento legal.
+
+| # | Tarea | Prioridad | Rol(es) |
+|---|-------|-----------|---------|
+| 11.1 | Política de retención de datos | 🟡 Media | Legal + DPO |
+| 11.2 | DPIA (Data Protection Impact Assessment) | 🟡 Media | DPO + Legal |
+| 11.3 | WAF rules (Cloudflare) | 🟡 Media | Cybersecurity + DevOps |
+| 11.4 | SLO definition (99.9% uptime) | 🟢 Baja | SRE + PM |
 
 ---
 
@@ -721,15 +755,15 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 ✅ E4: Analytics y Retención (completa)
 ✅ E5: Calidad y Robustez (completa)
 ✅ E6: Escalamiento (completa — 12/12 + CRM propio)
-📋 E7: Crecimiento y Monetización (5 tareas, 2 implementadas) — Sprint 1 semana
-🔄 Fix Realtime en producción — deploy manual pendiente (FileZilla)
-📋 E8: Escalamiento Técnico (7 tareas) — Sprint 1-2 semanas
-📋 E9: App Nativa (4 tareas, evaluar) — Baja prioridad
-📋 E10: Operaciones y Compliance (5 tareas) — Sprint 1 semana
+🚀 E7: Deploy y Activación Inmediata (5 tareas, 4 listas para deploy)
+📋 E8: Crecimiento y Monetización (5 tareas) — Sprint 1 semana
+📋 E9: Escalamiento Técnico (6 tareas) — Sprint 1-2 semanas
+📋 E10: App Nativa (4 tareas, evaluar) — Baja prioridad
+📋 E11: Operaciones y Compliance (4 tareas) — Sprint 1 semana
 ```
 
-**Tiempo total estimado:** 4-6 semanas (E7-E10)
-**Items que requieren decisión del usuario:** 2 (corte free/premium, app nativa)
+**Tiempo total estimado:** 4-6 semanas (E7-E11)
+**Items que requieren decisión del usuario:** 3 (corte free/premium, migración hosting, app nativa)
 
 ---
 
