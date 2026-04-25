@@ -347,7 +347,7 @@ INSERT INTO public.admin_config (key, value) VALUES
   ('recovery_answer_1_hash', encode(digest('mejoraapp', 'sha256'), 'hex')),
   ('recovery_question_2', '¿En qué ciudad naciste?'),
   ('recovery_answer_2_hash', encode(digest('buenosaires', 'sha256'), 'hex')),
-  ('recovery_email', 'admin@mejoraapp.com'),
+  ('recovery_email', 'pabloeckert@gmail.com'),
   ('admin_version', '1');
 
 INSERT INTO public.content_posts (titulo, contenido, content_type, video_url, resumen, category_id, estado, fuente, published_at)
