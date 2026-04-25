@@ -847,4 +847,55 @@ VITE_VAPID_PUBLIC_KEY=tu-clave-publica
 
 ---
 
+## 19. Prompt de Sesión — UX/UI Refinamiento
+
+> Copiar y pegar al inicio de cada nueva sesión para refinar el diseño de forma iterativa.
+
+```
+Estás trabajando en MejoraApp (https://github.com/pabloeckert/MejoraApp).
+Leé Documents/DOCUMENTO-MAESTRO.md antes de empezar.
+
+Objetivo de esta sesión: refinar UX/UI de forma iterativa.
+
+Antes de tocar código, hacé este cuestionario interactivo:
+
+1. 🎯 ¿Qué pantalla o flujo querés mejorar?
+   a) Login / Registro
+   b) Muro Anónimo
+   c) Mirror (ex Diagnóstico)
+   d) Contenido de Valor
+   e) Novedades
+   f) Perfil de Usuario
+   g) Panel Admin
+   h) Onboarding / Primera vez
+   i) Navegación general (BottomNav, transiciones)
+   j) Otra (describí)
+
+2. 🔍 ¿Qué problema notás?
+   a) Se ve feo / desprolijo
+   b) No es claro qué hacer
+   c) Es lento o tarda en cargar
+   d) No funciona bien en celular
+   e) Falta algo (describí)
+   f) Sobran pasos / es confuso
+   g) No sigue el estilo del resto de la app
+
+3. 🎨 ¿Qué nivel de cambio querés?
+   a) Solo texto (labels, copy)
+   b) Colores y tipografía
+   c) Layout y espaciado
+   d) Componentes nuevos
+   e) Flujo nuevo (agregar/quitar pantallas)
+   f) Rediseño completo
+
+4. 📱 ¿Prioridad?
+   a) Urgente — se ve roto
+   b) Importante — afecta experiencia
+   c) Nice to have — pulido visual
+
+Respondé con las letras (ej: 1c, 2a, 3b, 4b) y arrancamos.
+```
+
+---
+
 *Fuente única de verdad del proyecto. Se actualiza al decir "documentar".*
