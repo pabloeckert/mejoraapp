@@ -4,7 +4,7 @@
 > **Stack:** React 18 · TypeScript · Vite 5 · Supabase · Tailwind CSS · shadcn/ui
 > **Producción:** https://app.mejoraok.com
 > **Repo:** https://github.com/pabloeckert/MejoraApp
-> **Última actualización:** 2026-04-25 21:30 GMT+8
+> **Última actualización:** 2026-04-25 22:02 GMT+8
 
 ---
 
@@ -101,6 +101,7 @@ src/
 | `send-push-notification` | Service role | — |
 | `send-diagnostic-email` | Service role | — |
 
+**Módulos compartidos:** `_shared/cors.ts` (CORS centralizado) · `_shared/log.ts` (logging estructurado JSON)
 **Cadena fallback IA:** Gemini → Groq → OpenRouter (DeepSeek) → null (auto-aprobado)
 
 ### 2.4 Seguridad
@@ -116,9 +117,11 @@ Cliente → Supabase Auth (JWT) → RLS protege lecturas
 - Rate limiting en moderación (3 post/min, 10 comments/min) y admin (30 req/min)
 - Moderación IA multi-provider con fallback
 - Self-demotion prevention en remove-role
-- CSP headers (meta tag en index.html)
-- CORS restringido en 5 Edge Functions (app.mejoraok.com + localhost)
+- CSP headers (meta tag en index.html) — incluye base-uri, form-action
+- CORS restringido centralizado via `_shared/cors.ts` (app.mejoraok.com + localhost)
 - Admin audit log (fire-and-forget)
+- Logging estructurado JSON en todas las Edge Functions via `_shared/log.ts`
+- Validación de inputs con helpers requireString/requireObject en admin-action
 
 ### 2.5 PWA
 
@@ -304,7 +307,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | # | Área | Hallazgo | Estado |
 |---|------|----------|--------|
 | 1 | Legal | Sin política de privacidad ni términos | ✅ Resuelto (Sprint 5.1) |
-| 2 | Security | CORS `*` en Edge Functions | ✅ Resuelto (Sprint 6.1) |
+| 2 | Security | CORS `*` en Edge Functions | ✅ Resuelto (2026-04-25: bug crítico — getCorsHeaders() nunca se usaba, CORS real era `*`. Fix: _shared/cors.ts centralizado) |
 | 3 | SRE | Sin uptime monitoring | ✅ Resuelto (Sprint 6.1) |
 | 4 | BI | Analytics sin dashboards | ✅ Resuelto (Sprint 4.4) |
 | 5 | Growth | Sin funnel medido | ✅ Resuelto (Sprint 4.4) |
@@ -588,13 +591,20 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 
 | Archivo | Propósito |
 |---------|-----------|
-| `DOCUMENTO-MAESTRO.md` | **Este archivo** — fuente única de verdad (todo integrado) |
+| `DOCUMENTO-MAESTRO.md` | **Este archivo** — fuente única de verdad (todo integrado: arquitectura, style guide, dashboards, plan, 37 perspectivas) |
 | `GUIA-VAPID-KEYS.md` | Guía paso a paso para configurar VAPID keys |
 | `MIGRACION-CRM-2026-04-25.sql` | Script CRM (4 tablas + vistas + RPC) — ejecutado |
 | `PUSH_SUBSCRIPTIONS.sql` | Script SQL push_subscriptions |
 | `MIGRACION-SEGURIDAD-2026-04-23.sql` | Script hardening (ejecutado) |
 | `MIGRACION-GAMIFICACION-2026-04-24.sql` | Script gamificación (ejecutado) |
 | `../landing-static/index.html` | Landing page estática para mejoraok.com |
+
+**Archivos compartidos Edge Functions (`supabase/functions/_shared/`):**
+
+| Archivo | Propósito |
+|---------|-----------|
+| `cors.ts` | CORS centralizado: `handleCors()`, `jsonHeaders()`, `getCorsHeaders()` |
+| `log.ts` | Logging estructurado JSON: `logInfo()`, `logWarn()`, `logError()` |
 
 ---
 
@@ -621,6 +631,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | 2026-04-25 | Consolidación docs | DOCUMENTO-MAESTRO unificado, plan optimizado, archivos obsoletos eliminados |
 | 2026-04-25 | CRM integrado | Módulo AdminCRM (Dashboard, Clientes, Interacciones, Productos), 4 tablas CRM, vistas, RPC, RLS admin-only. DB migrations ejecutadas. VAPID keys configuradas. |
 | 2026-04-25 | Consolidación docs v2 | DOCUMENTO-MAESTRO unificado (18 secciones), style guide + dashboards integrados, SESSION-PROMPT eliminado. E6 completa (12/12). |
+| 2026-04-25 | Optimización producción | **Fix CORS crítico** en 7 Edge Functions (getCorsHeaders() nunca se usaba). _shared/cors.ts + _shared/log.ts centralizados. CSP mejorado (base-uri, form-action). PDF export lazy-loaded. Bundle splitting (vendor-charts). Preload fonts. Validación admin-action. 103 tests ✅. |
 
 ---
 
@@ -657,8 +668,8 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 |---|-------|---------|-----------|-------------|
 | 8.1 | Migrar hosting a Vercel/Cloudflare | Cloud Architect + DevOps | 🔴 Alta | Decisión infra |
 | 8.2 | CDN + edge caching | DevOps + SRE | 🔴 Alta | 8.1 |
-| 8.3 | Zod validation en Edge Functions | Backend Developer | 🟡 Media | — |
-| 8.4 | Logging estructurado (JSON logs) | SRE + Tech Support T2 | 🟡 Media | — |
+| 8.3 | Validación en Edge Functions | Backend Developer | 🟡 Media | ✅ Hecho (helpers requireString/requireObject en admin-action, validación body en moderate-post/comment) |
+| 8.4 | Logging estructurado (JSON logs) | SRE + Tech Support T2 | 🟡 Media | ✅ Hecho (_shared/log.ts con logInfo/logWarn/logError en 7 funciones) |
 | 8.5 | Visual regression tests (Chromatic/Percy) | QA Automation | 🟢 Baja | — |
 | 8.6 | Lighthouse CI en pipeline | QA Automation + DevOps | 🟢 Baja | — |
 | 8.7 | Environment protection rules (GitHub) | DevOps Engineer | 🟢 Baja | — |
