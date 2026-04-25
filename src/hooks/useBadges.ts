@@ -21,32 +21,45 @@ export interface EarnedBadge extends BadgeDefinition {
   earned_at: string;
 }
 
-// Module-level channel cache — shared across all hook instances
-const channelCache = new Map<
+// Module-level state shared across all hook instances for the same userId
+const channelState = new Map<
   string,
-  { channel: ReturnType<typeof supabase.channel>; refCount: number }
+  {
+    channel: ReturnType<typeof supabase.channel>;
+    refCount: number;
+    subscribed: boolean;
+  }
 >();
 
-function getOrCreateChannel(userId: string) {
+function getOrCreateChannel(userId: string): {
+  channel: ReturnType<typeof supabase.channel>;
+  isNew: boolean;
+} {
   const key = `user_badges_${userId}`;
-  const cached = channelCache.get(key);
+  const cached = channelState.get(key);
   if (cached) {
     cached.refCount++;
-    return cached.channel;
+    return { channel: cached.channel, isNew: false };
   }
   const channel = supabase.channel(key);
-  channelCache.set(key, { channel, refCount: 1 });
-  return channel;
+  channelState.set(key, { channel, refCount: 1, subscribed: false });
+  return { channel, isNew: true };
+}
+
+function markSubscribed(userId: string) {
+  const key = `user_badges_${userId}`;
+  const cached = channelState.get(key);
+  if (cached) cached.subscribed = true;
 }
 
 function releaseChannel(userId: string) {
   const key = `user_badges_${userId}`;
-  const cached = channelCache.get(key);
+  const cached = channelState.get(key);
   if (!cached) return;
   cached.refCount--;
   if (cached.refCount <= 0) {
     supabase.removeChannel(cached.channel);
-    channelCache.delete(key);
+    channelState.delete(key);
   }
 }
 
@@ -90,7 +103,7 @@ export function useBadges(userId: string | undefined) {
 
     fetchBadges();
 
-    // Store callback so we can update badges without re-subscribing
+    // Store callback so badge updates work across all hook instances
     callbackRef.current = (payload: { new: UserBadge }) => {
       const row = payload.new;
       const def = getBadgeBySlug(row.badge_slug);
@@ -102,15 +115,11 @@ export function useBadges(userId: string | undefined) {
       }
     };
 
-    // Get or create a shared channel — never creates duplicates
-    const channel = getOrCreateChannel(userId);
+    // Get or create shared channel — NEVER creates duplicates
+    const { channel, isNew } = getOrCreateChannel(userId);
 
-    // Only attach handlers + subscribe if the channel isn't already subscribed
-    const channelState = channel.state;
-    if (channelState === "joined" || channelState === "joining") {
-      // Channel already subscribed by another hook instance — just reuse it
-      // The callback will be picked up via callbackRef
-    } else {
+    if (isNew) {
+      // First instance: attach handler and subscribe
       channel.on(
         "postgres_changes",
         {
@@ -124,7 +133,9 @@ export function useBadges(userId: string | undefined) {
         }
       );
       channel.subscribe();
+      markSubscribed(userId);
     }
+    // else: another hook instance already subscribed — skip entirely
 
     return () => {
       releaseChannel(userId);
