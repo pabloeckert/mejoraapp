@@ -4,7 +4,7 @@
 > **Stack:** React 18 · TypeScript · Vite 5 · Supabase · Tailwind CSS · shadcn/ui
 > **Producción:** https://app.mejoraok.com
 > **Repo:** https://github.com/pabloeckert/MejoraApp
-> **Última actualización:** 2026-04-26 (sesión — consolidación documentación total)
+> **Última actualización:** 2026-04-26 (sesión — GitHub Pages + fix Realtime definitivo + migración gamificación)
 
 ---
 
@@ -722,6 +722,7 @@ VITE_VAPID_PUBLIC_KEY=tu-clave-publica
 | 2026-04-26 | Optimización plan + consolidación docs | **Plan reestructurado:** E7→Deploy inmediato, E8→Crecimiento, E9→Técnico, E10→App Nativa, E11→Compliance. **Docs consolidados:** CLEAN_SETUP.sql + SECURITY_HARDENING.sql movidos a Documents/. Regla: todo文档 vive en Documents/. Deploy FTP automático via GitHub Actions verificado. |
 | 2026-04-25 | Análisis integral + plan optimizado + push | **Revisión completa del repo:** arquitectura, workflows CI/CD, feature flags, migraciones. **DOCUMENTO-MAESTRO actualizado** (protocolo documentar clarificado). **Plan E7-E11 confirmado y priorizado.** Push a main → deploy automático vía GitHub Actions a app.mejoraok.com. |
 | 2026-04-26 | Consolidación documentación total | **Documentación unificada:** GUIA-VAPID-KEYS.md integrada como §13 en DOCUMENTO-MAESTRO.md y eliminada como archivo separado. README.md simplificado a puntero → Documents/DOCUMENTO-MAESTRO.md. Secciones renumeradas (14→18). Deploy verificado: run #110 exitoso (commit `7c04102`), app.mejoraok.com HTTP 200. GitHub Secrets FTP confirmados funcionando. Push `0355cca` → deploy automático. |
+| 2026-04-26 | GitHub Pages + Fix Realtime + Migración gamificación | **GitHub Pages:** workflow `github-pages.yml` creado. Base path condicional en `vite.config.ts` (`GITHUB_PAGES=true` → `/MejoraApp/`). `BrowserRouter` con `basename` dinámico via `import.meta.env.BASE_URL`. Deploy exitoso → `https://pabloeckert.github.io/MejoraApp/`. **Migración gamificación ejecutada vía API:** tablas `user_badges` y `community_ranking` creadas en Supabase (antes daban 404). **Fix Realtime channel collision (3 intentos):** 1) cleanup de canales stale antes de subscribe (no alcanzó — dos componentes con mismo userId creaban canales duplicados). 2) module-level channel cache con `refCount` (falló por `channel.state` check insuficiente). 3) Fix definitivo: `isNew` flag — segunda instancia de `useBadges` para mismo userId salta subscribe completamente. Commits `0521bd7` → `bf61eb4` → `087f5c9`. **Deploys:** Hostinger #115-#117, GitHub Pages #3-#5, todos exitosos. **Configuración GitHub Secrets:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID` configurados via API. |
 
 ---
 
@@ -730,7 +731,7 @@ VITE_VAPID_PUBLIC_KEY=tu-clave-publica
 | # | Acción | Estado | Detalle |
 |---|--------|--------|---------|
 | 1 | VAPID keys en Supabase | ✅ Listo | Keys configuradas en Supabase Secrets + GitHub Secrets (2026-04-25) |
-| 2 | Ejecutar migrations nuevas | ✅ Listo | Todas ejecutadas en Supabase SQL Editor (2026-04-25) |
+| 2 | Ejecutar migrations nuevas | ✅ Listo | Todas ejecutadas en Supabase SQL Editor (2026-04-25). Gamificación ejecutada vía API (2026-04-26). |
 | 3 | Landing mejoraok.com | ⚠️ Parcial | Landing estática lista. Disk quota exceeded en Hostinger. Evaluar migración a Vercel o liberar espacio. |
 | 4 | HubSpot API key | ✅ Reemplazado | CRM propio integrado como módulo admin-only (2026-04-25) |
 | 5 | Evaluar freemium/premium | ✅ Listo | Infraestructura feature flags implementada. Modo ALL_FREE activo. Cambiar `CURRENT_PLAN_ID` a `"free"` en `src/lib/plans.ts` cuando se defina el modelo de negocio. |
@@ -738,8 +739,10 @@ VITE_VAPID_PUBLIC_KEY=tu-clave-publica
 | 7 | Ejecutar migración onboarding_emails | 🔴 Pendiente | SQL en `supabase/migrations/20260426000000_onboarding_emails.sql`. Ejecutar en Supabase SQL Editor. |
 | 8 | Desplegar EF send-onboarding-email | 🔴 Pendiente | `supabase functions deploy send-onboarding-email`. Requiere `RESEND_API_KEY` en Supabase Secrets. |
 | 9 | Configurar cron onboarding emails | 🔴 Pendiente | Invocar `send-onboarding-email` cada 6-12h via pg_cron o externo. Depende de #7 y #8. |
-| 10 | Verificar GitHub Secrets FTP | ✅ Confirmado | Deploy automático verificado exitoso (run #110, 2026-04-26). Secrets `FTP_HOST`, `FTP_USERNAME`, `FTP_PASSWORD` configurados correctamente. |
+| 10 | Verificar GitHub Secrets FTP | ✅ Confirmado | Deploy automático verificado exitoso (run #110-#117, 2026-04-26). |
 | 11 | Migrar hosting a Vercel | 🟡 Recomendado | FTP Hostinger tiene timeouts en Actions. Vercel → deploy más rápido, CDN global, SSL automático, zero config. |
+| 12 | GitHub Pages configurado | ✅ Listo | Workflow `github-pages.yml`, base path condicional, Secrets configurados. URL: `pabloeckert.github.io/MejoraApp/`. |
+| 13 | Verificar fix Realtime en producción | ⏳ Esperando usuario | Fix deployado (commit `087f5c9`). Usuario debe confirmar que el error `cannot add postgres_changes callbacks` ya no aparece. |
 
 ---
 
@@ -750,17 +753,19 @@ VITE_VAPID_PUBLIC_KEY=tu-clave-publica
 
 ---
 
-### 🚀 ETAPA 7 — Deploy y Activación Inmediata (esta sesión)
+### 🚀 ETAPA 7 — Deploy y Activación Inmediata
 
 > Tareas que YA están implementadas y solo necesitan deploy/activación.
 
 | # | Tarea | Estado | Acción requerida |
 |---|-------|--------|------------------|
-| 7.1 | Fix Realtime channel collision | ✅ Verificado | Deploy run #110 exitoso. App en producción HTTP 200. |
+| 7.1 | Fix Realtime channel collision | ✅ Fix definitivo | 3 iteraciones. Fix final: module-level channel cache con `isNew` flag. Commits `0521bd7`→`bf61eb4`→`087f5c9`. Deploy Hostinger #117 + GitHub Pages #5. |
 | 7.2 | Onboarding emails — migración SQL | ✅ SQL listo | Ejecutar `20260426000000_onboarding_emails.sql` en Supabase SQL Editor |
 | 7.3 | Onboarding emails — Edge Function | ✅ EF lista | `supabase functions deploy send-onboarding-email` + `RESEND_API_KEY` en Secrets |
 | 7.4 | Onboarding emails — cron | ⏳ Espera 7.2+7.3 | Configurar invocación cada 6-12h (pg_cron o externo) |
-| 7.5 | Consolidar docs + DOCUMENTO-MAESTRO | ✅ Hecho (esta sesión) | Protocolo "documentar" clarificado. Push a main. |
+| 7.5 | Consolidar docs + DOCUMENTO-MAESTRO | ✅ Hecho | VAPID integrada como §13, README simplificado, secciones renumeradas. |
+| 7.6 | GitHub Pages como entorno de prueba | ✅ Hecho | Workflow, base path condicional, Secrets. URL: `pabloeckert.github.io/MejoraApp/` |
+| 7.7 | Migración gamificación ejecutada | ✅ Hecho | Tablas `user_badges` + `community_ranking` creadas vía Supabase API. |
 
 ---
 
