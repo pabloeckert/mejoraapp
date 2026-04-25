@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Shield, Lock, Eye, EyeOff, Mail, Loader2, AlertTriangle, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 
 interface AdminLoginFormProps {
   onBack: () => void;
@@ -25,7 +25,6 @@ const AdminLoginForm = ({ onBack, onSuccess }: AdminLoginFormProps) => {
 
     setLoading(true);
     try {
-      // 1. Sign in with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
@@ -51,11 +50,9 @@ const AdminLoginForm = ({ onBack, onSuccess }: AdminLoginFormProps) => {
         return;
       }
 
-      // 2. Check if user has admin role (server-side via Edge Function)
       const { data: verifyData, error: verifyError } = await supabase.functions.invoke("verify-admin");
 
       if (verifyError || !verifyData?.authorized) {
-        // Not an admin — sign out immediately
         await supabase.auth.signOut();
         setAttempts((a) => a + 1);
         toast({
@@ -68,7 +65,6 @@ const AdminLoginForm = ({ onBack, onSuccess }: AdminLoginFormProps) => {
         return;
       }
 
-      // 3. Success — admin confirmed
       sessionStorage.setItem("admin_unlocked", "true");
       sessionStorage.setItem("admin_unlocked_at", Date.now().toString());
       toast({ title: "Acceso concedido", description: "Bienvenido al panel de administración." });
@@ -84,51 +80,40 @@ const AdminLoginForm = ({ onBack, onSuccess }: AdminLoginFormProps) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="text-center space-y-1 mb-2">
-        <div className="mx-auto w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-          <Shield className="w-5 h-5 text-primary" />
-        </div>
-        <p className="text-sm font-semibold text-foreground">Acceso Administrador</p>
-        <p className="text-xs text-muted-foreground">Email y contraseña de tu cuenta admin</p>
-      </div>
-
       <div className="space-y-2">
         <Label htmlFor="admin-email">Email</Label>
-        <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            id="admin-email"
-            type="email"
-            placeholder="admin@mejoraok.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="pl-10"
-            disabled={isLocked}
-            autoComplete="email"
-            autoFocus
-          />
-        </div>
+        <Input
+          id="admin-email"
+          type="email"
+          placeholder="tu@email.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          disabled={isLocked}
+          autoComplete="email"
+          autoFocus
+          required
+        />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="admin-pass">Contraseña</Label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             id="admin-pass"
             type={showPassword ? "text" : "password"}
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="pl-10 pr-10"
+            className="pr-10"
             disabled={isLocked}
             autoComplete="current-password"
+            required
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            aria-label={showPassword ? "Ocultar" : "Mostrar"}
+            aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
           >
             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
@@ -136,29 +121,29 @@ const AdminLoginForm = ({ onBack, onSuccess }: AdminLoginFormProps) => {
       </div>
 
       {isLocked && (
-        <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-xs">
-          <AlertTriangle className="w-4 h-4 shrink-0" />
+        <p className="text-xs text-destructive text-center">
           Demasiados intentos. Esperá 30 segundos.
-        </div>
+        </p>
       )}
 
       <Button
         type="submit"
-        className="w-full h-11"
+        className="w-full h-11 bg-mc-dark-blue hover:bg-mc-dark-blue/90"
         disabled={loading || isLocked || !email.trim() || !password.trim()}
       >
-        {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Shield className="w-4 h-4 mr-2" />}
-        Ingresar al Panel
+        {loading ? "Cargando..." : "Iniciar sesión"}
       </Button>
 
-      <button
-        type="button"
-        onClick={onBack}
-        className="w-full flex items-center justify-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors py-2"
-      >
-        <ArrowLeft className="w-3 h-3" />
-        Volver al login de usuario
-      </button>
+      <p className="text-center text-sm text-muted-foreground pt-2">
+        ¿No sos admin?{" "}
+        <button
+          type="button"
+          onClick={onBack}
+          className="text-mc-red font-semibold hover:underline"
+        >
+          Volver al login
+        </button>
+      </p>
     </form>
   );
 };
