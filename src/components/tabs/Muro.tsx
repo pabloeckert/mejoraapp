@@ -309,10 +309,11 @@ const Muro = () => {
     staleTime: 30_000,
   });
 
-  // Realtime subscription
+  // Realtime subscription — unique channel name to avoid re-subscribe conflicts
   useEffect(() => {
+    const channelName = `wall_realtime_${user?.id ?? "anon"}`;
     const channel = supabase
-      .channel("wall_posts_changes")
+      .channel(channelName)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "wall_posts", filter: "status=eq.approved" },
