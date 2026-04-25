@@ -80,16 +80,11 @@ const COLORS = ["hsl(214,58%,41%)", "hsl(45,74%,60%)", "hsl(142,60%,40%)", "hsl(
 // MAIN COMPONENT
 // ============================================================
 export default function AdminCRM() {
-  const { user, role } = useAuth();
+  const { user } = useAuth();
   const [tab, setTab] = useState("dashboard");
 
-  if (role !== "admin") {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">Acceso restringido a administradores.</p>
-      </div>
-    );
-  }
+  // Admin access is already verified by parent Admin.tsx via verify-admin Edge Function
+  // No need for a second role check here
 
   return (
     <div className="space-y-4">

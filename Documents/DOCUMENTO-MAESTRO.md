@@ -643,6 +643,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | 2026-04-25 | Consolidación docs v2 | DOCUMENTO-MAESTRO unificado (18 secciones), style guide + dashboards integrados, SESSION-PROMPT eliminado. E6 completa (12/12). |
 | 2026-04-25 | Optimización producción | **Fix CORS crítico** en 7 Edge Functions (getCorsHeaders() nunca se usaba). _shared/cors.ts + _shared/log.ts centralizados. CSP mejorado (base-uri, form-action). PDF export lazy-loaded. Bundle splitting (vendor-charts). Preload fonts. Validación admin-action. 103 tests ✅. |
 | 2026-04-25 | Freemium infrastructure | Sistema feature flags: plans.ts (8 features free/premium), FeatureGate, UpgradePrompt, useFeatureAccess. Gates en historial, recomendaciones IA, PDF. Modo ALL_FREE (todo habilitado). Analytics: feature_blocked, upgrade_prompt_shown, upgrade_cta_click. Deploy automático a producción. |
+| 2026-04-26 | E7 — Onboarding email + Bug fix CRM | **Fix bug CRM:** AdminCRM usaba `role` de useAuth() que no existe → módulo bloqueado. Fix: removido check redundante (parent Admin.tsx ya verifica). **Onboarding emails:** migración SQL (onboarding_emails + RPC get_users_needing_onboarding_email), Edge Function send-onboarding-email con templates día 1/3/7 vía Resend. **Revisión código completa:** 103 tests ✅, build ✅, deploy verificado (HTTP 200). |
 
 ---
 
@@ -670,7 +671,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | 7.1 | Poblar CRM con datos reales | Business Dev + Account Mgr | 🔴 Alta | CRM funcional ✅ |
 | 7.2 | Modelo freemium: definir features premium | Product Manager + PM | 🔴 Alta | ✅ Infra lista (2026-04-25). Falta definir corte free/premium y activar. |
 | 7.3 | A/B testing en onboarding | Growth + Frontend + UX Researcher | 🟡 Media | PostHog feature flags |
-| 7.4 | Email onboarding sequence (día 1, 3, 7) | Backend + Content + Customer Success | 🟡 Media | Resend ✅ |
+| 7.4 | Email onboarding sequence (día 1, 3, 7) | Backend + Content + Customer Success | 🟡 Media | ✅ **Implementado** (2026-04-26): migración SQL + Edge Function + templates HTML. Pendiente: ejecutar migración + desplegar EF + configurar cron. |
 | 7.5 | Blog/SEO orgánico en landing | SEO Specialist + Content Manager | 🟡 Media | Landing ✅ |
 
 ### ETAPA 8 — Escalamiento Técnico (Sprint 1-2 semanas)
@@ -715,7 +716,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 ✅ E4: Analytics y Retención (completa)
 ✅ E5: Calidad y Robustez (completa)
 ✅ E6: Escalamiento (completa — 12/12 + CRM propio)
-📋 E7: Crecimiento y Monetización (5 tareas, 1 completa) — Sprint 1 semana
+📋 E7: Crecimiento y Monetización (5 tareas, 2 implementadas) — Sprint 1 semana
 📋 E8: Escalamiento Técnico (7 tareas) — Sprint 1-2 semanas
 📋 E9: App Nativa (4 tareas, evaluar) — Baja prioridad
 📋 E10: Operaciones y Compliance (5 tareas) — Sprint 1 semana
