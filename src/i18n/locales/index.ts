@@ -28,7 +28,7 @@ export const LOCALE_NAMES: Record<SupportedLocale, string> = {
 export const es: Record<string, string> = {
   // Navegación
   "nav.contenido": "Contenido",
-  "nav.diagnostico": "Diagnóstico",
+  "nav.diagnostico": "Mirror",
   "nav.muro": "Muro",
   "nav.novedades": "Novedades",
 
@@ -46,9 +46,9 @@ export const es: Record<string, string> = {
   "muro.rules.title": "Reglas de la comunidad",
 
   // Diagnóstico
-  "diag.title": "Diagnóstico Estratégico",
-  "diag.subtitle": "8 preguntas. Diagnóstico preciso.",
-  "diag.start": "Empezar diagnóstico",
+  "diag.title": "Mirror Estratégico",
+  "diag.subtitle": "8 preguntas. Mirror preciso.",
+  "diag.start": "Empezar Mirror",
   "diag.next": "Siguiente",
   "diag.back": "Atrás",
   "diag.finish": "Ver resultado",

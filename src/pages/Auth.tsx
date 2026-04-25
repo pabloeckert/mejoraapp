@@ -46,13 +46,21 @@ const Auth = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm space-y-5">
-        {/* Logo + admin dot below */}
-        <div className="flex flex-col items-center gap-2">
+        {/* Logo + title + admin dot below */}
+        <div className="flex flex-col items-center gap-3">
           <img
             src={logoComunidad}
             alt="Mejora Continua - Comunidad de Negocios"
             className="h-14 object-contain"
           />
+          <div className="text-center space-y-0.5">
+            <h1 className="text-lg font-semibold text-foreground tracking-tight">
+              Accede a <span className="text-mc-dark-blue">MejoraApp</span>
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              Comunidad de Negocios
+            </p>
+          </div>
           {/* Admin access toggle — visible but discreet */}
           <button
             onClick={() => setMode(mode === "admin" ? "login" : "admin")}

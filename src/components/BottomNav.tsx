@@ -9,7 +9,7 @@ interface BottomNavProps {
 
 const tabs = [
   { id: "contenido", label: "Contenido", icon: BookOpen },
-  { id: "diagnostico", label: "Diagnóstico", icon: ClipboardCheck },
+  { id: "diagnostico", label: "Mirror", icon: ClipboardCheck },
   { id: "muro", label: "Muro", icon: MessageSquare },
   { id: "novedades", label: "Novedades", icon: Sparkles },
 ];

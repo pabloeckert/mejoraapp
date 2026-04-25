@@ -196,7 +196,7 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
           <h1 className="text-heading font-extrabold leading-tight mb-1">
             ¿Te animás a ver cómo está tu negocio?
           </h1>
-          <p className="text-caption opacity-75">8 preguntas. Diagnóstico preciso.</p>
+          <p className="text-caption opacity-75">8 preguntas. Mirror preciso.</p>
         </div>
         <div className="bg-card rounded-b-xl shadow-lg p-6 text-center">
           <h2 className="text-title font-black text-mc-diag-blue mb-3">
@@ -219,13 +219,13 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
             onClick={startDiag}
             className="bg-mc-diag-red hover:bg-mc-diag-red/90 text-white px-8 py-3 text-base font-bold"
           >
-            {history.length > 0 ? "Hacerlo de nuevo →" : "Empezar diagnóstico →"}
+            {history.length > 0 ? "Hacerlo de nuevo →" : "Empezar Mirror →"}
           </Button>
 
           <FeatureGate feature="diagnostic_history" variant="inline">
             <div className="mt-6 pt-4 border-t border-border text-left">
               <h3 className="text-caption font-bold tracking-widest text-muted-foreground uppercase mb-3">
-                Tus diagnósticos anteriores
+                Tus Mirrors anteriores
               </h3>
               <div className="space-y-2">
                 {history.map((entry) => {
@@ -327,7 +327,7 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
                 "text-white"
               )}
             >
-              {currentIdx === 7 ? "Ver mi diagnóstico" : "Siguiente"}{" "}
+              {currentIdx === 7 ? "Ver mi Mirror" : "Siguiente"}{" "}
               <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
           </div>
@@ -343,7 +343,7 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
         <div className="w-12 h-12 border-3 border-mc-diag-blue border-t-transparent rounded-full animate-spin mx-auto mb-4" />
         <h2 className="text-title font-extrabold text-mc-diag-blue mb-2">Analizando tu negocio…</h2>
         <p className="text-sm text-muted-foreground">
-          Procesando tus respuestas y generando tu diagnóstico personalizado.
+          Procesando tus respuestas y generando tu Mirror personalizado.
         </p>
       </div>
     );
@@ -353,7 +353,7 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
   if (step === "result" && perfilData) {
     const puntaje = Object.values(answers).reduce((a, b) => a + b, 0);
     const waMsg = encodeURIComponent(
-      `Hola, hice el diagnóstico de Mejora Continua. Mi diagnóstico es: "${perfilData.tagline}". Quiero hablar.`
+      `Hola, hice el Mirror de Mejora Continua. Mi Mirror es: "${perfilData.tagline}". Quiero hablar.`
     );
     const waLink = `https://wa.me/${WA_NUMBER}?text=${waMsg}`;
 
@@ -405,7 +405,7 @@ const DiagnosticResultView = ({
         userName,
       });
       trackDiagnosticPDFExport(perfil);
-      toast({ title: "PDF descargado", description: "Tu diagnóstico se guardó como PDF." });
+      toast({ title: "PDF descargado", description: "Tu Mirror se guardó como PDF." });
     } catch (err) {
       console.error("PDF export error:", err);
       toast({ title: "Error", description: "No se pudo generar el PDF.", variant: "destructive" });
