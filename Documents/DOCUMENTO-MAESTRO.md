@@ -4,7 +4,7 @@
 > **Stack:** React 18 · TypeScript · Vite 5 · Supabase · Tailwind CSS · shadcn/ui
 > **Producción:** https://app.mejoraok.com
 > **Repo:** https://github.com/pabloeckert/MejoraApp
-> **Última actualización:** 2026-04-25 22:02 GMT+8
+> **Última actualización:** 2026-04-25 22:37 GMT+8
 
 ---
 
@@ -28,7 +28,7 @@
 
 MejoraApp es el MVP digital de **Mejora Continua**, comunidad de negocios para líderes empresariales argentinos. App funcional en producción con muro anónimo moderado por IA, contenido de valor, diagnóstico estratégico y panel admin.
 
-**Estado:** E1 ✅ · E2 ✅ · E3 ✅ · E4 ✅ · E5 ✅ · E6 ✅ (12/12 + CRM)
+**Estado:** E1 ✅ · E2 ✅ · E3 ✅ · E4 ✅ · E5 ✅ · E6 ✅ · E7 🔄 (infra freemium lista)
 
 ---
 
@@ -175,6 +175,16 @@ Módulo integrado en Panel Admin · 4 sub-tabs: Dashboard, Clientes, Interaccion
 - **Seguridad:** RLS con `is_admin()` — solo admins acceden · Lazy loading (se carga al hacer click en tab CRM)
 - **DB:** 4 tablas (`crm_clients`, `crm_products`, `crm_interactions`, `crm_interaction_lines`) · 2 vistas (`crm_client_summary`, `crm_seller_ranking`) · RPC `get_crm_dashboard()`
 
+### 3.13 Freemium / Feature Flags
+Sistema de feature flags para modelo free vs premium. Infraestructura lista, todo habilitado por defecto (ALL_FREE).
+- **Config:** `src/lib/plans.ts` — 8 features definidas (diagnostic_history, diagnostic_pdf, diagnostic_evolution, content_recommendations, premium_content, community_directory, priority_support, advanced_analytics)
+- **Hook:** `src/hooks/useFeatureAccess.ts` — verificación de acceso + tracking de bloqueos
+- **Gate:** `src/components/FeatureGate.tsx` — componente condicional que envuelve contenido premium
+- **Prompt:** `src/components/UpgradePrompt.tsx` — card/banner de upgrade (variantes inline y banner)
+- **Analytics:** 3 eventos nuevos (feature_blocked, upgrade_prompt_shown, upgrade_cta_click)
+- **Activar premium:** cambiar `CURRENT_PLAN_ID` de `"all_free"` a `"free"` en plans.ts
+- **Gates activos:** historial diagnósticos, recomendaciones IA, exportar PDF
+
 ---
 
 ## 4. Despliegue
@@ -206,15 +216,15 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 
 | Métrica | Valor |
 |---------|-------|
-| Líneas de código (TS/TSX) | ~14,000 |
-| Archivos totales | 203 |
+| Líneas de código (TS/TSX) | ~14,400 |
+| Archivos totales | 207 |
 | Tests unitarios | 103+ (100% passing) |
 | Tests E2E | 22 (Playwright) |
 | Tests accesibilidad | 7 (axe-core) |
 | Typography tokens | 7 (caption → display) |
 | Tablas DB | 23 (19 core + 4 CRM) |
 | Edge Functions | 7 |
-| Eventos analytics | 25+ |
+| Eventos analytics | 28+ |
 | Bundle gzipped | ~355KB |
 | Build time | ~6s |
 
@@ -632,6 +642,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | 2026-04-25 | CRM integrado | Módulo AdminCRM (Dashboard, Clientes, Interacciones, Productos), 4 tablas CRM, vistas, RPC, RLS admin-only. DB migrations ejecutadas. VAPID keys configuradas. |
 | 2026-04-25 | Consolidación docs v2 | DOCUMENTO-MAESTRO unificado (18 secciones), style guide + dashboards integrados, SESSION-PROMPT eliminado. E6 completa (12/12). |
 | 2026-04-25 | Optimización producción | **Fix CORS crítico** en 7 Edge Functions (getCorsHeaders() nunca se usaba). _shared/cors.ts + _shared/log.ts centralizados. CSP mejorado (base-uri, form-action). PDF export lazy-loaded. Bundle splitting (vendor-charts). Preload fonts. Validación admin-action. 103 tests ✅. |
+| 2026-04-25 | Freemium infrastructure | Sistema feature flags: plans.ts (8 features free/premium), FeatureGate, UpgradePrompt, useFeatureAccess. Gates en historial, recomendaciones IA, PDF. Modo ALL_FREE (todo habilitado). Analytics: feature_blocked, upgrade_prompt_shown, upgrade_cta_click. Deploy automático a producción. |
 
 ---
 
@@ -643,7 +654,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | 2 | Ejecutar migrations nuevas | ✅ Listo | Todas ejecutadas en Supabase SQL Editor (2026-04-25) |
 | 3 | Landing mejoraok.com | ⚠️ Parcial | Landing estática lista. Disk quota exceeded en Hostinger. Evaluar migración a Vercel o liberar espacio. |
 | 4 | HubSpot API key | ✅ Reemplazado | CRM propio integrado como módulo admin-only (2026-04-25) |
-| 5 | Evaluar freemium/premium | 🔴 Pendiente | Definir modelo de negocio antes de implementar |
+| 5 | Evaluar freemium/premium | ✅ Listo | Infraestructura feature flags implementada. Modo ALL_FREE activo. Definir features premium y activar cuando se defina modelo de negocio (cambiar CURRENT_PLAN_ID a "free"). |
 | 6 | Evaluar Capacitor | 🔴 Pendiente | Decidir si se necesita app nativa o si PWA es suficiente |
 
 ---
@@ -657,7 +668,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | # | Tarea | Rol(es) | Prioridad | Dependencia |
 |---|-------|---------|-----------|-------------|
 | 7.1 | Poblar CRM con datos reales | Business Dev + Account Mgr | 🔴 Alta | CRM funcional ✅ |
-| 7.2 | Modelo freemium: definir features premium | Product Manager + PM | 🔴 Alta | Decisión negocio |
+| 7.2 | Modelo freemium: definir features premium | Product Manager + PM | 🔴 Alta | ✅ Infra lista (2026-04-25). Falta definir corte free/premium y activar. |
 | 7.3 | A/B testing en onboarding | Growth + Frontend + UX Researcher | 🟡 Media | PostHog feature flags |
 | 7.4 | Email onboarding sequence (día 1, 3, 7) | Backend + Content + Customer Success | 🟡 Media | Resend ✅ |
 | 7.5 | Blog/SEO orgánico en landing | SEO Specialist + Content Manager | 🟡 Media | Landing ✅ |
@@ -704,14 +715,14 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 ✅ E4: Analytics y Retención (completa)
 ✅ E5: Calidad y Robustez (completa)
 ✅ E6: Escalamiento (completa — 12/12 + CRM propio)
-📋 E7: Crecimiento y Monetización (5 tareas) — Sprint 1 semana
+📋 E7: Crecimiento y Monetización (5 tareas, 1 completa) — Sprint 1 semana
 📋 E8: Escalamiento Técnico (7 tareas) — Sprint 1-2 semanas
 📋 E9: App Nativa (4 tareas, evaluar) — Baja prioridad
 📋 E10: Operaciones y Compliance (5 tareas) — Sprint 1 semana
 ```
 
 **Tiempo total estimado:** 4-6 semanas (E7-E10)
-**Items que requieren decisión del usuario:** 3 (freemium, hosting, app nativa)
+**Items que requieren decisión del usuario:** 2 (corte free/premium, app nativa)
 
 ---
 
