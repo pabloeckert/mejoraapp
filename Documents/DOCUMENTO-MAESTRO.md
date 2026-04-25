@@ -643,7 +643,8 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | 2026-04-25 | Consolidación docs v2 | DOCUMENTO-MAESTRO unificado (18 secciones), style guide + dashboards integrados, SESSION-PROMPT eliminado. E6 completa (12/12). |
 | 2026-04-25 | Optimización producción | **Fix CORS crítico** en 7 Edge Functions (getCorsHeaders() nunca se usaba). _shared/cors.ts + _shared/log.ts centralizados. CSP mejorado (base-uri, form-action). PDF export lazy-loaded. Bundle splitting (vendor-charts). Preload fonts. Validación admin-action. 103 tests ✅. |
 | 2026-04-25 | Freemium infrastructure | Sistema feature flags: plans.ts (8 features free/premium), FeatureGate, UpgradePrompt, useFeatureAccess. Gates en historial, recomendaciones IA, PDF. Modo ALL_FREE (todo habilitado). Analytics: feature_blocked, upgrade_prompt_shown, upgrade_cta_click. Deploy automático a producción. |
-| 2026-04-26 | E7 — Onboarding email + Bug fix CRM | **Fix bug CRM:** AdminCRM usaba `role` de useAuth() que no existe → módulo bloqueado. Fix: removido check redundante (parent Admin.tsx ya verifica). **Onboarding emails:** migración SQL (onboarding_emails + RPC get_users_needing_onboarding_email), Edge Function send-onboarding-email con templates día 1/3/7 vía Resend. **Revisión código completa:** 103 tests ✅, build ✅, deploy verificado (HTTP 200). |
+| 2026-04-26 | E7 — Onboarding email + Bug fix CRM | **Fix bug CRM:** AdminCRM usaba `role` de useAuth() que no existe → módulo bloqueado. Fix: removido check redundante (parent Admin.tsx ya verifica). **Onboarding emails:** migración SQL (onboarding_emails + RPC get_users_needing_onboarding_email), Edge Function send-onboarding-email con templates día 1/3/7 vía Resend. **Revisión código completa:** 103 tests ✅, build ✅. |
+| 2026-04-26 | Fix Realtime channel collision | **Bug crítico en producción:** `cannot add postgres_changes callbacks for realtime:user_badges_changes after subscribe()`. Causa: canales Realtime con nombre fijo colisionaban al re-ejecutar effects. Fix: nombres únicos por userId (`user_badges_{id}`, `wall_realtime_{id}`). **Deploy FTP:** GitHub Actions falló por timeout FTP Hostinger. Deploy manual via FileZilla pendiente (usuario en Windows). Commit `943bf42` en main. |
 
 ---
 
@@ -657,6 +658,10 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | 4 | HubSpot API key | ✅ Reemplazado | CRM propio integrado como módulo admin-only (2026-04-25) |
 | 5 | Evaluar freemium/premium | ✅ Listo | Infraestructura feature flags implementada. Modo ALL_FREE activo. Definir features premium y activar cuando se defina modelo de negocio (cambiar CURRENT_PLAN_ID a "free"). |
 | 6 | Evaluar Capacitor | 🔴 Pendiente | Decidir si se necesita app nativa o si PWA es suficiente |
+| 7 | Deploy fix Realtime | 🔄 En proceso | Commit `943bf42` en main. Build local hecho. Subir `dist/` a `/public_html/app/` via FileZilla (desde PC Windows). |
+| 8 | Ejecutar migración onboarding_emails | 🔴 Pendiente | SQL en `supabase/migrations/20260426000000_onboarding_emails.sql`. Ejecutar en Supabase SQL Editor. |
+| 9 | Desplegar EF send-onboarding-email | 🔴 Pendiente | `supabase functions deploy send-onboarding-email`. Requiere RESEND_API_KEY en Supabase Secrets. |
+| 10 | Configurar cron onboarding emails | 🔴 Pendiente | Invocar `send-onboarding-email` cada 6-12h via pg_cron o externo. |
 
 ---
 
@@ -717,6 +722,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 ✅ E5: Calidad y Robustez (completa)
 ✅ E6: Escalamiento (completa — 12/12 + CRM propio)
 📋 E7: Crecimiento y Monetización (5 tareas, 2 implementadas) — Sprint 1 semana
+🔄 Fix Realtime en producción — deploy manual pendiente (FileZilla)
 📋 E8: Escalamiento Técnico (7 tareas) — Sprint 1-2 semanas
 📋 E9: App Nativa (4 tareas, evaluar) — Baja prioridad
 📋 E10: Operaciones y Compliance (5 tareas) — Sprint 1 semana
