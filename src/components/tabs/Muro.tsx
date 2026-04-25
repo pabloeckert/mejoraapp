@@ -312,6 +312,11 @@ const Muro = () => {
   // Realtime subscription — unique channel name to avoid re-subscribe conflicts
   useEffect(() => {
     const channelName = `wall_realtime_${user?.id ?? "anon"}`;
+
+    // Remove any stale channel with the same name before creating a new one
+    const existing = supabase.getChannels().find((c) => c.topic === channelName);
+    if (existing) supabase.removeChannel(existing);
+
     const channel = supabase
       .channel(channelName)
       .on(

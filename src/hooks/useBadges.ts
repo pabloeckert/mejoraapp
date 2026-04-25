@@ -58,6 +58,11 @@ export function useBadges(userId: string | undefined) {
     // Realtime: subscribe to new badges
     // Channel name must be unique per user to avoid conflicts on re-subscribe
     const channelName = `user_badges_${userId}`;
+
+    // Remove any stale channel with the same name before creating a new one
+    const existing = supabase.getChannels().find((c) => c.topic === channelName);
+    if (existing) supabase.removeChannel(existing);
+
     const channel = supabase
       .channel(channelName)
       .on(
