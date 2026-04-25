@@ -53,14 +53,6 @@ const Auth = () => {
             alt="Mejora Continua - Comunidad de Negocios"
             className="h-14 object-contain"
           />
-          <div className="text-center space-y-0.5">
-            <h1 className="text-lg font-semibold text-foreground tracking-tight">
-              Accede a <span className="text-mc-dark-blue">MejoraApp</span>
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              Comunidad de Negocios
-            </p>
-          </div>
           {/* Admin access toggle — visible but discreet */}
           <button
             onClick={() => setMode(mode === "admin" ? "login" : "admin")}
