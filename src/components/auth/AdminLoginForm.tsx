@@ -78,6 +78,27 @@ const AdminLoginForm = ({ onBack, onSuccess }: AdminLoginFormProps) => {
 
   const isLocked = attempts >= 5;
 
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      toast({
+        title: "Ingresá tu email",
+        description: "Escribí tu email para recibir el link de recuperación.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) {
+      toast({ title: "Error", description: "No se pudo enviar el email de recuperación.", variant: "destructive" });
+    } else {
+      toast({ title: "Email enviado", description: "Revisá tu correo para restablecer tu contraseña." });
+    }
+    setLoading(false);
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
@@ -125,6 +146,16 @@ const AdminLoginForm = ({ onBack, onSuccess }: AdminLoginFormProps) => {
           Demasiados intentos. Esperá 30 segundos.
         </p>
       )}
+
+      <div className="flex items-center justify-end">
+        <button
+          type="button"
+          onClick={handleForgotPassword}
+          className="text-sm text-mc-blue hover:underline"
+        >
+          ¿Olvidaste tu contraseña?
+        </button>
+      </div>
 
       <Button
         type="submit"
