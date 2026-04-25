@@ -1,25 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-
-// ── CORS restringido ────────────────────────────────────────────
-const ALLOWED_ORIGINS = [
-  "https://app.mejoraok.com",
-  "http://localhost:8080",
-  "http://localhost:5173",
-];
-
-function getCorsHeaders(origin: string | null) {
-  const allowed = ALLOWED_ORIGINS.includes(origin ?? "") ? origin! : "https://app.mejoraok.com";
-  return {
-    "Access-Control-Allow-Origin": allowed,
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  };
-}
+import { handleCors, jsonHeaders } from "../_shared/cors.ts";
+import { logInfo, logWarn, logError } from "../_shared/log.ts";
 
 // ── Rate limiting (in-memory, per-function) ─────────────────────
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT = 30; // acciones por minuto por admin
-const RATE_WINDOW = 60_000; // 1 minuto
+const RATE_LIMIT = 30;
+const RATE_WINDOW = 60_000;
 
 function checkRateLimit(userId: string): boolean {
   const now = Date.now();
@@ -33,22 +20,34 @@ function checkRateLimit(userId: string): boolean {
   return true;
 }
 
-serve(async (req) => {
-  const origin = req.headers.get("Origin");
-  const corsHeaders = getCorsHeaders(origin);
+// ── Validation helpers ──────────────────────────────────────────
+function requireString(val: unknown, name: string): string {
+  if (!val || typeof val !== "string" || val.trim().length === 0) {
+    throw new Error(`${name} requerido`);
+  }
+  return val.trim();
+}
 
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+function requireObject(val: unknown, name: string): Record<string, unknown> {
+  if (!val || typeof val !== "object" || Array.isArray(val)) {
+    throw new Error(`${name} requerido`);
+  }
+  return val as Record<string, unknown>;
+}
+
+serve(async (req) => {
+  const corsResp = handleCors(req);
+  if (corsResp) return corsResp;
+
+  const origin = req.headers.get("Origin");
+  const headers = jsonHeaders(origin);
 
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: "No autorizado" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401, headers });
     }
 
-    // Verify user auth
     const supabaseUser = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!,
@@ -57,21 +56,14 @@ serve(async (req) => {
 
     const { data: { user }, error: authError } = await supabaseUser.auth.getUser();
     if (authError || !user) {
-      return new Response(JSON.stringify({ error: "No autenticado" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(JSON.stringify({ error: "No autenticado" }), { status: 401, headers });
     }
 
-    // Rate limit check
     if (!checkRateLimit(user.id)) {
-      return new Response(JSON.stringify({ error: "Demasiadas acciones. Esperá un minuto." }), {
-        status: 429,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      logWarn("admin-action", "Rate limit hit", { user_id: user.id });
+      return new Response(JSON.stringify({ error: "Demasiadas acciones. Esperá un minuto." }), { status: 429, headers });
     }
 
-    // Verify admin role with service_role
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
@@ -85,23 +77,18 @@ serve(async (req) => {
       .maybeSingle();
 
     if (!roleData) {
-      return new Response(JSON.stringify({ error: "Sin permisos de admin" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      logWarn("admin-action", "Non-admin attempt", { user_id: user.id });
+      return new Response(JSON.stringify({ error: "Sin permisos de admin" }), { status: 403, headers });
     }
 
-    // Parse action
-    const { action, ...params } = await req.json();
-
-    if (!action) {
-      return new Response(JSON.stringify({ error: "Acción requerida" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const body = await req.json().catch(() => null);
+    const action = body?.action;
+    if (!action || typeof action !== "string") {
+      return new Response(JSON.stringify({ error: "Acción requerida" }), { status: 400, headers });
     }
 
     // ── Audit log (fire-and-forget) ────────────────────────────
+    const { action: _a, ...params } = body;
     supabaseAdmin.from("admin_audit_log").insert({
       user_id: user.id,
       action,
@@ -110,26 +97,25 @@ serve(async (req) => {
     }).then(() => {}).catch(() => {});
 
     // ============================================================
-    // ROUTER — cada acción es una operación admin de escritura
+    // ROUTER
     // ============================================================
     let result;
 
     switch (action) {
 
-      // ── PERFILES ──────────────────────────────────────────────
       case "update-profile": {
-        const { profileId, data } = params;
-        if (!profileId || !data) throw new Error("profileId y data requeridos");
+        const data = requireObject(params.data, "data");
+        const profileId = requireString(params.profileId, "profileId");
         const { error } = await supabaseAdmin
           .from("profiles")
           .update({
-            nombre: data.nombre?.trim() || null,
-            apellido: data.apellido?.trim() || null,
-            empresa: data.empresa?.trim() || null,
-            cargo: data.cargo?.trim() || null,
-            email: data.email?.trim() || null,
-            phone: data.phone?.trim() || null,
-            display_name: `${(data.nombre || "").trim()} ${(data.apellido || "").trim()}`.trim() || null,
+            nombre: (data.nombre as string)?.trim() || null,
+            apellido: (data.apellido as string)?.trim() || null,
+            empresa: (data.empresa as string)?.trim() || null,
+            cargo: (data.cargo as string)?.trim() || null,
+            email: (data.email as string)?.trim() || null,
+            phone: (data.phone as string)?.trim() || null,
+            display_name: `${((data.nombre as string) || "").trim()} ${((data.apellido as string) || "").trim()}`.trim() || null,
           })
           .eq("id", profileId);
         if (error) throw error;
@@ -137,10 +123,8 @@ serve(async (req) => {
         break;
       }
 
-      // ── CONTENIDO: POSTS ──────────────────────────────────────
       case "create-post": {
-        const { post } = params;
-        if (!post) throw new Error("post requerido");
+        const post = requireObject(params.post, "post");
         const { data: created, error } = await supabaseAdmin
           .from("content_posts")
           .insert(post)
@@ -152,8 +136,8 @@ serve(async (req) => {
       }
 
       case "update-post-status": {
-        const { postId, estado } = params;
-        if (!postId || !estado) throw new Error("postId y estado requeridos");
+        const postId = requireString(params.postId, "postId");
+        const estado = requireString(params.estado, "estado");
         const { error } = await supabaseAdmin
           .from("content_posts")
           .update({ estado })
@@ -164,8 +148,7 @@ serve(async (req) => {
       }
 
       case "delete-post": {
-        const { postId } = params;
-        if (!postId) throw new Error("postId requerido");
+        const postId = requireString(params.postId, "postId");
         const { error } = await supabaseAdmin
           .from("content_posts")
           .delete()
@@ -175,10 +158,8 @@ serve(async (req) => {
         break;
       }
 
-      // ── CONTENIDO: CATEGORÍAS ─────────────────────────────────
       case "create-category": {
-        const { category } = params;
-        if (!category) throw new Error("category requerido");
+        const category = requireObject(params.category, "category");
         const { error } = await supabaseAdmin
           .from("content_categories")
           .insert(category);
@@ -187,20 +168,14 @@ serve(async (req) => {
         break;
       }
 
-      // ── NOVEDADES ─────────────────────────────────────────────
       case "upsert-novedad": {
-        const { novedadId, data } = params;
-        if (!data) throw new Error("data requerido");
-        if (novedadId) {
-          const { error } = await supabaseAdmin
-            .from("novedades")
-            .update(data)
-            .eq("id", novedadId);
+        const data = requireObject(params.data, "data");
+        if (params.novedadId) {
+          const novedadId = requireString(params.novedadId, "novedadId");
+          const { error } = await supabaseAdmin.from("novedades").update(data).eq("id", novedadId);
           if (error) throw error;
         } else {
-          const { error } = await supabaseAdmin
-            .from("novedades")
-            .insert(data);
+          const { error } = await supabaseAdmin.from("novedades").insert(data);
           if (error) throw error;
         }
         result = { success: true };
@@ -208,90 +183,64 @@ serve(async (req) => {
       }
 
       case "delete-novedad": {
-        const { novedadId } = params;
-        if (!novedadId) throw new Error("novedadId requerido");
-        const { error } = await supabaseAdmin
-          .from("novedades")
-          .delete()
-          .eq("id", novedadId);
+        const novedadId = requireString(params.novedadId, "novedadId");
+        const { error } = await supabaseAdmin.from("novedades").delete().eq("id", novedadId);
         if (error) throw error;
         result = { success: true };
         break;
       }
 
-      // ── MURO: MODERACIÓN ──────────────────────────────────────
       case "moderate-post": {
-        const { postId, status } = params;
-        if (!postId || !status) throw new Error("postId y status requeridos");
-        const { error } = await supabaseAdmin
-          .from("wall_posts")
-          .update({ status })
-          .eq("id", postId);
+        const postId = requireString(params.postId, "postId");
+        const status = requireString(params.status, "status");
+        const { error } = await supabaseAdmin.from("wall_posts").update({ status }).eq("id", postId);
         if (error) throw error;
         result = { success: true };
         break;
       }
 
       case "moderate-comment": {
-        const { commentId, status } = params;
-        if (!commentId || !status) throw new Error("commentId y status requeridos");
-        const { error } = await supabaseAdmin
-          .from("wall_comments")
-          .update({ status })
-          .eq("id", commentId);
+        const commentId = requireString(params.commentId, "commentId");
+        const status = requireString(params.status, "status");
+        const { error } = await supabaseAdmin.from("wall_comments").update({ status }).eq("id", commentId);
         if (error) throw error;
         result = { success: true };
         break;
       }
 
-      // ── ROLES ─────────────────────────────────────────────────
       case "add-role": {
-        const { targetUserId, role } = params;
-        if (!targetUserId || !role) throw new Error("targetUserId y role requeridos");
-        const { error } = await supabaseAdmin
-          .from("user_roles")
-          .insert({ user_id: targetUserId, role });
+        const targetUserId = requireString(params.targetUserId, "targetUserId");
+        const role = requireString(params.role, "role");
+        const { error } = await supabaseAdmin.from("user_roles").insert({ user_id: targetUserId, role });
         if (error) throw error;
         result = { success: true };
         break;
       }
 
       case "remove-role": {
-        const { targetUserId, role } = params;
-        if (!targetUserId || !role) throw new Error("targetUserId y role requeridos");
-        // Prevent self-demotion
+        const targetUserId = requireString(params.targetUserId, "targetUserId");
+        const role = requireString(params.role, "role");
         if (targetUserId === user.id && role === "admin") {
-          return new Response(JSON.stringify({ error: "No podés eliminarte a vos mismo" }), {
-            status: 400,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+          return new Response(JSON.stringify({ error: "No podés eliminarte a vos mismo" }), { status: 400, headers });
         }
-        const { error } = await supabaseAdmin
-          .from("user_roles")
-          .delete()
-          .eq("user_id", targetUserId)
-          .eq("role", role);
+        const { error } = await supabaseAdmin.from("user_roles").delete().eq("user_id", targetUserId).eq("role", role);
         if (error) throw error;
         result = { success: true };
         break;
       }
 
       default:
-        return new Response(JSON.stringify({ error: `Acción desconocida: ${action}` }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return new Response(JSON.stringify({ error: `Acción desconocida: ${action}` }), { status: 400, headers });
     }
 
-    return new Response(JSON.stringify(result), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    logInfo("admin-action", action, { user_id: user.id });
+    return new Response(JSON.stringify(result), { headers });
 
   } catch (e) {
-    console.error("admin-action error:", e);
+    logError("admin-action", "Unhandled error", { error: String(e) });
     return new Response(
       JSON.stringify({ error: e instanceof Error ? e.message : "Error interno" }),
-      { status: 500, headers: { ...getCorsHeaders(req.headers.get("Origin")), "Content-Type": "application/json" } }
+      { status: 500, headers: jsonHeaders(origin) }
     );
   }
 });

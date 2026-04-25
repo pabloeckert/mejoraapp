@@ -47,8 +47,15 @@ export default defineConfig(({ mode }) => ({
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "@tanstack/react-query", "@tanstack/query-core"],
   },
   build: {
+    // Production optimizations
+    target: "es2020",
+    minify: "esbuild",
     rollupOptions: {
       output: {
+        // Content hash for cache busting
+        entryFileNames: "assets/[name]-[hash].js",
+        chunkFileNames: "assets/[name]-[hash].js",
+        assetFileNames: "assets/[name]-[hash].[ext]",
         manualChunks: {
           "vendor-react": ["react", "react-dom", "react-router-dom"],
           "vendor-ui": [
@@ -70,8 +77,11 @@ export default defineConfig(({ mode }) => ({
           ],
           "vendor-supabase": ["@supabase/supabase-js"],
           "vendor-query": ["@tanstack/react-query"],
+          "vendor-charts": ["recharts"],
         },
       },
     },
+    // Warn on large chunks
+    chunkSizeWarningLimit: 500,
   },
 }));

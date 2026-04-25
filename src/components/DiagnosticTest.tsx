@@ -16,7 +16,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useContentRecommendations } from "@/hooks/useContentRecommendations";
-import { exportDiagnosticPDF } from "@/lib/pdfExport";
+// Lazy-load PDF export (heavy: jsPDF ~400KB)
+const exportDiagnosticPDF = (...args: Parameters<typeof import("@/lib/pdfExport").exportDiagnosticPDF>) =>
+  import("@/lib/pdfExport").then(m => m.exportDiagnosticPDF(...args));
 import {
   trackStartDiagnostic,
   trackCompleteDiagnostic,

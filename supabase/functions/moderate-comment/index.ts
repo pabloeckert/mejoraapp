@@ -1,20 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-
-const ALLOWED_ORIGINS = ["https://app.mejoraok.com", "http://localhost:8080", "http://localhost:5173"];
-function getCorsHeaders(origin: string | null) {
-  const allowed = ALLOWED_ORIGINS.includes(origin ?? "") ? origin! : "https://app.mejoraok.com";
-  return {
-    "Access-Control-Allow-Origin": allowed,
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  };
-}
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+import { getCorsHeaders, handleCors, jsonHeaders } from "../_shared/cors.ts";
+import { logInfo, logWarn, logError } from "../_shared/log.ts";
 
 const MODERATION_PROMPT = `Sos el moderador de MejoraOK, comunidad de negocios argentina. Decidí si un comentario es apropiado.
 APROBÁS: experiencias, preguntas, consejos, reflexiones de negocio.
@@ -42,7 +29,7 @@ async function callAI(prompt: string): Promise<{ action: string; reason: string 
         const match = text.match(/\{[\s\S]*?\}/);
         if (match) return JSON.parse(match[0]);
       }
-    } catch (e) { console.warn("Gemini failed:", e); }
+    } catch (e) { logWarn("moderate-comment", "Gemini failed", { error: String(e) }); }
   }
 
   const groqKey = Deno.env.get("GROQ_API_KEY");
@@ -63,21 +50,23 @@ async function callAI(prompt: string): Promise<{ action: string; reason: string 
         const match = text.match(/\{[\s\S]*?\}/);
         if (match) return JSON.parse(match[0]);
       }
-    } catch (e) { console.warn("Groq failed:", e); }
+    } catch (e) { logWarn("moderate-comment", "Groq failed", { error: String(e) }); }
   }
 
   return null;
 }
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const corsResp = handleCors(req);
+  if (corsResp) return corsResp;
+
+  const origin = req.headers.get("Origin");
+  const headers = jsonHeaders(origin);
 
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: "No autorizado" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401, headers });
     }
 
     const supabaseUser = createClient(
@@ -88,23 +77,17 @@ serve(async (req) => {
 
     const { data: { user }, error: authError } = await supabaseUser.auth.getUser();
     if (authError || !user) {
-      return new Response(JSON.stringify({ error: "No autorizado" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401, headers });
     }
 
-    const { post_id, content } = await req.json();
-
-    if (!post_id || !content || typeof content !== "string" || content.trim().length === 0) {
-      return new Response(JSON.stringify({ error: "Datos incompletos." }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const body = await req.json().catch(() => null);
+    if (!body?.post_id || !body?.content || typeof body.content !== "string" || body.content.trim().length === 0) {
+      return new Response(JSON.stringify({ error: "Datos incompletos." }), { status: 400, headers });
     }
 
+    const { post_id, content } = body;
     if (content.length > 500) {
-      return new Response(JSON.stringify({ error: "Máximo 500 caracteres." }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(JSON.stringify({ error: "Máximo 500 caracteres." }), { status: 400, headers });
     }
 
     // Rate limit: 10 comments per minute
@@ -121,9 +104,8 @@ serve(async (req) => {
       .gte("created_at", oneMinuteAgo);
 
     if ((count || 0) >= 10) {
-      return new Response(JSON.stringify({ error: "Máximo 10 comentarios por minuto." }), {
-        status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      logWarn("moderate-comment", "Rate limit hit", { user_id: user.id });
+      return new Response(JSON.stringify({ error: "Máximo 10 comentarios por minuto." }), { status: 429, headers });
     }
 
     // AI moderation
@@ -144,33 +126,32 @@ serve(async (req) => {
       .single();
 
     if (insertError) {
-      console.error("Insert error:", insertError);
+      logError("moderate-comment", "Insert failed", { error: insertError.message });
       throw new Error("Error al publicar comentario");
     }
 
-    // Log moderation
+    // Log moderation (fire-and-forget)
     if (comment) {
-      await supabaseAdmin.from("moderation_comments_log").insert({
+      supabaseAdmin.from("moderation_comments_log").insert({
         comment_id: comment.id, action: modAction, reason: modReason,
-      });
+      }).then(() => {}).catch(() => {});
     }
+
+    logInfo("moderate-comment", "Comment created", { comment_id: comment?.id, status: modAction, user_id: user.id });
 
     if (modAction === "rejected") {
       return new Response(
         JSON.stringify({ success: false, rejected: true, reason: "Tu comentario no cumple con las normas." }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers }
       );
     }
 
-    return new Response(
-      JSON.stringify({ success: true, comment }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ success: true, comment }), { headers });
   } catch (e) {
-    console.error("moderate-comment error:", e);
+    logError("moderate-comment", "Unhandled error", { error: String(e) });
     return new Response(
       JSON.stringify({ error: e instanceof Error ? e.message : "Error desconocido" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: jsonHeaders(origin) }
     );
   }
 });

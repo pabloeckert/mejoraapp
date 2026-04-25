@@ -1,20 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-
-const ALLOWED_ORIGINS = ["https://app.mejoraok.com", "http://localhost:8080", "http://localhost:5173"];
-function getCorsHeaders(origin: string | null) {
-  const allowed = ALLOWED_ORIGINS.includes(origin ?? "") ? origin! : "https://app.mejoraok.com";
-  return {
-    "Access-Control-Allow-Origin": allowed,
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  };
-}
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+import { getCorsHeaders, handleCors, jsonHeaders } from "../_shared/cors.ts";
+import { logInfo, logWarn, logError } from "../_shared/log.ts";
 
 const MODERATION_PROMPT = `Sos el moderador de MejoraOK, una comunidad de negocios argentina. Tu trabajo es decidir si un post anónimo del muro es apropiado o no.
 
@@ -60,7 +47,7 @@ async function callAI(prompt: string): Promise<{ action: string; reason: string 
         if (match) return JSON.parse(match[0]);
       }
     } catch (e) {
-      console.warn("Gemini failed:", e);
+      logWarn("moderate-post", "Gemini failed, trying fallback", { error: String(e) });
     }
   }
 
@@ -88,7 +75,7 @@ async function callAI(prompt: string): Promise<{ action: string; reason: string 
         if (match) return JSON.parse(match[0]);
       }
     } catch (e) {
-      console.warn("Groq failed:", e);
+      logWarn("moderate-post", "Groq failed, trying fallback", { error: String(e) });
     }
   }
 
@@ -116,7 +103,7 @@ async function callAI(prompt: string): Promise<{ action: string; reason: string 
         if (match) return JSON.parse(match[0]);
       }
     } catch (e) {
-      console.warn("OpenRouter failed:", e);
+      logWarn("moderate-post", "OpenRouter failed", { error: String(e) });
     }
   }
 
@@ -124,15 +111,16 @@ async function callAI(prompt: string): Promise<{ action: string; reason: string 
 }
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const corsResp = handleCors(req);
+  if (corsResp) return corsResp;
+
+  const origin = req.headers.get("Origin");
+  const headers = jsonHeaders(origin);
 
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: "No autorizado" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401, headers });
     }
 
     const supabaseUser = createClient(
@@ -143,26 +131,17 @@ serve(async (req) => {
 
     const { data: { user }, error: authError } = await supabaseUser.auth.getUser();
     if (authError || !user) {
-      return new Response(JSON.stringify({ error: "No autorizado" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401, headers });
     }
 
-    const { content } = await req.json();
-
-    if (!content || typeof content !== "string" || content.trim().length === 0) {
-      return new Response(JSON.stringify({ error: "El contenido no puede estar vacío." }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const body = await req.json().catch(() => null);
+    if (!body?.content || typeof body.content !== "string" || body.content.trim().length === 0) {
+      return new Response(JSON.stringify({ error: "El contenido no puede estar vacío." }), { status: 400, headers });
     }
 
+    const content = body.content as string;
     if (content.length > 1000) {
-      return new Response(JSON.stringify({ error: "El contenido no puede superar los 1000 caracteres." }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(JSON.stringify({ error: "El contenido no puede superar los 1000 caracteres." }), { status: 400, headers });
     }
 
     // Rate limit: max 3 posts per minute per user
@@ -179,10 +158,8 @@ serve(async (req) => {
       .gte("created_at", oneMinuteAgo);
 
     if ((count || 0) >= 3) {
-      return new Response(JSON.stringify({ error: "Máximo 3 posts por minuto. Esperá un momento." }), {
-        status: 429,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      logWarn("moderate-post", "Rate limit hit", { user_id: user.id });
+      return new Response(JSON.stringify({ error: "Máximo 3 posts por minuto. Esperá un momento." }), { status: 429, headers });
     }
 
     // AI moderation
@@ -198,46 +175,35 @@ serve(async (req) => {
     // Insert post with service_role (bypasses RLS)
     const { data: post, error: insertError } = await supabaseAdmin
       .from("wall_posts")
-      .insert({
-        user_id: user.id,
-        content: content.trim(),
-        status: modAction,
-      })
+      .insert({ user_id: user.id, content: content.trim(), status: modAction })
       .select("id, status")
       .single();
 
     if (insertError) {
-      console.error("Insert error:", insertError);
+      logError("moderate-post", "Insert failed", { error: insertError.message });
       throw new Error("Error al publicar");
     }
 
-    // Log moderation
-    await supabaseAdmin.from("moderation_log").insert({
-      post_id: post.id,
-      action: modAction,
-      reason: modReason,
-    });
+    // Log moderation (fire-and-forget)
+    supabaseAdmin.from("moderation_log").insert({
+      post_id: post.id, action: modAction, reason: modReason,
+    }).then(() => {}).catch(() => {});
+
+    logInfo("moderate-post", "Post created", { post_id: post.id, status: modAction, user_id: user.id });
 
     if (modAction === "rejected") {
       return new Response(
-        JSON.stringify({
-          success: false,
-          rejected: true,
-          reason: "Tu post no pudo ser publicado porque no cumple con las normas de la comunidad.",
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ success: false, rejected: true, reason: "Tu post no pudo ser publicado porque no cumple con las normas de la comunidad." }),
+        { headers }
       );
     }
 
-    return new Response(
-      JSON.stringify({ success: true, post_id: post.id }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ success: true, post_id: post.id }), { headers });
   } catch (e) {
-    console.error("moderate-post error:", e);
+    logError("moderate-post", "Unhandled error", { error: String(e) });
     return new Response(
       JSON.stringify({ error: e instanceof Error ? e.message : "Error desconocido" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: jsonHeaders(origin) }
     );
   }
 });

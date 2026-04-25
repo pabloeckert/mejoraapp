@@ -1,20 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-
-const ALLOWED_ORIGINS = ["https://app.mejoraok.com", "http://localhost:8080", "http://localhost:5173"];
-function getCorsHeaders(origin: string | null) {
-  const allowed = ALLOWED_ORIGINS.includes(origin ?? "") ? origin! : "https://app.mejoraok.com";
-  return {
-    "Access-Control-Allow-Origin": allowed,
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  };
-}
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+import { handleCors, jsonHeaders } from "../_shared/cors.ts";
+import { logInfo, logError } from "../_shared/log.ts";
 
 const SYSTEM_PROMPT = `Sos la voz de Mejora Continua, una comunidad de negocios argentina. Tu comunicación es:
 - DIRECTA: Vas al punto sin preámbulos.
@@ -76,18 +63,20 @@ async function callAI(systemPrompt: string, userPrompt: string): Promise<string>
     }
   }
 
-  throw new Error("No hay proveedores de IA configurados. Configurá GEMINI_API_KEY o GROQ_API_KEY en los secrets de Supabase.");
+  throw new Error("No hay proveedores de IA configurados.");
 }
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const corsResp = handleCors(req);
+  if (corsResp) return corsResp;
+
+  const origin = req.headers.get("Origin");
+  const headers = jsonHeaders(origin);
 
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: "No autorizado" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401, headers });
     }
 
     const supabase = createClient(
@@ -98,12 +87,12 @@ serve(async (req) => {
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      return new Response(JSON.stringify({ error: "No autorizado" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401, headers });
     }
 
-    const { category, guidelines } = await req.json().catch(() => ({ category: "tip", guidelines: "" }));
+    const body = await req.json().catch(() => ({}));
+    const category = typeof body.category === "string" ? body.category : "tip";
+    const guidelines = typeof body.guidelines === "string" ? body.guidelines : "";
 
     const promptType = CATEGORY_PROMPTS[category] || CATEGORY_PROMPTS.tip;
     const guidelinesBlock = guidelines ? `\n\nLineamientos del administrador: ${guidelines}` : "";
@@ -121,14 +110,14 @@ serve(async (req) => {
       result = { titulo: "Contenido generado", contenido: aiResponse, resumen: aiResponse.slice(0, 120) };
     }
 
-    return new Response(JSON.stringify(result), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    logInfo("generate-content", "Content generated", { category, user_id: user.id });
+
+    return new Response(JSON.stringify(result), { headers });
   } catch (e) {
-    console.error("generate-content error:", e);
+    logError("generate-content", "Unhandled error", { error: String(e) });
     return new Response(
       JSON.stringify({ error: e instanceof Error ? e.message : "Error desconocido" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: jsonHeaders(origin) }
     );
   }
 });

@@ -1,19 +1,7 @@
-/**
- * Edge Function: send-push-notification
- *
- * Sends Web Push notifications to subscribed users.
- * Requires: web-push library (Deno compatible)
- *
- * Actions:
- *  - new_post: Notify all subscribers (except author) about a new muro post
- *  - reply: Notify post author about a new comment
- *  - new_novedad: Notify all subscribers about a new novedad
- *
- * Called from: database webhooks or admin-action
- */
-
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { handleCors, jsonHeaders } from "../_shared/cors.ts";
+import { logInfo, logWarn, logError } from "../_shared/log.ts";
 import {
   ApplicationServerKey,
   PushSubscription,
@@ -38,7 +26,9 @@ interface NotificationPayload {
 }
 
 serve(async (req) => {
-  // Only POST
+  const corsResp = handleCors(req);
+  if (corsResp) return corsResp;
+
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
   }
@@ -47,13 +37,13 @@ serve(async (req) => {
     return new Response("VAPID keys not configured", { status: 500 });
   }
 
+  const origin = req.headers.get("Origin");
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
     const payload: NotificationPayload = await req.json();
     const { action, title, body, url, tag, exclude_user_id, target_user_id } = payload;
 
-    // Build notification based on action
     let notifTitle = title || "MejoraApp";
     let notifBody = body || "";
     let notifUrl = url || "/";
@@ -80,9 +70,7 @@ serve(async (req) => {
         break;
     }
 
-    // Get subscriptions
     let query = supabase.from("push_subscriptions").select("*");
-
     if (target_user_id) {
       query = query.eq("user_id", target_user_id);
     } else if (exclude_user_id) {
@@ -90,19 +78,17 @@ serve(async (req) => {
     }
 
     const { data: subscriptions, error } = await query;
-
     if (error) {
-      console.error("Error fetching subscriptions:", error);
+      logError("send-push", "DB error", { error: error.message });
       return new Response("Error fetching subscriptions", { status: 500 });
     }
 
     if (!subscriptions || subscriptions.length === 0) {
       return new Response(JSON.stringify({ sent: 0, message: "No subscriptions" }), {
-        headers: { "Content-Type": "application/json" },
+        headers: jsonHeaders(origin),
       });
     }
 
-    // Send push to all subscriptions
     const vapidKeys = new ApplicationServerKey({
       publicKey: VAPID_PUBLIC_KEY,
       privateKey: VAPID_PRIVATE_KEY,
@@ -115,35 +101,30 @@ serve(async (req) => {
     for (const sub of subscriptions) {
       const pushSub: PushSubscription = {
         endpoint: sub.endpoint,
-        keys: {
-          p256dh: sub.keys_p256dh,
-          auth: sub.keys_auth,
-        },
+        keys: { p256dh: sub.keys_p256dh, auth: sub.keys_auth },
       };
 
       try {
         await sendNotification(pushSub, JSON.stringify({
-          title: notifTitle,
-          body: notifBody,
-          url: notifUrl,
-          tag: notifTag,
+          title: notifTitle, body: notifBody, url: notifUrl, tag: notifTag,
         }), { vapidKeys });
         sent++;
       } catch (err) {
-        console.error(`Push failed for ${sub.user_id}:`, err);
         failed++;
-        // Clean up invalid subscriptions (410 Gone)
-        if (err.message?.includes("410") || err.message?.includes("expired")) {
+        logWarn("send-push", "Push failed", { user_id: sub.user_id, error: String(err) });
+        if (err instanceof Error && (err.message.includes("410") || err.message.includes("expired"))) {
           await supabase.from("push_subscriptions").delete().eq("id", sub.id);
         }
       }
     }
 
+    logInfo("send-push", "Push batch complete", { action, sent, failed, total: subscriptions.length });
+
     return new Response(JSON.stringify({ sent, failed, total: subscriptions.length }), {
-      headers: { "Content-Type": "application/json" },
+      headers: jsonHeaders(origin),
     });
   } catch (err) {
-    console.error("send-push-notification error:", err);
+    logError("send-push", "Unhandled error", { error: String(err) });
     return new Response("Internal server error", { status: 500 });
   }
 });
