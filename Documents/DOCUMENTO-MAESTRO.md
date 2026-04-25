@@ -4,7 +4,7 @@
 > **Stack:** React 18 · TypeScript · Vite 5 · Supabase · Tailwind CSS · shadcn/ui
 > **Producción:** https://app.mejoraok.com
 > **Repo:** https://github.com/pabloeckert/MejoraApp
-> **Última actualización:** 2026-04-25 (sesión Claude — análisis integral + plan optimizado + deploy)
+> **Última actualización:** 2026-04-26 (sesión — consolidación documentación total)
 
 ---
 
@@ -721,6 +721,7 @@ VITE_VAPID_PUBLIC_KEY=tu-clave-publica
 | 2026-04-26 | Fix Realtime channel collision | **Bug crítico en producción:** `cannot add postgres_changes callbacks for realtime:user_badges_changes after subscribe()`. Causa: canales Realtime con nombre fijo colisionaban al re-ejecutar effects. Fix: nombres únicos por userId (`user_badges_{id}`, `wall_realtime_{id}`). **Deploy FTP:** GitHub Actions falló por timeout FTP Hostinger. Deploy manual via FileZilla pendiente (usuario en Windows). Commit `943bf42` en main. |
 | 2026-04-26 | Optimización plan + consolidación docs | **Plan reestructurado:** E7→Deploy inmediato, E8→Crecimiento, E9→Técnico, E10→App Nativa, E11→Compliance. **Docs consolidados:** CLEAN_SETUP.sql + SECURITY_HARDENING.sql movidos a Documents/. Regla: todo文档 vive en Documents/. Deploy FTP automático via GitHub Actions verificado. |
 | 2026-04-25 | Análisis integral + plan optimizado + push | **Revisión completa del repo:** arquitectura, workflows CI/CD, feature flags, migraciones. **DOCUMENTO-MAESTRO actualizado** (protocolo documentar clarificado). **Plan E7-E11 confirmado y priorizado.** Push a main → deploy automático vía GitHub Actions a app.mejoraok.com. |
+| 2026-04-26 | Consolidación documentación total | **Documentación unificada:** GUIA-VAPID-KEYS.md integrada como §13 en DOCUMENTO-MAESTRO.md y eliminada como archivo separado. README.md simplificado a puntero → Documents/DOCUMENTO-MAESTRO.md. Secciones renumeradas (14→18). Deploy verificado: run #110 exitoso (commit `7c04102`), app.mejoraok.com HTTP 200. GitHub Secrets FTP confirmados funcionando. Push `0355cca` → deploy automático. |
 
 ---
 
@@ -737,7 +738,7 @@ VITE_VAPID_PUBLIC_KEY=tu-clave-publica
 | 7 | Ejecutar migración onboarding_emails | 🔴 Pendiente | SQL en `supabase/migrations/20260426000000_onboarding_emails.sql`. Ejecutar en Supabase SQL Editor. |
 | 8 | Desplegar EF send-onboarding-email | 🔴 Pendiente | `supabase functions deploy send-onboarding-email`. Requiere `RESEND_API_KEY` en Supabase Secrets. |
 | 9 | Configurar cron onboarding emails | 🔴 Pendiente | Invocar `send-onboarding-email` cada 6-12h via pg_cron o externo. Depende de #7 y #8. |
-| 10 | Verificar GitHub Secrets FTP | 🔴 Crítico | Sin `FTP_HOST`, `FTP_USERNAME`, `FTP_PASSWORD` en GitHub Secrets → deploy automático falla. Verificar en repo Settings → Secrets and variables → Actions. |
+| 10 | Verificar GitHub Secrets FTP | ✅ Confirmado | Deploy automático verificado exitoso (run #110, 2026-04-26). Secrets `FTP_HOST`, `FTP_USERNAME`, `FTP_PASSWORD` configurados correctamente. |
 | 11 | Migrar hosting a Vercel | 🟡 Recomendado | FTP Hostinger tiene timeouts en Actions. Vercel → deploy más rápido, CDN global, SSL automático, zero config. |
 
 ---
@@ -755,7 +756,7 @@ VITE_VAPID_PUBLIC_KEY=tu-clave-publica
 
 | # | Tarea | Estado | Acción requerida |
 |---|-------|--------|------------------|
-| 7.1 | Fix Realtime channel collision | ✅ En main | Pendiente verificar que GitHub Actions deploy se ejecutó correctamente |
+| 7.1 | Fix Realtime channel collision | ✅ Verificado | Deploy run #110 exitoso. App en producción HTTP 200. |
 | 7.2 | Onboarding emails — migración SQL | ✅ SQL listo | Ejecutar `20260426000000_onboarding_emails.sql` en Supabase SQL Editor |
 | 7.3 | Onboarding emails — Edge Function | ✅ EF lista | `supabase functions deploy send-onboarding-email` + `RESEND_API_KEY` en Secrets |
 | 7.4 | Onboarding emails — cron | ⏳ Espera 7.2+7.3 | Configurar invocación cada 6-12h (pg_cron o externo) |
