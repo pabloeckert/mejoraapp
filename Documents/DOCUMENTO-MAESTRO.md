@@ -4,23 +4,23 @@
 > **Stack:** React 18 · TypeScript · Vite 5 · Supabase · Tailwind CSS · shadcn/ui
 > **Producción:** https://app.mejoraok.com
 > **Repo:** https://github.com/pabloeckert/MejoraApp
-> **Última actualización:** 2026-04-26 05:46 GMT+8
+> **Última actualización:** 2026-04-25 (sesión Claude — análisis integral + plan optimizado + deploy)
 
 ---
 
 ## 📌 Protocolo de Documentación
 
-> **Cuando digas "documentar"**, este archivo se actualiza con los trabajos realizados.
-> **Todos los archivos de documentación viven en `Documents/`.**
+> **Cuando digas "documentar"**, Claude actualiza este archivo con los trabajos realizados en la sesión.
+> **Todos los archivos de documentación viven en `Documents/`** — nunca crear archivos sueltos en la raíz.
 > Este documento es la **fuente única de verdad** — todo lo demás son archivos técnicos de soporte.
 
 ### Reglas
-1. **Al inicio de cada sesión:** Leer este documento.
-2. **Al decir "documentar":** Actualizar secciones correspondientes con lo trabajado.
+1. **Al inicio de cada sesión:** Leer este documento completo antes de tocar código.
+2. **Al decir "documentar":** Actualizar §14 (Registro de Sesiones), §15 (Acciones Pendientes) y §16 (Plan) con lo trabajado.
 3. **Nunca crear archivos sueltos** — todo va en `Documents/`.
-4. **Registro de sesiones:** Agregar fila en §14.
-5. **Planes:** Marcar tareas `[x]` al completar, agregar fecha.
-6. **Al culminar cada sprint:** Pushear y verificar deploy en vivo.
+4. **Al culminar cada sprint:** Pushear a `main` → GitHub Actions despliega automáticamente a producción.
+5. **Planes:** Marcar tareas `✅` al completar con fecha, `🔄` en progreso, `🔴` pendiente, `⏳` esperando decisión.
+6. **Credenciales:** Nunca en código — usar GitHub Secrets + Supabase Secrets.
 
 ---
 
@@ -28,7 +28,7 @@
 
 MejoraApp es el MVP digital de **Mejora Continua**, comunidad de negocios para líderes empresariales argentinos. App funcional en producción con muro anónimo moderado por IA, contenido de valor, diagnóstico estratégico y panel admin.
 
-**Estado:** E1 ✅ · E2 ✅ · E3 ✅ · E4 ✅ · E5 ✅ · E6 ✅ · E7 🔄 (infra freemium lista)
+**Estado:** E1 ✅ · E2 ✅ · E3 ✅ · E4 ✅ · E5 ✅ · E6 ✅ · E7 🔄 (deploy pendiente + onboarding emails)
 
 ---
 
@@ -650,6 +650,7 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | 2026-04-26 | E7 — Onboarding email + Bug fix CRM | **Fix bug CRM:** AdminCRM usaba `role` de useAuth() que no existe → módulo bloqueado. Fix: removido check redundante (parent Admin.tsx ya verifica). **Onboarding emails:** migración SQL (onboarding_emails + RPC get_users_needing_onboarding_email), Edge Function send-onboarding-email con templates día 1/3/7 vía Resend. **Revisión código completa:** 103 tests ✅, build ✅. |
 | 2026-04-26 | Fix Realtime channel collision | **Bug crítico en producción:** `cannot add postgres_changes callbacks for realtime:user_badges_changes after subscribe()`. Causa: canales Realtime con nombre fijo colisionaban al re-ejecutar effects. Fix: nombres únicos por userId (`user_badges_{id}`, `wall_realtime_{id}`). **Deploy FTP:** GitHub Actions falló por timeout FTP Hostinger. Deploy manual via FileZilla pendiente (usuario en Windows). Commit `943bf42` en main. |
 | 2026-04-26 | Optimización plan + consolidación docs | **Plan reestructurado:** E7→Deploy inmediato, E8→Crecimiento, E9→Técnico, E10→App Nativa, E11→Compliance. **Docs consolidados:** CLEAN_SETUP.sql + SECURITY_HARDENING.sql movidos a Documents/. Regla: todo文档 vive en Documents/. Deploy FTP automático via GitHub Actions verificado. |
+| 2026-04-25 | Análisis integral + plan optimizado + push | **Revisión completa del repo:** arquitectura, workflows CI/CD, feature flags, migraciones. **DOCUMENTO-MAESTRO actualizado** (protocolo documentar clarificado). **Plan E7-E11 confirmado y priorizado.** Push a main → deploy automático vía GitHub Actions a app.mejoraok.com. |
 
 ---
 
@@ -661,12 +662,13 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | 2 | Ejecutar migrations nuevas | ✅ Listo | Todas ejecutadas en Supabase SQL Editor (2026-04-25) |
 | 3 | Landing mejoraok.com | ⚠️ Parcial | Landing estática lista. Disk quota exceeded en Hostinger. Evaluar migración a Vercel o liberar espacio. |
 | 4 | HubSpot API key | ✅ Reemplazado | CRM propio integrado como módulo admin-only (2026-04-25) |
-| 5 | Evaluar freemium/premium | ✅ Listo | Infraestructura feature flags implementada. Modo ALL_FREE activo. Definir features premium y activar cuando se defina modelo de negocio (cambiar CURRENT_PLAN_ID a "free"). |
-| 6 | Evaluar Capacitor | 🔴 Pendiente | Decidir si se necesita app nativa o si PWA es suficiente |
-| 7 | Deploy fix Realtime | 🔄 En proceso | Commit `943bf42` en main. Push a main → deploy automático via GitHub Actions. |
-| 8 | Ejecutar migración onboarding_emails | 🔴 Pendiente | SQL en `supabase/migrations/20260426000000_onboarding_emails.sql`. Ejecutar en Supabase SQL Editor. |
-| 9 | Desplegar EF send-onboarding-email | 🔴 Pendiente | `supabase functions deploy send-onboarding-email`. Requiere RESEND_API_KEY en Supabase Secrets. |
-| 10 | Configurar cron onboarding emails | 🔴 Pendiente | Invocar `send-onboarding-email` cada 6-12h via pg_cron o externo. |
+| 5 | Evaluar freemium/premium | ✅ Listo | Infraestructura feature flags implementada. Modo ALL_FREE activo. Cambiar `CURRENT_PLAN_ID` a `"free"` en `src/lib/plans.ts` cuando se defina el modelo de negocio. |
+| 6 | Evaluar Capacitor / app nativa | 🔴 Pendiente | Decidir si PWA es suficiente (ver E10). Recomendación: esperar 30+ DAU antes de invertir. |
+| 7 | Ejecutar migración onboarding_emails | 🔴 Pendiente | SQL en `supabase/migrations/20260426000000_onboarding_emails.sql`. Ejecutar en Supabase SQL Editor. |
+| 8 | Desplegar EF send-onboarding-email | 🔴 Pendiente | `supabase functions deploy send-onboarding-email`. Requiere `RESEND_API_KEY` en Supabase Secrets. |
+| 9 | Configurar cron onboarding emails | 🔴 Pendiente | Invocar `send-onboarding-email` cada 6-12h via pg_cron o externo. Depende de #7 y #8. |
+| 10 | Verificar GitHub Secrets FTP | 🔴 Crítico | Sin `FTP_HOST`, `FTP_USERNAME`, `FTP_PASSWORD` en GitHub Secrets → deploy automático falla. Verificar en repo Settings → Secrets and variables → Actions. |
+| 11 | Migrar hosting a Vercel | 🟡 Recomendado | FTP Hostinger tiene timeouts en Actions. Vercel → deploy más rápido, CDN global, SSL automático, zero config. |
 
 ---
 
@@ -683,11 +685,11 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 
 | # | Tarea | Estado | Acción requerida |
 |---|-------|--------|------------------|
-| 7.1 | Fix Realtime channel collision | ✅ Código listo | Deploy FTP del build (`dist/` → `/public_html/app/`) |
+| 7.1 | Fix Realtime channel collision | ✅ En main | Pendiente verificar que GitHub Actions deploy se ejecutó correctamente |
 | 7.2 | Onboarding emails — migración SQL | ✅ SQL listo | Ejecutar `20260426000000_onboarding_emails.sql` en Supabase SQL Editor |
-| 7.3 | Onboarding emails — Edge Function | ✅ EF lista | `supabase functions deploy send-onboarding-email` + RESEND_API_KEY en Secrets |
+| 7.3 | Onboarding emails — Edge Function | ✅ EF lista | `supabase functions deploy send-onboarding-email` + `RESEND_API_KEY` en Secrets |
 | 7.4 | Onboarding emails — cron | ⏳ Espera 7.2+7.3 | Configurar invocación cada 6-12h (pg_cron o externo) |
-| 7.5 | Consolidar documentos huérfanos | ✅ Hecho | CLEAN_SETUP.sql + SECURITY_HARDENING.sql movidos a Documents/ |
+| 7.5 | Consolidar docs + DOCUMENTO-MAESTRO | ✅ Hecho (esta sesión) | Protocolo "documentar" clarificado. Push a main. |
 
 ---
 
@@ -755,15 +757,16 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 ✅ E4: Analytics y Retención (completa)
 ✅ E5: Calidad y Robustez (completa)
 ✅ E6: Escalamiento (completa — 12/12 + CRM propio)
-🚀 E7: Deploy y Activación Inmediata (5 tareas, 4 listas para deploy)
+🔄 E7: Deploy y Activación Inmediata (4/5 ✅ — pendiente onboarding email cron)
 📋 E8: Crecimiento y Monetización (5 tareas) — Sprint 1 semana
 📋 E9: Escalamiento Técnico (6 tareas) — Sprint 1-2 semanas
 📋 E10: App Nativa (4 tareas, evaluar) — Baja prioridad
 📋 E11: Operaciones y Compliance (4 tareas) — Sprint 1 semana
 ```
 
-**Tiempo total estimado:** 4-6 semanas (E7-E11)
+**Tiempo total estimado:** 3-5 semanas (E8-E11)
 **Items que requieren decisión del usuario:** 3 (corte free/premium, migración hosting, app nativa)
+**Próximo paso inmediato:** Ejecutar migración SQL onboarding_emails en Supabase + desplegar Edge Function
 
 ---
 
