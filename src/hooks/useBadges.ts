@@ -3,9 +3,12 @@
  *
  * Fetches badges from user_badges table.
  * Returns earned badges and all badge definitions.
+ *
+ * Uses a module-level channel cache to prevent duplicate Realtime
+ * subscriptions when multiple components use this hook with the same userId.
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { BADGES, BadgeDefinition, getBadgeBySlug } from "@/data/badges";
 
@@ -18,9 +21,41 @@ export interface EarnedBadge extends BadgeDefinition {
   earned_at: string;
 }
 
+// Module-level channel cache — shared across all hook instances
+const channelCache = new Map<
+  string,
+  { channel: ReturnType<typeof supabase.channel>; refCount: number }
+>();
+
+function getOrCreateChannel(userId: string) {
+  const key = `user_badges_${userId}`;
+  const cached = channelCache.get(key);
+  if (cached) {
+    cached.refCount++;
+    return cached.channel;
+  }
+  const channel = supabase.channel(key);
+  channelCache.set(key, { channel, refCount: 1 });
+  return channel;
+}
+
+function releaseChannel(userId: string) {
+  const key = `user_badges_${userId}`;
+  const cached = channelCache.get(key);
+  if (!cached) return;
+  cached.refCount--;
+  if (cached.refCount <= 0) {
+    supabase.removeChannel(cached.channel);
+    channelCache.delete(key);
+  }
+}
+
 export function useBadges(userId: string | undefined) {
   const [earnedBadges, setEarnedBadges] = useState<EarnedBadge[]>([]);
   const [loading, setLoading] = useState(true);
+  const callbackRef = useRef<((payload: { new: UserBadge }) => void) | null>(
+    null
+  );
 
   useEffect(() => {
     if (!userId) {
@@ -55,17 +90,28 @@ export function useBadges(userId: string | undefined) {
 
     fetchBadges();
 
-    // Realtime: subscribe to new badges
-    // Channel name must be unique per user to avoid conflicts on re-subscribe
-    const channelName = `user_badges_${userId}`;
+    // Store callback so we can update badges without re-subscribing
+    callbackRef.current = (payload: { new: UserBadge }) => {
+      const row = payload.new;
+      const def = getBadgeBySlug(row.badge_slug);
+      if (def) {
+        setEarnedBadges((prev) => {
+          if (prev.some((b) => b.slug === row.badge_slug)) return prev;
+          return [...prev, { ...def, earned_at: row.earned_at }];
+        });
+      }
+    };
 
-    // Remove any stale channel with the same name before creating a new one
-    const existing = supabase.getChannels().find((c) => c.topic === channelName);
-    if (existing) supabase.removeChannel(existing);
+    // Get or create a shared channel — never creates duplicates
+    const channel = getOrCreateChannel(userId);
 
-    const channel = supabase
-      .channel(channelName)
-      .on(
+    // Only attach handlers + subscribe if the channel isn't already subscribed
+    const channelState = channel.state;
+    if (channelState === "joined" || channelState === "joining") {
+      // Channel already subscribed by another hook instance — just reuse it
+      // The callback will be picked up via callbackRef
+    } else {
+      channel.on(
         "postgres_changes",
         {
           event: "INSERT",
@@ -74,20 +120,14 @@ export function useBadges(userId: string | undefined) {
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
-          const row = payload.new as UserBadge;
-          const def = getBadgeBySlug(row.badge_slug);
-          if (def) {
-            setEarnedBadges((prev) => {
-              if (prev.some((b) => b.slug === row.badge_slug)) return prev;
-              return [...prev, { ...def, earned_at: row.earned_at }];
-            });
-          }
+          callbackRef.current?.(payload as { new: UserBadge });
         }
-      )
-      .subscribe();
+      );
+      channel.subscribe();
+    }
 
     return () => {
-      supabase.removeChannel(channel);
+      releaseChannel(userId);
     };
   }, [userId]);
 
