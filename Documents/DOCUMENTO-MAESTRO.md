@@ -4,7 +4,7 @@
 > **Stack:** React 18 · TypeScript · Vite 5 · Supabase · Tailwind CSS · shadcn/ui
 > **Producción:** https://app.mejoraok.com
 > **Repo:** https://github.com/pabloeckert/MejoraApp
-> **Última actualización:** 2026-04-26 (sesión — GitHub Pages + fix Realtime definitivo + migración gamificación)
+> **Última actualización:** 2026-04-26 (sesión — Login UI + renombre Mirror + admin setup)
 
 ---
 
@@ -723,6 +723,7 @@ VITE_VAPID_PUBLIC_KEY=tu-clave-publica
 | 2026-04-25 | Análisis integral + plan optimizado + push | **Revisión completa del repo:** arquitectura, workflows CI/CD, feature flags, migraciones. **DOCUMENTO-MAESTRO actualizado** (protocolo documentar clarificado). **Plan E7-E11 confirmado y priorizado.** Push a main → deploy automático vía GitHub Actions a app.mejoraok.com. |
 | 2026-04-26 | Consolidación documentación total | **Documentación unificada:** GUIA-VAPID-KEYS.md integrada como §13 en DOCUMENTO-MAESTRO.md y eliminada como archivo separado. README.md simplificado a puntero → Documents/DOCUMENTO-MAESTRO.md. Secciones renumeradas (14→18). Deploy verificado: run #110 exitoso (commit `7c04102`), app.mejoraok.com HTTP 200. GitHub Secrets FTP confirmados funcionando. Push `0355cca` → deploy automático. |
 | 2026-04-26 | GitHub Pages + Fix Realtime + Migración gamificación | **GitHub Pages:** workflow `github-pages.yml` creado. Base path condicional en `vite.config.ts` (`GITHUB_PAGES=true` → `/MejoraApp/`). `BrowserRouter` con `basename` dinámico via `import.meta.env.BASE_URL`. Deploy exitoso → `https://pabloeckert.github.io/MejoraApp/`. **Migración gamificación ejecutada vía API:** tablas `user_badges` y `community_ranking` creadas en Supabase (antes daban 404). **Fix Realtime channel collision (3 intentos):** 1) cleanup de canales stale antes de subscribe (no alcanzó — dos componentes con mismo userId creaban canales duplicados). 2) module-level channel cache con `refCount` (falló por `channel.state` check insuficiente). 3) Fix definitivo: `isNew` flag — segunda instancia de `useBadges` para mismo userId salta subscribe completamente. Commits `0521bd7` → `bf61eb4` → `087f5c9`. **Deploys:** Hostinger #115-#117, GitHub Pages #3-#5, todos exitosos. **Configuración GitHub Secrets:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID` configurados via API. |
+| 2026-04-26 | Login UI + renombre Mirror + admin setup | **Login:** Quitado texto "Accede a MejoraApp" y "Comunidad de Negocios" — solo logo de Mejora Continua. **AdminLoginForm:** Rediseñado para seguir mismo estilo que LoginForm de usuario (mismos campos, botón, toggle mostrar/ocultar). Agregado "¿Olvidaste tu contraseña?" al login admin. **ResetPassword:** Agregado toggle mostrar/ocultar contraseña (ícono 👁️). **Sección Diagnóstico → Mirror:** Renombrado en BottomNav, DiagnosticTest (intro, botones, historial, loading, resultado, WhatsApp msg, toast PDF) e i18n. **Admin setup:** Recovery email actualizado a `pabloeckert@gmail.com` en CLEAN_SETUP.sql. Admin emails: `mejoraok@gmail.com`, `pabloeckert@gmail.com`, `sindygeisert@gmail.com`. SQL para asignar rol admin proporcionado. 8 commits, deploys automáticos a app.mejoraok.com. |
 
 ---
 
