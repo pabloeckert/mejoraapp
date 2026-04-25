@@ -19,6 +19,7 @@ import { useContentRecommendations } from "@/hooks/useContentRecommendations";
 // Lazy-load PDF export (heavy: jsPDF ~400KB)
 const exportDiagnosticPDF = (...args: Parameters<typeof import("@/lib/pdfExport").exportDiagnosticPDF>) =>
   import("@/lib/pdfExport").then(m => m.exportDiagnosticPDF(...args));
+import { FeatureGate } from "@/components/FeatureGate";
 import {
   trackStartDiagnostic,
   trackCompleteDiagnostic,
@@ -221,7 +222,7 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
             {history.length > 0 ? "Hacerlo de nuevo →" : "Empezar diagnóstico →"}
           </Button>
 
-          {history.length > 0 && (
+          <FeatureGate feature="diagnostic_history" variant="inline">
             <div className="mt-6 pt-4 border-t border-border text-left">
               <h3 className="text-caption font-bold tracking-widest text-muted-foreground uppercase mb-3">
                 Tus diagnósticos anteriores
@@ -255,7 +256,7 @@ const DiagnosticTest = ({ onComplete }: { onComplete: () => void }) => {
                 })}
               </div>
             </div>
-          )}
+          </FeatureGate>
         </div>
       </div>
     );
@@ -492,62 +493,74 @@ const DiagnosticResultView = ({
       </div>
 
       {/* Recomendaciones de contenido */}
-      <div className="space-y-2">
-        <h3 className="text-caption font-bold tracking-widest text-muted-foreground uppercase flex items-center gap-1.5">
-          <Lightbulb className="w-3.5 h-3.5" />
-          Contenido recomendado para tu perfil
-        </h3>
-        {loadingRecs ? (
-          <div className="space-y-2">
-            {[1, 2].map((i) => (
-              <Skeleton key={i} className="h-16 w-full rounded-lg" />
-            ))}
-          </div>
-        ) : recommendations.length > 0 ? (
-          <div className="space-y-2">
-            {recommendations.map((rec) => (
-              <Card
-                key={rec.id}
-                className="hover:shadow-sm transition-shadow cursor-pointer"
-                onClick={() => {
-                  trackContentRecommendationClick(rec.id, perfil);
-                  onComplete(); // Navigate to content tab
-                }}
-              >
-                <CardContent className="p-3 flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                    <BookOpen className="w-4 h-4 text-primary" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold text-foreground line-clamp-1">
-                      {rec.titulo}
-                    </p>
-                    <p className="text-caption text-muted-foreground line-clamp-2 mt-0.5">
-                      {rec.resumen || rec.contenido?.slice(0, 100)}
-                    </p>
-                    {rec.content_categories && (
-                      <span className="text-[9px] font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded mt-1 inline-block">
-                        {rec.content_categories.nombre}
-                      </span>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : null}
-      </div>
+      <FeatureGate feature="content_recommendations" variant="inline">
+        <div className="space-y-2">
+          <h3 className="text-caption font-bold tracking-widest text-muted-foreground uppercase flex items-center gap-1.5">
+            <Lightbulb className="w-3.5 h-3.5" />
+            Contenido recomendado para tu perfil
+          </h3>
+          {loadingRecs ? (
+            <div className="space-y-2">
+              {[1, 2].map((i) => (
+                <Skeleton key={i} className="h-16 w-full rounded-lg" />
+              ))}
+            </div>
+          ) : recommendations.length > 0 ? (
+            <div className="space-y-2">
+              {recommendations.map((rec) => (
+                <Card
+                  key={rec.id}
+                  className="hover:shadow-sm transition-shadow cursor-pointer"
+                  onClick={() => {
+                    trackContentRecommendationClick(rec.id, perfil);
+                    onComplete(); // Navigate to content tab
+                  }}
+                >
+                  <CardContent className="p-3 flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <BookOpen className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-foreground line-clamp-1">
+                        {rec.titulo}
+                      </p>
+                      <p className="text-caption text-muted-foreground line-clamp-2 mt-0.5">
+                        {rec.resumen || rec.contenido?.slice(0, 100)}
+                      </p>
+                      {rec.content_categories && (
+                        <span className="text-[9px] font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded mt-1 inline-block">
+                          {rec.content_categories.nombre}
+                        </span>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      </FeatureGate>
 
       {/* Action buttons */}
       <div className="flex gap-2">
-        <Button
-          onClick={handleExportPDF}
-          variant="outline"
-          className="flex-1 py-3 gap-2"
-        >
-          <Download className="w-4 h-4" />
-          Descargar PDF
-        </Button>
+        <FeatureGate feature="diagnostic_pdf" fallback={
+          <Button
+            onClick={onComplete}
+            className="flex-1 bg-mc-dark-blue hover:bg-mc-dark-blue/90 text-white py-3 gap-2"
+          >
+            <BookOpen className="w-4 h-4" />
+            Ver contenido
+          </Button>
+        }>
+          <Button
+            onClick={handleExportPDF}
+            variant="outline"
+            className="flex-1 py-3 gap-2"
+          >
+            <Download className="w-4 h-4" />
+            Descargar PDF
+          </Button>
+        </FeatureGate>
         <Button
           onClick={onComplete}
           className="flex-1 bg-mc-dark-blue hover:bg-mc-dark-blue/90 text-white py-3 gap-2"

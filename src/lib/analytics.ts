@@ -256,3 +256,17 @@ export function trackContentRecommendationClick(contentId: string, perfil: strin
 export function trackFunnelStep(step: string, data?: Record<string, string | number | boolean>) {
   track("funnel_step", { step, ...data });
 }
+
+// ─── Freemium / Feature Flags ────────────────────────────────────
+
+export function trackFeatureBlocked(feature: string, plan: string) {
+  track("feature_blocked", { feature, plan });
+}
+
+export function trackUpgradePromptShown(feature: string, plan: string) {
+  track("upgrade_prompt_shown", { feature, plan });
+}
+
+export function trackUpgradeCTAClick(feature: string, plan: string) {
+  track("upgrade_cta_click", { feature, plan });
+}
