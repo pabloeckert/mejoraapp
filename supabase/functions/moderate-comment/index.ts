@@ -1,6 +1,11 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+/**
+ * moderate-comment — Edge Function para moderación de comentarios
+ *
+ * Usa middleware compartido para CORS + Auth + Rate Limiting.
+ * Cadena IA: Gemini → Groq → auto-aprobado.
+ */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { getCorsHeaders, handleCors, jsonHeaders } from "../_shared/cors.ts";
+import { withMiddleware } from "../_shared/middleware.ts";
 import { logInfo, logWarn, logError } from "../_shared/log.ts";
 
 const MODERATION_PROMPT = `Sos el moderador de MejoraOK, comunidad de negocios argentina. Decidí si un comentario es apropiado.
@@ -29,7 +34,9 @@ async function callAI(prompt: string): Promise<{ action: string; reason: string 
         const match = text.match(/\{[\s\S]*?\}/);
         if (match) return JSON.parse(match[0]);
       }
-    } catch (e) { logWarn("moderate-comment", "Gemini failed", { error: String(e) }); }
+    } catch (e) {
+      logWarn("moderate-comment", "Gemini failed", { error: String(e) });
+    }
   }
 
   const groqKey = Deno.env.get("GROQ_API_KEY");
@@ -41,7 +48,8 @@ async function callAI(prompt: string): Promise<{ action: string; reason: string 
         body: JSON.stringify({
           model: "llama-3.3-70b-versatile",
           messages: [{ role: "system", content: MODERATION_PROMPT }, { role: "user", content: prompt }],
-          temperature: 0.3, max_tokens: 256,
+          temperature: 0.3,
+          max_tokens: 256,
         }),
       });
       if (res.ok) {
@@ -50,108 +58,98 @@ async function callAI(prompt: string): Promise<{ action: string; reason: string 
         const match = text.match(/\{[\s\S]*?\}/);
         if (match) return JSON.parse(match[0]);
       }
-    } catch (e) { logWarn("moderate-comment", "Groq failed", { error: String(e) }); }
+    } catch (e) {
+      logWarn("moderate-comment", "Groq failed", { error: String(e) });
+    }
   }
 
   return null;
 }
 
-serve(async (req) => {
-  const corsResp = handleCors(req);
-  if (corsResp) return corsResp;
+Deno.serve(
+  withMiddleware({ auth: true, rateLimit: 10 }, async (req, ctx) => {
+    const headers = { "Content-Type": "application/json" };
+    const user = ctx.user!;
 
-  const origin = req.headers.get("Origin");
-  const headers = jsonHeaders(origin);
+    try {
+      const body = await req.json().catch(() => null);
+      if (!body?.post_id || !body?.content || typeof body.content !== "string" || body.content.trim().length === 0) {
+        return new Response(JSON.stringify({ error: "Datos incompletos." }), { status: 400, headers });
+      }
 
-  try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401, headers });
-    }
+      const { post_id, content } = body;
+      if (content.length > 500) {
+        return new Response(JSON.stringify({ error: "Máximo 500 caracteres." }), { status: 400, headers });
+      }
 
-    const supabaseUser = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
+      const supabaseAdmin = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+      );
 
-    const { data: { user }, error: authError } = await supabaseUser.auth.getUser();
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401, headers });
-    }
+      // DB-level rate limit: 10 comments per minute
+      const oneMinuteAgo = new Date(Date.now() - 60000).toISOString();
+      const { count } = await supabaseAdmin
+        .from("wall_comments")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .gte("created_at", oneMinuteAgo);
 
-    const body = await req.json().catch(() => null);
-    if (!body?.post_id || !body?.content || typeof body.content !== "string" || body.content.trim().length === 0) {
-      return new Response(JSON.stringify({ error: "Datos incompletos." }), { status: 400, headers });
-    }
+      if ((count || 0) >= 10) {
+        logWarn("moderate-comment", "DB rate limit hit", { user_id: user.id });
+        return new Response(
+          JSON.stringify({ error: "Máximo 10 comentarios por minuto." }),
+          { status: 429, headers }
+        );
+      }
 
-    const { post_id, content } = body;
-    if (content.length > 500) {
-      return new Response(JSON.stringify({ error: "Máximo 500 caracteres." }), { status: 400, headers });
-    }
+      // AI moderation
+      let modAction = "approved";
+      let modReason = "Auto-aprobado";
 
-    // Rate limit: 10 comments per minute
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
+      const aiResult = await callAI(`Moderá este comentario:\n\n"${content}"`);
+      if (aiResult) {
+        modAction = aiResult.action || "approved";
+        modReason = aiResult.reason || "Moderado por IA";
+      }
 
-    const oneMinuteAgo = new Date(Date.now() - 60000).toISOString();
-    const { count } = await supabaseAdmin
-      .from("wall_comments")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .gte("created_at", oneMinuteAgo);
+      // Insert comment with service_role
+      const { data: comment, error: insertError } = await supabaseAdmin
+        .from("wall_comments")
+        .insert({ post_id, user_id: user.id, content: content.trim(), status: modAction })
+        .select("id, post_id, content, created_at, user_id, status")
+        .single();
 
-    if ((count || 0) >= 10) {
-      logWarn("moderate-comment", "Rate limit hit", { user_id: user.id });
-      return new Response(JSON.stringify({ error: "Máximo 10 comentarios por minuto." }), { status: 429, headers });
-    }
+      if (insertError) {
+        logError("moderate-comment", "Insert failed", { error: insertError.message });
+        throw new Error("Error al publicar comentario");
+      }
 
-    // AI moderation
-    let modAction = "approved";
-    let modReason = "Auto-aprobado";
+      // Log moderation (fire-and-forget)
+      if (comment) {
+        supabaseAdmin.from("moderation_comments_log").insert({
+          comment_id: comment.id, action: modAction, reason: modReason,
+        }).then(() => {}).catch(() => {});
+      }
 
-    const aiResult = await callAI(`Moderá este comentario:\n\n"${content}"`);
-    if (aiResult) {
-      modAction = aiResult.action || "approved";
-      modReason = aiResult.reason || "Moderado por IA";
-    }
+      logInfo("moderate-comment", "Comment created", {
+        comment_id: comment?.id, status: modAction, user_id: user.id,
+      });
 
-    // Insert comment with service_role
-    const { data: comment, error: insertError } = await supabaseAdmin
-      .from("wall_comments")
-      .insert({ post_id, user_id: user.id, content: content.trim(), status: modAction })
-      .select("id, post_id, content, created_at, user_id, status")
-      .single();
+      if (modAction === "rejected") {
+        return new Response(
+          JSON.stringify({ success: false, rejected: true, reason: "Tu comentario no cumple con las normas." }),
+          { headers }
+        );
+      }
 
-    if (insertError) {
-      logError("moderate-comment", "Insert failed", { error: insertError.message });
-      throw new Error("Error al publicar comentario");
-    }
-
-    // Log moderation (fire-and-forget)
-    if (comment) {
-      supabaseAdmin.from("moderation_comments_log").insert({
-        comment_id: comment.id, action: modAction, reason: modReason,
-      }).then(() => {}).catch(() => {});
-    }
-
-    logInfo("moderate-comment", "Comment created", { comment_id: comment?.id, status: modAction, user_id: user.id });
-
-    if (modAction === "rejected") {
+      return new Response(JSON.stringify({ success: true, comment }), { headers });
+    } catch (e) {
+      logError("moderate-comment", "Unhandled error", { error: String(e) });
       return new Response(
-        JSON.stringify({ success: false, rejected: true, reason: "Tu comentario no cumple con las normas." }),
-        { headers }
+        JSON.stringify({ error: e instanceof Error ? e.message : "Error desconocido" }),
+        { status: 500, headers }
       );
     }
-
-    return new Response(JSON.stringify({ success: true, comment }), { headers });
-  } catch (e) {
-    logError("moderate-comment", "Unhandled error", { error: String(e) });
-    return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Error desconocido" }),
-      { status: 500, headers: jsonHeaders(origin) }
-    );
-  }
-});
+  })
+);

@@ -1,6 +1,11 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+/**
+ * moderate-post — Edge Function para moderación de posts del muro
+ *
+ * Usa middleware compartido para CORS + Auth + Rate Limiting.
+ * Cadena IA: Gemini → Groq → OpenRouter → auto-aprobado.
+ */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { getCorsHeaders, handleCors, jsonHeaders } from "../_shared/cors.ts";
+import { withMiddleware } from "../_shared/middleware.ts";
 import { logInfo, logWarn, logError } from "../_shared/log.ts";
 
 const MODERATION_PROMPT = `Sos el moderador de MejoraOK, una comunidad de negocios argentina. Tu trabajo es decidir si un post anónimo del muro es apropiado o no.
@@ -110,100 +115,91 @@ async function callAI(prompt: string): Promise<{ action: string; reason: string 
   return null;
 }
 
-serve(async (req) => {
-  const corsResp = handleCors(req);
-  if (corsResp) return corsResp;
+Deno.serve(
+  withMiddleware({ auth: true, rateLimit: 3 }, async (req, ctx) => {
+    const headers = { "Content-Type": "application/json" };
+    const user = ctx.user!;
 
-  const origin = req.headers.get("Origin");
-  const headers = jsonHeaders(origin);
+    try {
+      const body = await req.json().catch(() => null);
+      if (!body?.content || typeof body.content !== "string" || body.content.trim().length === 0) {
+        return new Response(JSON.stringify({ error: "El contenido no puede estar vacío." }), { status: 400, headers });
+      }
 
-  try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401, headers });
-    }
+      const content = body.content as string;
+      if (content.length > 1000) {
+        return new Response(JSON.stringify({ error: "El contenido no puede superar los 1000 caracteres." }), { status: 400, headers });
+      }
 
-    const supabaseUser = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
+      // Supabase admin client for DB operations
+      const supabaseAdmin = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+      );
 
-    const { data: { user }, error: authError } = await supabaseUser.auth.getUser();
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401, headers });
-    }
+      // Additional DB-level rate limit: max 3 posts per minute per user
+      const oneMinuteAgo = new Date(Date.now() - 60000).toISOString();
+      const { count } = await supabaseAdmin
+        .from("wall_posts")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .gte("created_at", oneMinuteAgo);
 
-    const body = await req.json().catch(() => null);
-    if (!body?.content || typeof body.content !== "string" || body.content.trim().length === 0) {
-      return new Response(JSON.stringify({ error: "El contenido no puede estar vacío." }), { status: 400, headers });
-    }
+      if ((count || 0) >= 3) {
+        logWarn("moderate-post", "DB rate limit hit", { user_id: user.id });
+        return new Response(
+          JSON.stringify({ error: "Máximo 3 posts por minuto. Esperá un momento." }),
+          { status: 429, headers }
+        );
+      }
 
-    const content = body.content as string;
-    if (content.length > 1000) {
-      return new Response(JSON.stringify({ error: "El contenido no puede superar los 1000 caracteres." }), { status: 400, headers });
-    }
+      // AI moderation
+      let modAction = "approved";
+      let modReason = "Auto-aprobado (sin IA configurada)";
 
-    // Rate limit: max 3 posts per minute per user
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
+      const aiResult = await callAI(`Moderá este post del muro anónimo:\n\n"${content}"`);
+      if (aiResult) {
+        modAction = aiResult.action || "approved";
+        modReason = aiResult.reason || "Moderado por IA";
+      }
 
-    const oneMinuteAgo = new Date(Date.now() - 60000).toISOString();
-    const { count } = await supabaseAdmin
-      .from("wall_posts")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .gte("created_at", oneMinuteAgo);
+      // Insert post with service_role (bypasses RLS)
+      const { data: post, error: insertError } = await supabaseAdmin
+        .from("wall_posts")
+        .insert({ user_id: user.id, content: content.trim(), status: modAction })
+        .select("id, status")
+        .single();
 
-    if ((count || 0) >= 3) {
-      logWarn("moderate-post", "Rate limit hit", { user_id: user.id });
-      return new Response(JSON.stringify({ error: "Máximo 3 posts por minuto. Esperá un momento." }), { status: 429, headers });
-    }
+      if (insertError) {
+        logError("moderate-post", "Insert failed", { error: insertError.message });
+        throw new Error("Error al publicar");
+      }
 
-    // AI moderation
-    let modAction = "approved";
-    let modReason = "Auto-aprobado (sin IA configurada)";
+      // Log moderation (fire-and-forget)
+      supabaseAdmin.from("moderation_log").insert({
+        post_id: post.id, action: modAction, reason: modReason,
+      }).then(() => {}).catch(() => {});
 
-    const aiResult = await callAI(`Moderá este post del muro anónimo:\n\n"${content}"`);
-    if (aiResult) {
-      modAction = aiResult.action || "approved";
-      modReason = aiResult.reason || "Moderado por IA";
-    }
+      logInfo("moderate-post", "Post created", { post_id: post.id, status: modAction, user_id: user.id });
 
-    // Insert post with service_role (bypasses RLS)
-    const { data: post, error: insertError } = await supabaseAdmin
-      .from("wall_posts")
-      .insert({ user_id: user.id, content: content.trim(), status: modAction })
-      .select("id, status")
-      .single();
+      if (modAction === "rejected") {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            rejected: true,
+            reason: "Tu post no pudo ser publicado porque no cumple con las normas de la comunidad.",
+          }),
+          { headers }
+        );
+      }
 
-    if (insertError) {
-      logError("moderate-post", "Insert failed", { error: insertError.message });
-      throw new Error("Error al publicar");
-    }
-
-    // Log moderation (fire-and-forget)
-    supabaseAdmin.from("moderation_log").insert({
-      post_id: post.id, action: modAction, reason: modReason,
-    }).then(() => {}).catch(() => {});
-
-    logInfo("moderate-post", "Post created", { post_id: post.id, status: modAction, user_id: user.id });
-
-    if (modAction === "rejected") {
+      return new Response(JSON.stringify({ success: true, post_id: post.id }), { headers });
+    } catch (e) {
+      logError("moderate-post", "Unhandled error", { error: String(e) });
       return new Response(
-        JSON.stringify({ success: false, rejected: true, reason: "Tu post no pudo ser publicado porque no cumple con las normas de la comunidad." }),
-        { headers }
+        JSON.stringify({ error: e instanceof Error ? e.message : "Error desconocido" }),
+        { status: 500, headers }
       );
     }
-
-    return new Response(JSON.stringify({ success: true, post_id: post.id }), { headers });
-  } catch (e) {
-    logError("moderate-post", "Unhandled error", { error: String(e) });
-    return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Error desconocido" }),
-      { status: 500, headers: jsonHeaders(origin) }
-    );
-  }
-});
+  })
+);

@@ -217,6 +217,7 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 
 | Fecha | Resumen |
 |-------|---------|
+| 2026-04-28 | **Middleware migration + Report + Providers refactor** — Edge Functions (moderate-post, moderate-comment, verify-admin, admin-action) migradas a middleware compartido. Providers.tsx compositor. ReportDialog en muro. Glosario creado. Commits `4643837`, `b8c408c`, `d54a3b2`. |
 | 2026-04-28 | **Análisis multidisciplinario completo (30+ roles)** — DOCUMENTO-MAESTRO reestructurado con perspectivas de todas las áreas. Plan optimizado por etapas E7-E12. Protocolo "documentar" confirmado. |
 | 2026-04-28 | **Consolidación documentación total** — DOCUMENTO-MAESTRO compactado (915→396 líneas). README actualizado. Push `2d700e3`. |
 | 2026-04-27 | GitHub Pages fix + Vercel setup + onboarding email prep |
@@ -580,6 +581,7 @@ Solo si 30+ DAU. PWA es suficiente por ahora.
 |---------|-----------|
 | `DOCUMENTO-MAESTRO.md` | **Este archivo** — fuente única de verdad |
 | `GUIA-SETUP-INICIAL.md` | Guía paso a paso: Vercel + Resend + onboarding emails |
+| `GLOSARIO.md` | Glosario de términos del producto (para equipo, traductores, docs) |
 | `CHANGELOG-2026-04-28.md` | Changelog de la sesión |
 | `MIGRACION-CRM-2026-04-25.sql` | Script CRM (4 tablas + vistas + RPC) — ejecutado |
 | `PUSH_SUBSCRIPTIONS.sql` | Script SQL push_subscriptions |
