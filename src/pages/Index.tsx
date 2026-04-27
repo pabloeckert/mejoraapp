@@ -10,9 +10,11 @@ import Novedades from "@/components/tabs/Novedades";
 import DiagnosticTest from "@/components/DiagnosticTest";
 import ProfileCompleteModal from "@/components/ProfileCompleteModal";
 import Onboarding, { shouldShowOnboarding } from "@/components/Onboarding";
+import OnboardingV2 from "@/components/OnboardingV2";
 import { NPSSurvey } from "@/components/NPSSurvey";
 import { trackPageView, trackTabSwitch } from "@/lib/analytics";
 import { useLastVisit } from "@/hooks/useLastVisit";
+import { getVariant, trackABTest } from "@/lib/ab-testing";
 
 const Index = () => {
   const { session, loading, user } = useAuth();
@@ -27,6 +29,7 @@ const Index = () => {
   });
   const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingVariant, setOnboardingVariant] = useState("control");
   const { badges, markVisited } = useLastVisit();
   const scrollPositions = useRef<Record<string, number>>({});
 
@@ -64,7 +67,15 @@ const Index = () => {
         return data?.has_completed_diagnostic === true;
       };
       skipOnboarding().then((skip) => {
-        if (!skip) setShowOnboarding(shouldShowOnboarding());
+        if (!skip) {
+          const shouldShow = shouldShowOnboarding();
+          if (shouldShow) {
+            const variant = getVariant("onboarding_v2", user?.id);
+            setOnboardingVariant(variant);
+            trackABTest("onboarding_v2", variant, "assigned");
+          }
+          setShowOnboarding(shouldShow);
+        }
       });
     }
   }, [loading, session, profileComplete, user]);
@@ -139,9 +150,16 @@ const Index = () => {
         />
       )}
 
-      {/* Onboarding overlay */}
+      {/* Onboarding overlay — A/B tested */}
       {showOnboarding && (
-        <Onboarding onComplete={() => setShowOnboarding(false)} />
+        onboardingVariant === "variant_b" ? (
+          <OnboardingV2
+            onComplete={() => setShowOnboarding(false)}
+            experimentVariant={onboardingVariant}
+          />
+        ) : (
+          <Onboarding onComplete={() => setShowOnboarding(false)} />
+        )
       )}
 
       {/* NPS survey — shows after 7 days of use */}
