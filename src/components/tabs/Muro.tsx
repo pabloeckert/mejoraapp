@@ -26,6 +26,7 @@ import {
   ArrowDown,
   Trash2,
   Award,
+  Flag,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,7 @@ import { CommunityRanking } from "@/components/CommunityRanking";
 import { CommunityRules } from "@/components/CommunityRules";
 import { ReferralBanner } from "@/components/ReferralBanner";
 import { trackPublishPost, trackBadgeEarned } from "@/lib/analytics";
+import { ReportDialog } from "@/components/ReportDialog";
 
 interface WallPost {
   id: string;
@@ -113,6 +115,7 @@ const PostCard = memo(
     onLike,
     onDelete,
     confirmingDelete,
+    onReport,
     expanded,
     onToggle,
     comments,
@@ -129,6 +132,7 @@ const PostCard = memo(
     onLike: (postId: string) => void;
     onDelete: (postId: string) => void;
     confirmingDelete: boolean;
+    onReport: (postId: string, content: string) => void;
     expanded: boolean;
     onToggle: (postId: string) => void;
     comments: WallComment[];
@@ -150,7 +154,7 @@ const PostCard = memo(
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            {isOwn && (
+            {isOwn ? (
               <button
                 onClick={() => onDelete(post.id)}
                 className={`flex items-center gap-1 text-xs transition-colors px-2 py-1 rounded-full ${
@@ -162,6 +166,14 @@ const PostCard = memo(
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 {confirmingDelete && <span className="text-caption">¿Eliminar?</span>}
+              </button>
+            ) : (
+              <button
+                onClick={() => onReport(post.id, post.content)}
+                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-amber-500 transition-colors px-2 py-1 rounded-full hover:bg-amber-500/5"
+                title="Reportar contenido"
+              >
+                <Flag className="w-3.5 h-3.5" />
               </button>
             )}
             <button
@@ -288,6 +300,7 @@ const Muro = () => {
 
   const [newPost, setNewPost] = useState("");
   const [posting, setPosting] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{ id: string; content: string } | null>(null);
 
   const postsDataRef = useRef<WallPost[]>([]);
   const {
@@ -356,6 +369,11 @@ const Muro = () => {
 
   const allPosts = data?.pages.flat() ?? [];
   useEffect(() => { postsDataRef.current = allPosts; }, [allPosts]);
+
+  // Report handler
+  const handleReport = useCallback((postId: string, content: string) => {
+    setReportTarget({ id: postId, content });
+  }, []);
 
   // Pull-to-refresh
   const { pullDistance, isRefreshing, isReady, handlers } = usePullToRefresh({
@@ -548,6 +566,7 @@ const Muro = () => {
               onLike={toggleLike}
               onDelete={(id) => handleDelete(id, refetch)}
               confirmingDelete={confirmingDelete === post.id}
+              onReport={handleReport}
               expanded={expandedPosts.has(post.id)}
               onToggle={toggleExpand}
               comments={commentsMap[post.id] || []}
@@ -568,6 +587,15 @@ const Muro = () => {
             </div>
           )}
         </div>
+      )}
+      {/* Report dialog */}
+      {reportTarget && (
+        <ReportDialog
+          open={!!reportTarget}
+          onOpenChange={(open) => !open && setReportTarget(null)}
+          postId={reportTarget.id}
+          postContent={reportTarget.content}
+        />
       )}
     </div>
   );
