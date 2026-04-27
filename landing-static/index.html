@@ -28,6 +28,90 @@
   <meta http-equiv="X-Frame-Options" content="DENY" />
   <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
 
+  <!-- Structured Data (JSON-LD) — SEO -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "MejoraApp",
+    "alternateName": "Mejora Continua",
+    "url": "https://mejoraok.com",
+    "logo": "https://app.mejoraok.com/favicon.png",
+    "description": "Comunidad de negocios para líderes empresariales argentinos. Contenido de valor, diagnóstico estratégico y networking anónimo.",
+    "foundingDate": "2026",
+    "areaServed": "AR",
+    "knowsAbout": ["Emprendimiento", "Gestión empresarial", "Networking", "Estrategia de negocios"],
+    "sameAs": [],
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "email": "hola@mejoraok.com",
+      "contactType": "customer service",
+      "availableLanguage": "Spanish"
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "MejoraApp",
+    "url": "https://mejoraok.com",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://app.mejoraok.com/?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "¿Qué es MejoraApp?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "MejoraApp es la comunidad digital de Mejora Continua, diseñada para líderes empresariales argentinos. Ofrece contenido de valor, diagnóstico estratégico gratuito y un muro anónimo donde los empresarios comparten experiencias reales."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "¿Cuánto cuesta MejoraApp?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "El registro y uso básico de MejoraApp es completamente gratis. Esto incluye el diagnóstico estratégico, acceso al muro anónimo, contenido de valor y novedades de la comunidad."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "¿El muro anónimo es realmente anónimo?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+            "text": "Sí. Los posts en el muro son 100% anónimos. Tu identidad nunca se revela a otros usuarios. La moderación es automática mediante IA para mantener la calidad del contenido."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "¿Qué mide el diagnóstico estratégico?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "El diagnóstico evalúa 8 dimensiones clave de tu negocio en 1 minuto. Al completar, recibí un puntaje personalizado, tu perfil estratégico y recomendaciones de contenido adaptadas a tu situación."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "¿Necesito descargar algo?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. MejoraApp es una aplicación web progresiva (PWA) que funciona directamente en tu navegador. Podés instalarla en tu celular como si fuera una app nativa, sin necesidad de ir a ninguna tienda."
+        }
+      }
+    ]
+  }
+  </script>
+
   <style>
     :root {
       --bg: #fafafa;
@@ -192,7 +276,46 @@
       font-size: 0.9rem;
     }
 
-    /* CTA */
+    /* FAQ */
+  .faq { padding: 5rem 0; }
+  .faq-header { text-align: center; margin-bottom: 3rem; }
+  .faq-header h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem; }
+  .faq-header p { color: var(--muted); max-width: 480px; margin: 0 auto; }
+  .faq-list { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 0.75rem; }
+  .faq-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    overflow: hidden;
+  }
+  .faq-question {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    background: none;
+    border: none;
+    color: var(--fg);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+  }
+  .faq-question:hover { color: var(--primary); }
+  .faq-question .arrow { transition: transform 0.2s; font-size: 0.8rem; }
+  .faq-question[aria-expanded="true"] .arrow { transform: rotate(180deg); }
+  .faq-answer {
+    padding: 0 1.25rem 1rem;
+    font-size: 0.875rem;
+    color: var(--muted);
+    line-height: 1.7;
+    display: none;
+  }
+  .faq-answer.open { display: block; }
+
+  /* CTA */
     .cta {
       padding: 5rem 0;
       background: var(--primary);
@@ -311,6 +434,48 @@
         <div class="community-feature">🇦🇷 Para empresarios argentinos</div>
         <div class="community-feature">🔒 100% anónimo en el muro</div>
         <div class="community-feature">🤖 Moderado por IA</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq" id="faq">
+    <div class="container">
+      <div class="faq-header">
+        <h2>Preguntas frecuentes</h2>
+        <p>Todo lo que necesitás saber antes de empezar.</p>
+      </div>
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" onclick="this.setAttribute('aria-expanded',this.getAttribute('aria-expanded')==='true'?'false':'true');this.nextElementSibling.classList.toggle('open')">
+            ¿Qué es MejoraApp? <span class="arrow">▼</span>
+          </button>
+          <div class="faq-answer">MejoraApp es la comunidad digital de Mejora Continua, diseñada para líderes empresariales argentinos. Ofrece contenido de valor, diagnóstico estratégico gratuito y un muro anónimo donde los empresarios comparten experiencias reales.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" onclick="this.setAttribute('aria-expanded',this.getAttribute('aria-expanded')==='true'?'false':'true');this.nextElementSibling.classList.toggle('open')">
+            ¿Cuánto cuesta? <span class="arrow">▼</span>
+          </button>
+          <div class="faq-answer">El registro y uso básico de MejoraApp es completamente gratis. Esto incluye el diagnóstico estratégico, acceso al muro anónimo, contenido de valor y novedades de la comunidad.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" onclick="this.setAttribute('aria-expanded',this.getAttribute('aria-expanded')==='true'?'false':'true');this.nextElementSibling.classList.toggle('open')">
+            ¿El muro es realmente anónimo? <span class="arrow">▼</span>
+          </button>
+          <div class="faq-answer">Sí. Los posts en el muro son 100% anónimos. Tu identidad nunca se revela a otros usuarios. La moderación es automática mediante IA para mantener la calidad del contenido.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" onclick="this.setAttribute('aria-expanded',this.getAttribute('aria-expanded')==='true'?'false':'true');this.nextElementSibling.classList.toggle('open')">
+            ¿Qué mide el diagnóstico? <span class="arrow">▼</span>
+          </button>
+          <div class="faq-answer">El diagnóstico evalúa 8 dimensiones clave de tu negocio en 1 minuto. Al completar, recibís un puntaje personalizado, tu perfil estratégico y recomendaciones de contenido adaptadas a tu situación.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" onclick="this.setAttribute('aria-expanded',this.getAttribute('aria-expanded')==='true'?'false':'true');this.nextElementSibling.classList.toggle('open')">
+            ¿Necesito descargar algo? <span class="arrow">▼</span>
+          </button>
+          <div class="faq-answer">No. MejoraApp es una aplicación web progresiva (PWA) que funciona directamente en tu navegador. Podés instalarla en tu celular como si fuera una app nativa, sin necesidad de ir a ninguna tienda.</div>
+        </div>
       </div>
     </div>
   </section>
