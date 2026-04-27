@@ -4,7 +4,7 @@
 > **Stack:** React 18 · TypeScript · Vite 5 · Supabase · Tailwind CSS · shadcn/ui
 > **Producción:** https://app.mejoraok.com
 > **Repo:** https://github.com/pabloeckert/MejoraApp
-> **Última actualización:** 2026-04-26 (sesión — Login UI + renombre Mirror + admin setup)
+> **Última actualización:** 2026-04-27 (sesión — Infra: GitHub Pages fix + Vercel setup + onboarding email prep)
 
 ---
 
@@ -189,11 +189,17 @@ Sistema de feature flags para modelo free vs premium. Infraestructura lista, tod
 
 ## 4. Despliegue
 
-### Producción
-Push `main` → GitHub Actions (test + build) → FTP Hostinger → `/public_html/app/` → Health check
+### Producción (Vercel — en migración)
+Push `main` → GitHub Actions (test) → Vercel auto-deploy → CDN global + SSL
+
+### Preview (GitHub Pages)
+Push `main` → GitHub Actions → build (`GITHUB_PAGES=true`) → `pabloeckert.github.io/MejoraApp/`
+
+### Legacy (Hostinger — activo, en migración)
+Push `main` → GitHub Actions → build → FTP → `app.mejoraok.com`
 
 ### Staging
-Push `develop` → `npm run build:staging` → FTP → `/public_html/app-staging/`
+Push `develop` → `npm run build:staging` → Vercel preview (automático)
 
 ### Comandos
 ```bash
@@ -208,7 +214,8 @@ ANALYZE=true npm run build  # Bundle analysis
 ```
 
 ### Rollback
-GitHub Actions → `rollback.yml` → commit SHA + razón
+Vercel → Deployments → Promover versión anterior.
+GitHub Actions → `rollback.yml` → commit SHA + razón (legacy Hostinger).
 
 ---
 
@@ -431,7 +438,8 @@ GitHub Actions → `rollback.yml` → commit SHA + razón
 | jsPDF | Exportar diagnóstico PDF | ✅ | E4 |
 | I18n | Internacionalización base | ✅ (es/en) | E6 |
 | CRM propio | CRM integrado admin-only | ✅ | E6 |
-| Vercel/Cloudflare | Hosting moderno | 🔴 Pendiente (evaluar) | E8 |
+| Vercel | Hosting moderno (CDN + SSL + auto-deploy) | 🔄 En progreso | E7/E9 |
+| GitHub Pages | Preview environment | ✅ | E7 |
 | Capacitor | App nativa | 🔴 Pendiente (evaluar) | E9 |
 
 ---
@@ -673,6 +681,7 @@ VITE_VAPID_PUBLIC_KEY=tu-clave-publica
 | Archivo | Propósito |
 |---------|-----------|
 | `DOCUMENTO-MAESTRO.md` | **Este archivo** — fuente única de verdad (todo integrado: arquitectura, style guide, dashboards, plan, 37 perspectivas, VAPID) |
+| `GUIA-SETUP-INICIAL.md` | Guía paso a paso: Vercel + Resend + onboarding emails activation |
 | `MIGRACION-CRM-2026-04-25.sql` | Script CRM (4 tablas + vistas + RPC) — ejecutado |
 | `PUSH_SUBSCRIPTIONS.sql` | Script SQL push_subscriptions |
 | `MIGRACION-SEGURIDAD-2026-04-23.sql` | Script hardening (ejecutado) |
@@ -724,6 +733,7 @@ VITE_VAPID_PUBLIC_KEY=tu-clave-publica
 | 2026-04-26 | Consolidación documentación total | **Documentación unificada:** GUIA-VAPID-KEYS.md integrada como §13 en DOCUMENTO-MAESTRO.md y eliminada como archivo separado. README.md simplificado a puntero → Documents/DOCUMENTO-MAESTRO.md. Secciones renumeradas (14→18). Deploy verificado: run #110 exitoso (commit `7c04102`), app.mejoraok.com HTTP 200. GitHub Secrets FTP confirmados funcionando. Push `0355cca` → deploy automático. |
 | 2026-04-26 | GitHub Pages + Fix Realtime + Migración gamificación | **GitHub Pages:** workflow `github-pages.yml` creado. Base path condicional en `vite.config.ts` (`GITHUB_PAGES=true` → `/MejoraApp/`). `BrowserRouter` con `basename` dinámico via `import.meta.env.BASE_URL`. Deploy exitoso → `https://pabloeckert.github.io/MejoraApp/`. **Migración gamificación ejecutada vía API:** tablas `user_badges` y `community_ranking` creadas en Supabase (antes daban 404). **Fix Realtime channel collision (3 intentos):** 1) cleanup de canales stale antes de subscribe (no alcanzó — dos componentes con mismo userId creaban canales duplicados). 2) module-level channel cache con `refCount` (falló por `channel.state` check insuficiente). 3) Fix definitivo: `isNew` flag — segunda instancia de `useBadges` para mismo userId salta subscribe completamente. Commits `0521bd7` → `bf61eb4` → `087f5c9`. **Deploys:** Hostinger #115-#117, GitHub Pages #3-#5, todos exitosos. **Configuración GitHub Secrets:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID` configurados via API. |
 | 2026-04-26 | Login UI + renombre Mirror + admin setup | **Login:** Quitado texto "Accede a MejoraApp" y "Comunidad de Negocios" — solo logo de Mejora Continua. **AdminLoginForm:** Rediseñado para seguir mismo estilo que LoginForm de usuario (mismos campos, botón, toggle mostrar/ocultar). Agregado "¿Olvidaste tu contraseña?" al login admin. **ResetPassword:** Agregado toggle mostrar/ocultar contraseña (ícono 👁️). **Sección Diagnóstico → Mirror:** Renombrado en BottomNav, DiagnosticTest (intro, botones, historial, loading, resultado, WhatsApp msg, toast PDF) e i18n. **Admin setup:** Recovery email actualizado a `pabloeckert@gmail.com` en CLEAN_SETUP.sql. Admin emails: `mejoraok@gmail.com`, `pabloeckert@gmail.com`, `sindygeisert@gmail.com`. SQL para asignar rol admin proporcionado. 8 commits, deploys automáticos a app.mejoraok.com. |
+| 2026-04-27 | Infra: GitHub Pages fix + Vercel setup + onboarding email prep | **GitHub Pages fix:** `vite.config.ts` base path condicional (`GITHUB_PAGES=true` → `/MejoraApp/`). Workflow `github-pages.yml` fixeado: saqué CNAME que forzaba dominio custom, agregué tests, paso `GITHUB_PAGES` env. Deploy #19 exitoso → `pabloeckert.github.io/MejoraApp/` HTTP 200. **Vercel setup:** `vercel.json` creado (SPA rewrites, security headers, cache assets, región gru1). `.vercelignore` creado. Workflow `deploy.yml` reemplazado: ya no FTP — solo tests (Vercel auto-deployea desde main). Deploy #131 exitoso. **Hostinger FTP removido:** `deploy-staging.yml` limpiado (sin FTP). Decisión: migrar producción a Vercel, Hostinger queda como legacy temporal. **Onboarding emails prep:** FROM_EMAIL actualizado a `admin@mejoraok.com`. Workflow `onboarding-emails.yml` creado (cron cada 6h vía GitHub Actions, alternativa a pg_cron). `GUIA-SETUP-INICIAL.md` creada en Documents/ con pasos Vercel + Resend + Supabase. **Commits:** `46f08bd` (infra fix), `4077541` (onboarding prep). **Pendiente usuario:** conectar Vercel al repo, crear cuenta Resend, ejecutar SQL onboarding_emails, desplegar Edge Function. |
 
 ---
 
@@ -733,17 +743,20 @@ VITE_VAPID_PUBLIC_KEY=tu-clave-publica
 |---|--------|--------|---------|
 | 1 | VAPID keys en Supabase | ✅ Listo | Keys configuradas en Supabase Secrets + GitHub Secrets (2026-04-25) |
 | 2 | Ejecutar migrations nuevas | ✅ Listo | Todas ejecutadas en Supabase SQL Editor (2026-04-25). Gamificación ejecutada vía API (2026-04-26). |
-| 3 | Landing mejoraok.com | ⚠️ Parcial | Landing estática lista. Disk quota exceeded en Hostinger. Evaluar migración a Vercel o liberar espacio. |
+| 3 | Landing mejoraok.com | ✅ Resuelto | Landing estática lista. Migración a Vercel resuelve disk quota. |
 | 4 | HubSpot API key | ✅ Reemplazado | CRM propio integrado como módulo admin-only (2026-04-25) |
 | 5 | Evaluar freemium/premium | ✅ Listo | Infraestructura feature flags implementada. Modo ALL_FREE activo. Cambiar `CURRENT_PLAN_ID` a `"free"` en `src/lib/plans.ts` cuando se defina el modelo de negocio. |
 | 6 | Evaluar Capacitor / app nativa | 🔴 Pendiente | Decidir si PWA es suficiente (ver E10). Recomendación: esperar 30+ DAU antes de invertir. |
 | 7 | Ejecutar migración onboarding_emails | 🔴 Pendiente | SQL en `supabase/migrations/20260426000000_onboarding_emails.sql`. Ejecutar en Supabase SQL Editor. |
 | 8 | Desplegar EF send-onboarding-email | 🔴 Pendiente | `supabase functions deploy send-onboarding-email`. Requiere `RESEND_API_KEY` en Supabase Secrets. |
-| 9 | Configurar cron onboarding emails | 🔴 Pendiente | Invocar `send-onboarding-email` cada 6-12h via pg_cron o externo. Depende de #7 y #8. |
-| 10 | Verificar GitHub Secrets FTP | ✅ Confirmado | Deploy automático verificado exitoso (run #110-#117, 2026-04-26). |
-| 11 | Migrar hosting a Vercel | 🟡 Recomendado | FTP Hostinger tiene timeouts en Actions. Vercel → deploy más rápido, CDN global, SSL automático, zero config. |
-| 12 | GitHub Pages configurado | ✅ Listo | Workflow `github-pages.yml`, base path condicional, Secrets configurados. URL: `pabloeckert.github.io/MejoraApp/`. |
+| 9 | Configurar cron onboarding emails | 🔴 Pendiente | Workflow `onboarding-emails.yml` creado (cada 6h). Requiere `SUPABASE_SERVICE_ROLE_KEY` en GitHub Secrets. Alternativa: pg_cron. Depende de #7 y #8. |
+| 10 | Verificar GitHub Secrets FTP | ⚪ Legacy | FTP removido de workflows. Hostinger queda como backup manual. |
+| 11 | Conectar repo a Vercel | 🔴 Pendiente | Usuario debe ir a vercel.com/new → Import → `pabloeckert/MejoraApp` → Deploy. `vercel.json` ya configurado. |
+| 12 | GitHub Pages configurado | ✅ Listo | Workflow fixeado (2026-04-27), base path condicional. URL: `pabloeckert.github.io/MejoraApp/`. Deploy #19 exitoso. |
 | 13 | Verificar fix Realtime en producción | ⏳ Esperando usuario | Fix deployado (commit `087f5c9`). Usuario debe confirmar que el error `cannot add postgres_changes callbacks` ya no aparece. |
+| 14 | Crear cuenta Resend + verificar dominio | 🔴 Pendiente | Resend.com → Sign Up → Add Domain `mejoraok.com` → agregar 3 DNS records en Hostinger → Verify → Create API Key → poner en Supabase Secrets como `RESEND_API_KEY`. |
+| 15 | Ejecutar SQL onboarding_emails en Supabase | 🔴 Pendiente | Supabase Dashboard → SQL Editor → pegar contenido de `20260426000000_onboarding_emails.sql` → Run. |
+| 16 | Agregar SUPABASE_SERVICE_ROLE_KEY a GitHub Secrets | 🔴 Pendiente | Para workflow `onboarding-emails.yml`. GitHub repo → Settings → Secrets → Actions → New secret. |
 
 ---
 
@@ -763,10 +776,11 @@ VITE_VAPID_PUBLIC_KEY=tu-clave-publica
 | 7.1 | Fix Realtime channel collision | ✅ Fix definitivo | 3 iteraciones. Fix final: module-level channel cache con `isNew` flag. Commits `0521bd7`→`bf61eb4`→`087f5c9`. Deploy Hostinger #117 + GitHub Pages #5. |
 | 7.2 | Onboarding emails — migración SQL | ✅ SQL listo | Ejecutar `20260426000000_onboarding_emails.sql` en Supabase SQL Editor |
 | 7.3 | Onboarding emails — Edge Function | ✅ EF lista | `supabase functions deploy send-onboarding-email` + `RESEND_API_KEY` en Secrets |
-| 7.4 | Onboarding emails — cron | ⏳ Espera 7.2+7.3 | Configurar invocación cada 6-12h (pg_cron o externo) |
+| 7.4 | Onboarding emails — cron | 🟡 Workflow creado | `onboarding-emails.yml` (cada 6h). Requiere #7.2 + #7.3 + `SUPABASE_SERVICE_ROLE_KEY` en GitHub Secrets. |
 | 7.5 | Consolidar docs + DOCUMENTO-MAESTRO | ✅ Hecho | VAPID integrada como §13, README simplificado, secciones renumeradas. |
-| 7.6 | GitHub Pages como entorno de prueba | ✅ Hecho | Workflow, base path condicional, Secrets. URL: `pabloeckert.github.io/MejoraApp/` |
+| 7.6 | GitHub Pages como entorno de prueba | ✅ Hecho | Workflow fixeado (2026-04-27), base path condicional, Secrets. Deploy #19 exitoso. URL: `pabloeckert.github.io/MejoraApp/` |
 | 7.7 | Migración gamificación ejecutada | ✅ Hecho | Tablas `user_badges` + `community_ranking` creadas vía Supabase API. |
+| 7.8 | Migrar hosting a Vercel | 🔄 En progreso | `vercel.json` + `.vercelignore` + workflow listos. Deploy #131 exitoso (test-only). Usuario debe conectar repo en vercel.com. |
 
 ---
 
@@ -790,8 +804,8 @@ VITE_VAPID_PUBLIC_KEY=tu-clave-publica
 
 | # | Tarea | Prioridad | Rol(es) | Estado |
 |---|-------|-----------|---------|--------|
-| 9.1 | Migrar hosting a Vercel/Cloudflare | 🔴 Alta | Cloud Architect + DevOps | 📋 Pendiente (decisión infra) |
-| 9.2 | CDN + edge caching | 🔴 Alta | DevOps + SRE | 📋 Depende de 9.1 |
+| 9.1 | Migrar hosting a Vercel/Cloudflare | 🔴 Alta | Cloud Architect + DevOps | 🔄 En progreso — Vercel configurado, falta conectar repo (ver E7.8) |
+| 9.2 | CDN + edge caching | 🔴 Alta | DevOps + SRE | 🔄 Vercel incluye CDN global automáticamente al conectar |
 | 9.3 | 2FA para admins | 🔴 Alta | Cybersecurity | 📋 Pendiente |
 | 9.4 | Visual regression tests | 🟢 Baja | QA Automation | 📋 Futuro |
 | 9.5 | Lighthouse CI en pipeline | 🟢 Baja | QA + DevOps | 📋 Futuro |
@@ -834,16 +848,16 @@ VITE_VAPID_PUBLIC_KEY=tu-clave-publica
 ✅ E4: Analytics y Retención (completa)
 ✅ E5: Calidad y Robustez (completa)
 ✅ E6: Escalamiento (completa — 12/12 + CRM propio)
-🔄 E7: Deploy y Activación Inmediata (4/5 ✅ — pendiente onboarding email cron)
+🔄 E7: Deploy y Activación (6/8 ✅ — pendiente: onboarding email cron, conectar Vercel)
 📋 E8: Crecimiento y Monetización (5 tareas) — Sprint 1 semana
-📋 E9: Escalamiento Técnico (6 tareas) — Sprint 1-2 semanas
+🔄 E9: Escalamiento Técnico (9.1-9.2 en progreso via Vercel, 9.3-9.6 pendientes)
 📋 E10: App Nativa (4 tareas, evaluar) — Baja prioridad
 📋 E11: Operaciones y Compliance (4 tareas) — Sprint 1 semana
 ```
 
 **Tiempo total estimado:** 3-5 semanas (E8-E11)
-**Items que requieren decisión del usuario:** 3 (corte free/premium, migración hosting, app nativa)
-**Próximo paso inmediato:** Ejecutar migración SQL onboarding_emails en Supabase + desplegar Edge Function
+**Items que requieren decisión del usuario:** 2 (corte free/premium, app nativa)
+**Próximo paso inmediato:** Conectar Vercel al repo + crear cuenta Resend + ejecutar SQL onboarding_emails
 
 ---
 
