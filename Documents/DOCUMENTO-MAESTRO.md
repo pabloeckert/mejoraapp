@@ -4,7 +4,7 @@
 > **Stack:** React 18 · TypeScript · Vite 5 · Supabase · Tailwind CSS · shadcn/ui
 > **Producción:** https://app.mejoraok.com
 > **Repo:** https://github.com/pabloeckert/MejoraApp
-> **Última actualización:** 2026-04-27
+> **Última actualización:** 2026-04-28
 
 ---
 
@@ -217,6 +217,7 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 
 | Fecha | Resumen |
 |-------|---------|
+| 2026-04-28 | **Consolidación documentación total** — DOCUMENTO-MAESTRO compactado (915→396 líneas, 50KB→16KB). Sesiones antiguas, 37 perspectivas detalladas y dashboards PostHog eliminados. README actualizado (Vercel, no FTP). Push `2d700e3` → deploy #21 GitHub Pages exitoso. |
 | 2026-04-27 | GitHub Pages fix + Vercel setup + onboarding email prep |
 | 2026-04-26 | Login UI + renombre Mirror + admin setup + Realtime fix |
 | 2026-04-26 | GitHub Pages + Fix Realtime + Migración gamificación |
