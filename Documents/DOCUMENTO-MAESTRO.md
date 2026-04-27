@@ -89,17 +89,18 @@ src/
 
 ### 2.3 Edge Functions
 
-| Función | Auth | Rate Limit |
-|---------|------|------------|
-| `moderate-post` | JWT | 3 posts/min |
-| `moderate-comment` | JWT | 10 comments/min |
-| `verify-admin` | JWT | — |
-| `admin-action` (13 acciones) | JWT + admin | 30 req/min + audit log |
-| `generate-content` | JWT + admin | — |
-| `send-push-notification` | Service role | — |
-| `send-diagnostic-email` | Service role | — |
+| Función | Auth | Rate Limit | Middleware |
+|---------|------|------------|------------|
+| `moderate-post` | JWT | 3 posts/min | ✅ `withMiddleware` |
+| `moderate-comment` | JWT | 10 comments/min | ✅ `withMiddleware` |
+| `verify-admin` | JWT + admin | — | ✅ `withMiddleware` |
+| `admin-action` (13 acciones) | JWT + admin | 30 req/min + audit log | ✅ `withMiddleware` |
+| `generate-content` | JWT + admin | — | Legacy |
+| `send-push-notification` | Service role | — | Legacy |
+| `send-diagnostic-email` | Service role | — | Legacy |
 
-**Módulos compartidos:** `_shared/cors.ts` · `_shared/log.ts`
+**Módulos compartidos:** `_shared/cors.ts` · `_shared/log.ts` · `_shared/middleware.ts`
+**Middleware chain:** CORS → JWT Auth → Admin Check → Rate Limit → Handler
 **Cadena fallback IA:** Gemini → Groq → OpenRouter (DeepSeek) → null (auto-aprobado)
 
 ### 2.4 Seguridad
@@ -122,7 +123,7 @@ src/
 
 | Módulo | Descripción |
 |--------|-------------|
-| **Muro Anónimo** | Posts (500 chars) · Likes toggle · Comentarios (300 chars) · Moderación IA · Realtime · Infinite scroll · Pull-to-refresh · Eliminar propios · Badges · Ranking |
+| **Muro Anónimo** | Posts (500 chars) · Likes toggle · Comentarios (300 chars) · Moderación IA · Realtime · Infinite scroll · Pull-to-refresh · Eliminar propios · Reportar contenido · Badges · Ranking |
 | **Contenido de Valor** | 4 categorías · 4 tipos media · Búsqueda · Filtro pills · Generación IA · Contenido programado · Recomendaciones por perfil |
 | **Diagnóstico (Mirror)** | Test interactivo · Puntaje + perfil · WhatsApp CTA · Historial 3 resultados · PDF export · Recomendaciones por perfil · CTA consultoría |
 | **Novedades** | CRUD admin · Fecha publicación · Imagen + enlace · Empty state |
@@ -198,7 +199,7 @@ Legal (privacidad, términos, cookies, "Mis Datos") · E2E Playwright (25) · ax
 ### E6 — Escalamiento ✅ (2026-04-25)
 CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Admin whitelist · Landing · Referidos · CRM propio · NPS · Repository Layer · i18n · Bundle analysis
 
-### E7 — Deploy y Activación 🔄 (6/8 ✅)
+### E7 — Deploy y Activación 🔄 (7/9 ✅)
 
 | # | Tarea | Estado |
 |---|-------|--------|
@@ -209,7 +210,8 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 | 7.5 | Consolidar docs | ✅ |
 | 7.6 | GitHub Pages configurado | ✅ |
 | 7.7 | Migración gamificación ejecutada | ✅ |
-| 7.8 | Migrar a Vercel | 🔄 (ver §Setup) |
+| 7.8 | Migrar a Vercel | 🟡 En progreso (GitHub App instalada, falta import + deploy) |
+| 7.9 | Deploy Edge Functions migradas a middleware | 🔴 `supabase functions deploy moderate-post moderate-comment verify-admin admin-action` |
 
 ---
 
@@ -217,8 +219,7 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 
 | Fecha | Resumen |
 |-------|---------|
-| 2026-04-28 | **Middleware migration + Report + Providers refactor** — Edge Functions (moderate-post, moderate-comment, verify-admin, admin-action) migradas a middleware compartido. Providers.tsx compositor. ReportDialog en muro. Glosario creado. Commits `4643837`, `b8c408c`, `d54a3b2`. |
-| 2026-04-28 | **Análisis multidisciplinario completo (30+ roles)** — DOCUMENTO-MAESTRO reestructurado con perspectivas de todas las áreas. Plan optimizado por etapas E7-E12. Protocolo "documentar" confirmado. |
+| 2026-04-28 | **Sesión completa: análisis + refactor + setup Vercel** — DOCUMENTO-MAESTRO reestructurado con 30+ perspectivas profesionales. Providers.tsx compositor. ReportDialog en muro. Middleware compartido para Edge Functions. 4 Edge Functions migradas (moderate-post, moderate-comment, verify-admin, admin-action). GLOSARIO.md creado. Setup Vercel guiado (en progreso). 3 commits: `4643837`, `b8c408c`, `0a56d96`. |
 | 2026-04-28 | **Consolidación documentación total** — DOCUMENTO-MAESTRO compactado (915→396 líneas). README actualizado. Push `2d700e3`. |
 | 2026-04-27 | GitHub Pages fix + Vercel setup + onboarding email prep |
 | 2026-04-26 | Login UI + renombre Mirror + admin setup + Realtime fix |
@@ -235,12 +236,13 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 
 | # | Acción | Estado |
 |---|--------|--------|
-| 1 | Conectar repo a Vercel | 🔴 `vercel.json` listo, ir a vercel.com/new |
+| 1 | Conectar repo a Vercel | 🟡 En progreso — GitHub App instalada, falta importar repo + env vars + deploy |
 | 2 | Crear cuenta Resend + verificar dominio | 🔴 Resend.com → Add Domain `mejoraok.com` |
 | 3 | Ejecutar SQL onboarding_emails en Supabase | 🔴 `supabase/migrations/20260426000000_onboarding_emails.sql` |
 | 4 | Desplegar EF send-onboarding-email | 🔴 `supabase functions deploy send-onboarding-email` |
 | 5 | Agregar SUPABASE_SERVICE_ROLE_KEY a GitHub Secrets | 🔴 Para cron onboarding |
-| 6 | Verificar fix Realtime en producción | ⏳ Confirmar que error ya no aparece |
+| 6 | Deploy Edge Functions migradas a middleware | 🔴 `supabase functions deploy moderate-post moderate-comment verify-admin admin-action` |
+| 7 | Verificar fix Realtime en producción | ⏳ Confirmar que error ya no aparece |
 
 ---
 
