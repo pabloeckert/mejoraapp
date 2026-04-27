@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -154,10 +154,11 @@ const SignupForm = ({ onSwitchToLogin }: SignupFormProps) => {
       </div>
       <Button
         type="submit"
-        className="w-full h-11 bg-mc-red hover:bg-mc-red/90"
+        className="w-full h-11 bg-mc-red hover:bg-mc-red/90 gap-2"
         disabled={loading}
       >
-        {loading ? "Cargando..." : "Crear cuenta"}
+        {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+        {loading ? "Creando tu cuenta…" : "Crear cuenta"}
       </Button>
 
       <p className="text-center text-sm text-muted-foreground pt-2">

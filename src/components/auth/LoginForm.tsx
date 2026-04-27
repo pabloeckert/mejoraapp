@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -116,10 +116,11 @@ const LoginForm = ({ onSwitchToSignup }: LoginFormProps) => {
 
       <Button
         type="submit"
-        className="w-full h-11 bg-mc-dark-blue hover:bg-mc-dark-blue/90"
+        className="w-full h-11 bg-mc-dark-blue hover:bg-mc-dark-blue/90 gap-2"
         disabled={loading}
       >
-        {loading ? "Cargando..." : "Iniciar sesión"}
+        {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+        {loading ? "Ingresando…" : "Iniciar sesión"}
       </Button>
 
       <p className="text-center text-sm text-muted-foreground pt-2">

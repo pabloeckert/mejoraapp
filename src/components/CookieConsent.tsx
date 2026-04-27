@@ -101,7 +101,7 @@ export const CookieConsent = () => {
           <p className="text-caption text-muted-foreground text-center">
             Al aceptar, nos ayudás a mejorar la app. Podés leer nuestra{" "}
             <a
-              href="/Documents/PRIVACIDAD.html"
+              href="/politica-privacidad.html"
               className="text-primary hover:underline"
               target="_blank"
             >

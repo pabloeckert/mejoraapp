@@ -28,9 +28,12 @@ const queryClient = new QueryClient({
   },
 });
 
+import logoComunidad from "@/assets/logo-comunidad.png";
+
 const LoadingFallback = () => (
-  <div className="min-h-screen flex items-center justify-center bg-background">
-    <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+  <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
+    <img src={logoComunidad} alt="MejoraApp" className="h-10 object-contain animate-pulse" />
+    <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
   </div>
 );
 

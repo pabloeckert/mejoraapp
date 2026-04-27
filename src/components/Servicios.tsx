@@ -29,6 +29,7 @@ interface Servicio {
     label: string;
     href: string;
     external?: boolean;
+    tabChange?: string;
   };
 }
 
@@ -53,6 +54,7 @@ const servicios: Servicio[] = [
     cta: {
       label: "Ver próximos eventos",
       href: "#novedades",
+      tabChange: "novedades",
     },
   },
   {
@@ -168,6 +170,11 @@ export const Servicios = ({ variant = "full" }: { variant?: "full" | "compact" }
                       onClick={(e) => {
                         e.stopPropagation();
                         if (servicio.id === "consultoria") handleWhatsApp();
+                        if (servicio.cta?.tabChange) {
+                          e.preventDefault();
+                          const event = new CustomEvent("navigate-tab", { detail: servicio.cta.tabChange });
+                          window.dispatchEvent(event);
+                        }
                       }}
                     >
                       {servicio.cta.label}

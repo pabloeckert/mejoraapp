@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ExternalLink, Calendar, Loader2 } from "lucide-react";
+import { ExternalLink, Calendar, Loader2, MessageCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,6 +17,11 @@ const formatDate = (date: string) => {
     year: "numeric",
   });
 };
+
+const WA_NUMBER = "543764358152";
+const WA_GENERAL_MSG = encodeURIComponent(
+  "Hola, quiero info de Mejora Continua"
+);
 
 
 
@@ -105,12 +110,14 @@ const Novedades = () => {
                           {novedad.contenido}
                         </div>
                       )}
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs font-medium text-primary hover:text-primary/80 h-7 px-2"
                         onClick={() => toggleExpanded(novedad.id)}
-                        className="text-xs font-medium text-primary hover:underline"
                       >
                         {isExpanded ? "Ver menos" : "Leer más"}
-                      </button>
+                      </Button>
                     </>
                   )}
                   {novedad.enlace_externo && (
@@ -133,9 +140,24 @@ const Novedades = () => {
           <CardContent className="flex flex-col items-center justify-center py-8 text-center">
             <Calendar className="w-10 h-10 text-muted-foreground/40 mb-3" />
             <h3 className="font-semibold text-foreground mb-1 text-sm">Próximamente</h3>
-            <p className="text-xs text-muted-foreground max-w-[260px]">
+            <p className="text-xs text-muted-foreground max-w-[260px] mb-3">
               Estamos preparando eventos y novedades para la comunidad.
             </p>
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5 text-xs h-7"
+              asChild
+            >
+              <a
+                href={`https://wa.me/${WA_NUMBER}?text=${WA_GENERAL_MSG}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <MessageCircle className="w-3 h-3" />
+                Consultanos por WhatsApp
+              </a>
+            </Button>
           </CardContent>
         </Card>
       )}
