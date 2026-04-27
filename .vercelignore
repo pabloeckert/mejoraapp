@@ -1,0 +1,14 @@
+.github
+.env*
+.vscode
+Documents
+e2e
+landing-static
+node_modules
+public
+supabase
+*.md
+*.test.*
+playwright.config.ts
+vitest.config.ts
+tsconfig.node.json
