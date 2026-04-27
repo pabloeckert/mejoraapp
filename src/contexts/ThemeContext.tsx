@@ -18,7 +18,8 @@ const getInitialTheme = (): Theme => {
   if (typeof window === "undefined") return "light";
   const stored = localStorage.getItem("mc-theme") as Theme | null;
   if (stored) return stored;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  // Default to light mode — users can toggle to dark if they prefer
+  return "light";
 };
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {

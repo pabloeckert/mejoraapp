@@ -61,7 +61,7 @@ const Auth = () => {
             className={`flex items-center gap-1.5 text-caption font-medium transition-all duration-200 px-2 py-0.5 rounded-full
               ${mode === "admin"
                 ? "bg-primary/10 text-primary"
-                : "text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
           >
             <Shield className="w-2.5 h-2.5" />

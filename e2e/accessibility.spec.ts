@@ -53,11 +53,11 @@ test.describe("Accessibility", () => {
     await page.waitForLoadState("networkidle");
 
     const results = await new AxeBuilder({ page })
-      .withRules(["keyboard", "focus-order-semantics", "tabindex"])
+      .withRules(["tabindex", "focus-order-semantics"])
       .analyze();
 
     const keyboardViolations = results.violations.filter(
-      (v) => v.id === "keyboard" || v.id === "tabindex"
+      (v) => v.id === "tabindex" || v.id === "focus-order-semantics"
     );
 
     expect(keyboardViolations).toHaveLength(0);

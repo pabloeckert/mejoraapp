@@ -18,7 +18,7 @@ test.describe("Auth Page", () => {
 
     // Should have email and password fields
     const emailInput = page.getByLabel(/email/i).or(page.getByPlaceholder(/email/i));
-    const passwordInput = page.getByLabel(/contraseña/i).or(page.getByPlaceholder(/contraseña/i));
+    const passwordInput = page.getByLabel(/contraseña/i).first().or(page.getByPlaceholder(/••••/));
 
     await expect(emailInput).toBeVisible();
     await expect(passwordInput).toBeVisible();
