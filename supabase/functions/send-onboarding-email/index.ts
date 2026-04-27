@@ -4,7 +4,7 @@ import { getCorsHeaders, handleCors, jsonHeaders } from "../_shared/cors.ts";
 import { logInfo, logWarn, logError } from "../_shared/log.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") || "";
-const FROM_EMAIL = "MejoraApp <hola@mejoraok.com>";
+const FROM_EMAIL = "MejoraApp <admin@mejoraok.com>";
 
 // ── Email Templates ────────────────────────────────────────────
 const EMAIL_TEMPLATES: Record<string, { subject: string; html: (nombre: string) => string }> = {
