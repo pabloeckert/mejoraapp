@@ -38,7 +38,6 @@ jobs:
       - name: Build for GitHub Pages
         run: npm run build
         env:
-          GITHUB_PAGES: "true"
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
@@ -46,6 +45,9 @@ jobs:
 
       - name: Copy index.html to 404.html (SPA routing)
         run: cp dist/index.html dist/404.html
+
+      - name: Add CNAME for custom domain
+        run: echo "app.mejoraok.com" > dist/CNAME
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

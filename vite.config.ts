@@ -4,8 +4,8 @@ import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  // GitHub Pages: base path = /mejoraapp/  |  Hostinger: /
-  base: process.env.GITHUB_PAGES === "true" ? "/MejoraApp/" : "/",
+  // Custom domain (app.mejoraok.com) en ambos: base = "/"
+  base: "/",
   server: {
     host: "::",
     port: 8080,
