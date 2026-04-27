@@ -7,7 +7,7 @@
 
 **📄 Fuente única de verdad:** [`Documents/DOCUMENTO-MAESTRO.md`](Documents/DOCUMENTO-MAESTRO.md)
 
-Arquitectura, plan de desarrollo, análisis UX, estado actual, registro de sesiones, guía VAPID, y todo lo demás.
+Arquitectura, plan, estado actual, guía de estilo, setup, y todo lo demás.
 
 > **Cuando digas "documentar"** — el DOCUMENTO-MAESTRO.md se actualiza con los trabajos realizados.
 
@@ -23,4 +23,4 @@ npm run test:e2e     # E2E: playwright test
 
 ## Despliegue
 
-Push a `main` → GitHub Actions → build → deploy automático a Hostinger via FTP → `app.mejoraok.com`
+Push a `main` → GitHub Actions (tests) → Vercel auto-deploy → `app.mejoraok.com`
