@@ -15,7 +15,13 @@
 
 ### Reglas
 1. **Al inicio de sesión:** Leer este documento completo antes de tocar código.
-2. **Al decir "documentar":** Actualizar §7 (Registro de Sesiones), §8 (Acciones Pendientes) y §9 (Plan) con lo trabajado.
+2. **Al decir "documentar":** Actualizar:
+   - §7 (Registro de Sesiones) — agregar fila con fecha + resumen
+   - §8 (Acciones Pendientes) — actualizar estados
+   - §9 (Plan) — marcar completadas con ✅ + fecha
+   - §5 (Métricas) — actualizar si cambiaron
+   - §2 (Arquitectura) — si hubo cambios estructurales
+   - §10 (Análisis Multidisciplinario) — si hubo mejoras relevantes
 3. **Nunca crear archivos sueltos** — todo va en `Documents/`.
 4. **Al culminar cada sprint:** Pushear a `main` → deploy automático.
 5. **Planes:** `✅` completado con fecha, `🔄` en progreso, `🔴` pendiente, `⏳` esperando decisión.
@@ -27,7 +33,9 @@
 
 MejoraApp es el MVP digital de **Mejora Continua**, comunidad de negocios para líderes empresariales argentinos. App funcional en producción con muro anónimo moderado por IA, contenido de valor, diagnóstico estratégico y panel admin.
 
-**Estado:** E1 ✅ · E2 ✅ · E3 ✅ · E4 ✅ · E5 ✅ · E6 ✅ · E7 🔄 (deploy pendiente + onboarding emails)
+**Estado general:** E1–E6 ✅ completas · E7 🔄 (deploy pendiente + onboarding emails)
+**Líneas de código:** 17,500 (154 archivos TS/TSX) · **Tests:** 103+ unit · 25 E2E · 7 a11y
+**Tablas DB:** 23 · **Edge Functions:** 7 · **Analytics:** 28+ eventos
 
 ---
 
@@ -37,9 +45,10 @@ MejoraApp es el MVP digital de **Mejora Continua**, comunidad de negocios para l
 
 ```
 src/
-├── pages/              # 5 páginas lazy-loaded
+├── pages/              # 5 páginas lazy-loaded (Index, Auth, Admin, ResetPassword, NotFound)
 ├── components/
 │   ├── admin/          # 7 módulos (Contenido, IA, Muro, Novedades, Usuarios, Seguridad, CRM)
+│   │   └── crm/        # CRMDashboard, CRMClientsTab, CRMInteractionsTab, CRMProductsTab + constants
 │   ├── auth/           # LoginForm, SignupForm, GoogleButton, AdminLoginForm
 │   ├── tabs/           # Muro, Novedades, ContenidoDeValor
 │   ├── ui/             # 30+ componentes shadcn/ui
@@ -48,7 +57,7 @@ src/
 ├── hooks/              # useWallInteractions, usePullToRefresh, useBadges, useRanking, useCRM
 ├── data/               # diagnosticData.ts, badges.ts
 ├── integrations/supabase/  # client.ts, types.ts
-├── lib/                # utils.ts, analytics.ts, sentry.ts, push.ts, pdfExport.ts
+├── lib/                # utils.ts, analytics.ts, sentry.ts, push.ts, pdfExport.ts, plans.ts, ab-testing.ts
 ├── repositories/       # index.ts (Repository Layer sobre Supabase)
 ├── i18n/               # locales/index.ts (es/en, 130+ claves)
 └── App.tsx             # Router + providers
@@ -148,6 +157,11 @@ src/
 | **Legacy** | Push `main` | Hostinger FTP: `app.mejoraok.com` |
 | **Staging** | Push `develop` | Vercel preview |
 
+### CI/CD Pipeline
+```
+Push main → GitHub Actions (test + build) → Vercel auto-deploy → Health check (3 intentos) → ✅/❌
+```
+
 ### Comandos
 ```bash
 npm install          # Instalar dependencias
@@ -167,8 +181,8 @@ Vercel → Deployments → Promover versión anterior.
 
 | Métrica | Valor |
 |---------|-------|
-| Líneas de código (TS/TSX) | ~17,000 |
-| Archivos fuente | 120+ |
+| Líneas de código (TS/TSX) | ~17,500 |
+| Archivos fuente | 154 |
 | Tests unitarios | 103+ (100% passing) |
 | Tests E2E | 25 (Playwright) |
 | Tests accesibilidad | 7 (axe-core) |
@@ -176,6 +190,9 @@ Vercel → Deployments → Promover versión anterior.
 | Edge Functions | 7 |
 | Eventos analytics | 28+ |
 | Bundle gzipped | ~355KB |
+| Componentes UI | 30+ (shadcn/ui) |
+| Hooks custom | 11 |
+| Migraciones SQL | 17 |
 
 ---
 
@@ -199,27 +216,30 @@ Legal (privacidad, términos, cookies, "Mis Datos") · E2E Playwright (25) · ax
 ### E6 — Escalamiento ✅ (2026-04-25)
 CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Admin whitelist · Landing · Referidos · CRM propio · NPS · Repository Layer · i18n · Bundle analysis
 
-### E7 — Deploy y Activación 🔄 (7/9 ✅)
+### E7 — Deploy y Activación 🔄 (7/12 ✅)
 
-| # | Tarea | Estado |
-|---|-------|--------|
-| 7.1 | Fix Realtime channel collision | ✅ |
-| 7.2 | Onboarding emails — SQL listo | ✅ (ejecutar en Supabase) |
-| 7.3 | Onboarding emails — Edge Function lista | ✅ (desplegar) |
-| 7.4 | Onboarding emails — cron workflow | 🟡 (requiere 7.2 + 7.3) |
-| 7.5 | Consolidar docs | ✅ |
-| 7.6 | GitHub Pages configurado | ✅ |
-| 7.7 | Migración gamificación ejecutada | ✅ |
-| 7.8 | Migrar a Vercel | 🟡 En progreso (GitHub App instalada, falta import + deploy) |
-| 7.9 | Deploy Edge Functions migradas a middleware | 🔴 `supabase functions deploy moderate-post moderate-comment verify-admin admin-action` |
+| # | Tarea | Prioridad | Estado |
+|---|-------|-----------|--------|
+| 7.1 | Fix Realtime channel collision | 🔴 | ✅ |
+| 7.2 | Onboarding emails — SQL listo | 🔴 | ✅ (ejecutar en Supabase) |
+| 7.3 | Onboarding emails — Edge Function lista | 🔴 | ✅ (desplegar) |
+| 7.4 | Onboarding emails — cron workflow | 🔴 | 🟡 (requiere 7.2 + 7.3) |
+| 7.5 | Consolidar docs | 🟡 | ✅ |
+| 7.6 | GitHub Pages configurado | 🟡 | ✅ |
+| 7.7 | Migración gamificación ejecutada | 🟡 | ✅ |
+| 7.8 | Migrar a Vercel | 🔴 | 🟡 En progreso |
+| 7.9 | Deploy Edge Functions migradas a middleware | 🔴 | 🔴 Pendiente |
+| 7.10 | AdminCRM refactor (900→34 líneas) | 🟡 | ✅ 2026-04-29 |
+| 7.11 | Skeleton components (5 variantes) | 🟡 | ✅ 2026-04-29 |
+| 7.12 | Deploy health check post-deploy | 🟡 | ✅ 2026-04-29 |
 
 ---
 
-## 7. Registro de Sesiones (últimas 10)
+## 7. Registro de Sesiones
 
 | Fecha | Resumen |
 |-------|---------|
-| 2026-04-29 | **Refactor AdminCRM + Skeleton + Health Check** — AdminCRM 900→34 líneas (split en 4 módulos: CRMDashboard, CRMClientsTab, CRMInteractionsTab, CRMProductsTab + constants). Skeleton components (Card, Table, KPI, Chart, List). Deploy health check (3 intentos post-deploy). 103 tests passing. Push `d75b800`. |
+| 2026-04-29 | **Refactor AdminCRM + Skeleton + Health Check** — AdminCRM 900→34 líneas (split en 4 módulos). Skeleton components (Card, Table, KPI, Chart, List). Deploy health check (3 intentos post-deploy). 103 tests passing. Push `d75b800`. |
 | 2026-04-29 | **Consolidación definitiva + análisis 30+ roles optimizado** — DOCUMENTO-MAESTRO reestructurado como fuente única. Guía setup, glosario y changelog integrados. Plan optimizado E7-E12 con prioridades concretas. Push `5ecfb06`. |
 | 2026-04-29 | **Setup Vercel en progreso** — Usuario creó cuenta Vercel con GitHub. Importando repo `MejoraApp`. Pendiente: env vars + deploy. |
 | 2026-04-28 | **Sesión completa: análisis + refactor + setup Vercel** — Providers.tsx compositor. ReportDialog en muro. Middleware compartido para Edge Functions. 4 Edge Functions migradas. GLOSARIO.md creado. Setup Vercel guiado. |
@@ -238,7 +258,7 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 
 | # | Acción | Prioridad | Estado |
 |---|--------|-----------|--------|
-| 1 | Crear cuenta Vercel + importar repo + env vars + deploy | 🔴 Crítico | 🟡 En progreso (cuenta creada, importando repo) |
+| 1 | Crear cuenta Vercel + importar repo + env vars + deploy | 🔴 Crítico | 🟡 En progreso |
 | 2 | Crear cuenta Resend + verificar dominio `mejoraok.com` | 🔴 Crítico | 🔴 Pendiente |
 | 3 | Ejecutar SQL `onboarding_emails` en Supabase SQL Editor | 🔴 Alta | 🔴 Pendiente |
 | 4 | Desplegar EF `send-onboarding-email` | 🔴 Alta | 🔴 Pendiente |
@@ -250,47 +270,56 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 
 ## 9. Plan Optimizado — Próximas Etapas (E7-E12)
 
+### Dependencias entre etapas
+```
+E7 (Deploy) ──→ E8 (Crecimiento) ──→ E10 (App Nativa)
+     │                                      ↑
+     └──→ E9 (Escalamiento Técnico) ────────┘
+     │
+     └──→ E11 (Compliance) ──→ E12 (Data & ML)
+```
+
 ### E7 — Deploy y Activación 🔄 (actual — completar esta semana)
 
-| # | Tarea | Prioridad | Estado |
-|---|-------|-----------|--------|
-| 7.8 | Importar repo en Vercel + env vars + deploy | 🔴 Crítico | 🟡 En progreso (cuenta creada, importando) |
-| 7.9 | Deploy Edge Functions con middleware | 🔴 Crítico | 🔴 Pendiente (requiere Supabase CLI) |
-| 7.2-7.4 | Onboarding emails (SQL + EF + cron) | 🔴 Alta | 🔴 Pendiente (requiere Resend) |
-| 7.10 | AdminCRM refactor (900→34 líneas) | 🟡 Media | ✅ Completado 2026-04-29 |
-| 7.11 | Skeleton components (5 variantes) | 🟡 Media | ✅ Completado 2026-04-29 |
-| 7.12 | Deploy health check post-deploy | 🟡 Media | ✅ Completado 2026-04-29 |
+| # | Tarea | Rol | Prioridad | Estado |
+|---|-------|-----|-----------|--------|
+| 7.8 | Importar repo en Vercel + env vars + deploy | DevOps | 🔴 Crítico | 🟡 En progreso |
+| 7.9 | Deploy Edge Functions con middleware | DevOps | 🔴 Crítico | 🔴 Pendiente |
+| 7.2-7.4 | Onboarding emails (SQL + EF + cron) | Backend | 🔴 Alta | 🔴 Pendiente |
+| 7.10 | AdminCRM refactor | Frontend | 🟡 Media | ✅ |
+| 7.11 | Skeleton components | UI/UX | 🟡 Media | ✅ |
+| 7.12 | Deploy health check | DevOps/SRE | 🟡 Media | ✅ |
 
-**Done criteria:** App servida desde Vercel, emails onboarding funcionando, Edge Functions desplegadas.
+**Gate de salida:** App servida desde Vercel, emails onboarding funcionando, Edge Functions desplegadas.
 
 ### E8 — Crecimiento y Activación (Sprint 1 semana)
 
-| # | Tarea | Rol responsable | Prioridad |
-|---|-------|-----------------|-----------|
-| 8.1 | Definir North Star Metric (30 DAU, 3+ sesiones/semana) | Product Manager | 🔴 Alta |
-| 8.2 | Poblar CRM con datos reales (10+ clientes) | Business Dev | 🔴 Alta |
-| 8.3 | Activar freemium: definir corte free/premium | Product Owner | 🔴 Alta |
-| 8.4 | Funnel analytics: Signup→Onboarding→Post→Return | Growth Manager | 🟡 Media |
-| 8.5 | A/B testing en onboarding (variantes) | Growth Manager | 🟡 Media |
-| 8.6 | Email templates finales (day1/day3/day7) | Content Manager | 🟡 Media |
+| # | Tarea | Rol | Prioridad | Dependencia |
+|---|-------|-----|-----------|-------------|
+| 8.1 | Definir North Star Metric (30 DAU, 3+ sesiones/sem) | Product Manager | 🔴 Alta | — |
+| 8.2 | Poblar CRM con datos reales (10+ clientes) | Business Dev | 🔴 Alta | E7 ✅ |
+| 8.3 | Activar freemium: definir corte free/premium | Product Owner | 🔴 Alta | — |
+| 8.4 | Funnel analytics: Signup→Onboarding→Post→Return | Growth Manager | 🟡 Media | E7 ✅ |
+| 8.5 | A/B testing en onboarding (variantes) | Growth Manager | 🟡 Media | E7 ✅ |
+| 8.6 | Email templates finales (day1/day3/day7) | Content Manager | 🟡 Media | E7 ✅ |
 
-**Done criteria:** Freemium activo, CRM poblado, funnel midiendo, emails enviándose.
+**Gate de salida:** Freemium activo, CRM poblado, funnel midiendo, emails enviándose.
 
 ### E9 — Escalamiento Técnico (Sprint 1-2 semanas)
 
-| # | Tarea | Rol responsable | Prioridad |
-|---|-------|-----------------|-----------|
-| 9.1 | 2FA para admins (Supabase MFA) | Cybersecurity | 🔴 Alta |
-| 9.2 | Health checks post-deploy en CI | DevOps/SRE | 🔴 Alta |
-| 9.3 | Separar `lib/` en `lib/` (utils) + `services/` (lógica) | Software Architect | 🟡 Media |
-| 9.4 | Reducir componentes >300 líneas (AdminCRM, Muro, DiagnosticTest) | Frontend Dev | 🟡 Media |
-| 9.5 | Skeleton loading en pantallas críticas | UX Designer | 🟡 Media |
-| 9.6 | Design tokens formales en `tailwind.config.ts` | UI Designer | 🟢 Baja |
-| 9.7 | Storybook para componentes UI | Frontend Dev | 🟢 Baja |
-| 9.8 | Lighthouse CI en pipeline | DevOps | 🟢 Baja |
-| 9.9 | Visual regression tests (Playwright) | QA Automation | 🟢 Baja |
+| # | Tarea | Rol | Prioridad | Dependencia |
+|---|-------|-----|-----------|-------------|
+| 9.1 | 2FA para admins (Supabase MFA) | Cybersecurity | 🔴 Alta | — |
+| 9.2 | Health checks post-deploy en CI | DevOps/SRE | 🔴 Alta | — |
+| 9.3 | Separar `lib/` en `lib/` + `services/` | Software Architect | 🟡 Media | — |
+| 9.4 | Reducir componentes >300 líneas | Frontend Dev | 🟡 Media | — |
+| 9.5 | Skeleton loading en pantallas críticas | UX Designer | 🟡 Media | — |
+| 9.6 | Design tokens en `tailwind.config.ts` | UI Designer | 🟢 Baja | — |
+| 9.7 | Storybook para componentes UI | Frontend Dev | 🟢 Baja | — |
+| 9.8 | Lighthouse CI en pipeline | DevOps | 🟢 Baja | — |
+| 9.9 | Visual regression tests (Playwright) | QA Automation | 🟢 Baja | — |
 
-**Done criteria:** 2FA activo, CI con health checks, componentes refactorizados, skeleton loading en muro/diagnóstico.
+**Gate de salida:** 2FA activo, CI con health checks, componentes refactorizados.
 
 ### E10 — App Nativa (evaluar si 30+ DAU)
 
@@ -304,16 +333,16 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 
 ### E11 — Operaciones y Compliance (Sprint 1 semana)
 
-| # | Tarea | Rol responsable | Prioridad |
-|---|-------|-----------------|-----------|
-| 11.1 | DPIA (Data Protection Impact Assessment) | DPO/Legal | 🟡 Media |
-| 11.2 | Procedimiento breach notification (72h GDPR) | DPO | 🟡 Media |
-| 11.3 | Registro de actividades de procesamiento | Legal | 🟡 Media |
-| 11.4 | WAF rules (Cloudflare free tier) | Cybersecurity | 🟡 Media |
-| 11.5 | SLO definition: 99.9% uptime (43 min/mes) | SRE | 🟢 Baja |
-| 11.6 | Runbook incidentes (Supabase caído, rate limit, moderación IA falla) | SRE | 🟢 Baja |
+| # | Tarea | Rol | Prioridad | Dependencia |
+|---|-------|-----|-----------|-------------|
+| 11.1 | DPIA (Data Protection Impact Assessment) | DPO/Legal | 🟡 Media | — |
+| 11.2 | Procedimiento breach notification (72h GDPR) | DPO | 🟡 Media | — |
+| 11.3 | Registro de actividades de procesamiento | Legal | 🟡 Media | — |
+| 11.4 | WAF rules (Cloudflare free tier) | Cybersecurity | 🟡 Media | — |
+| 11.5 | SLO definition: 99.9% uptime | SRE | 🟢 Baja | — |
+| 11.6 | Runbook incidentes | SRE | 🟢 Baja | — |
 
-**Done criteria:** DPIA completado, WAF activo, SLO definido, runbook creado.
+**Gate de salida:** DPIA completado, WAF activo, SLO definido, runbook creado.
 
 ### E12 — Data & ML (solo si hay tracción)
 
@@ -325,8 +354,6 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 | 12.4 | Modelo predictivo de churn | 🟢 Baja | Si 1000+ usuarios |
 | 12.5 | Recomendaciones ML (collaborative filtering) | 🟢 Baja | Si 1000+ usuarios |
 
-**Decisión:** Data warehouse solo con tracción significativa. Rule-based recommendations son suficientes para MVP.
-
 ---
 
 ## 10. Análisis Multidisciplinario (30+ Perspectivas)
@@ -335,8 +362,8 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 
 #### Software Architect (8/10)
 - **Fortalezas:** Separación clara Front/Back. Repository Pattern. Lazy loading. Providers encapsulados.
-- **Deuda técnica:** `lib/` mezcla utils con lógica de negocio. Componentes >300 líneas (AdminCRM 900, Muro 604, DiagnosticTest 576).
-- **Plan:** E9.3 separar `lib/` + `services/`. E9.4 descomponer componentes grandes. Extraer sub-componentes de AdminCRM.
+- **Deuda técnica:** `lib/` mezcla utils con lógica de negocio. Componentes >300 líneas (Muro 604, DiagnosticTest 576).
+- **Plan:** E9.3 separar `lib/` + `services/`. E9.4 descomponer componentes grandes.
 
 #### Cloud Architect (7/10)
 - **Fortalezas:** Supabase BaaS managed. Edge Functions serverless. Vercel CDN global. Region `gru1` (São Paulo) correcta para LATAM.
@@ -350,7 +377,7 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 
 #### Frontend Developer (7/10)
 - **Fortalezas:** React 18 + TypeScript estricto. 30+ shadcn/ui components. Custom hooks. Lazy loading.
-- **Deuda:** AdminCRM.tsx (900 líneas), Muro.tsx (604), DiagnosticTest.tsx (576). Testing de componentes poco granular.
+- **Deuda:** Muro.tsx (604), DiagnosticTest.tsx (576). Testing de componentes poco granular.
 - **Plan:** E9.4 descomponer en sub-componentes. Agregar tests de componente por feature.
 
 #### iOS Developer (N/A — PWA)
@@ -362,9 +389,9 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 - **Plan:** Priorizar Android en testing. Manifest ya configurado.
 
 #### DevOps Engineer (8/10)
-- **Fortalezas:** CI con GitHub Actions. Deploy automático. Staging. Rollback. Concurrency control.
-- **Falta:** Health checks post-deploy. Alertas si build falla en producción.
-- **Plan:** E9.2 agregar health check (`curl` post-deploy → 200). Notificación Discord si deploy falla.
+- **Fortalezas:** CI con GitHub Actions. Deploy automático. Staging. Rollback. Concurrency control. Health check post-deploy.
+- **Falta:** Alertas si build falla en producción.
+- **Plan:** E9.2 health check en CI. Notificación Discord si deploy falla.
 
 #### SRE (7/10)
 - **Fortalezas:** Sentry error tracking. CSP headers. Rate limiting. Service Worker offline.
@@ -431,7 +458,6 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 
 #### UX Writer (8/10)
 - **Fortalezas:** Voz argentina con voseo. Microcopy humanizado. Empty states con personalidad.
-- **Falta:** Glosario ya creado (GLOSARIO.md).
 - **Plan:** Mantener glosario actualizado. Agregar context comments en claves i18n.
 
 #### Localization Manager (7/10)
@@ -651,7 +677,7 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 ✅ E4: Analytics y Retención (completa)
 ✅ E5: Calidad y Robustez (completa)
 ✅ E6: Escalamiento (completa — 12/12 + CRM)
-🔄 E7: Deploy y Activación (7/9 ✅ — pendiente: Vercel + onboarding emails + EF deploy)
+🔄 E7: Deploy y Activación (7/12 ✅ — pendiente: Vercel + onboarding emails + EF deploy)
 📋 E8: Crecimiento (6 tareas) — Sprint 1 semana
 📋 E9: Escalamiento Técnico (9 tareas) — Sprint 1-2 semanas
 ⏳ E10: App Nativa (evaluar si 30+ DAU)
