@@ -239,6 +239,7 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 
 | Fecha | Resumen |
 |-------|---------|
+| 2026-04-29 | **Setup Vercel + Deploy intento** — Credenciales Supabase configuradas (URL, publishable key, project ID). Repo importado en Vercel. 3 env vars guardadas (Production + Preview). Deploy falló: `tsconfig.node.json` no encontrado por esbuild en entorno Vercel (error ENOENT). Archivo existe en git. Pendiente: resolver build error + redeploy sin cache. Push `75284ae`. |
 | 2026-04-29 | **Refactor AdminCRM + Skeleton + Health Check** — AdminCRM 900→34 líneas (split en 4 módulos). Skeleton components (Card, Table, KPI, Chart, List). Deploy health check (3 intentos post-deploy). 103 tests passing. Push `d75b800`. |
 | 2026-04-29 | **Consolidación definitiva + análisis 30+ roles optimizado** — DOCUMENTO-MAESTRO reestructurado como fuente única. Guía setup, glosario y changelog integrados. Plan optimizado E7-E12 con prioridades concretas. Push `5ecfb06`. |
 | 2026-04-29 | **Setup Vercel en progreso** — Usuario creó cuenta Vercel con GitHub. Importando repo `MejoraApp`. Pendiente: env vars + deploy. |
@@ -258,7 +259,7 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 
 | # | Acción | Prioridad | Estado |
 |---|--------|-----------|--------|
-| 1 | Crear cuenta Vercel + importar repo + env vars + deploy | 🔴 Crítico | 🟡 En progreso |
+| 1 | Crear cuenta Vercel + importar repo + env vars + deploy | 🔴 Crítico | 🟡 En progreso (repo importado, env vars OK, build falló por tsconfig.node.json) |
 | 2 | Crear cuenta Resend + verificar dominio `mejoraok.com` | 🔴 Crítico | 🔴 Pendiente |
 | 3 | Ejecutar SQL `onboarding_emails` en Supabase SQL Editor | 🔴 Alta | 🔴 Pendiente |
 | 4 | Desplegar EF `send-onboarding-email` | 🔴 Alta | 🔴 Pendiente |
@@ -283,7 +284,7 @@ E7 (Deploy) ──→ E8 (Crecimiento) ──→ E10 (App Nativa)
 
 | # | Tarea | Rol | Prioridad | Estado |
 |---|-------|-----|-----------|--------|
-| 7.8 | Importar repo en Vercel + env vars + deploy | DevOps | 🔴 Crítico | 🟡 En progreso |
+| 7.8 | Importar repo en Vercel + env vars + deploy | DevOps | 🔴 Crítico | 🟡 En progreso (repo + env vars OK, build error tsconfig.node.json) |
 | 7.9 | Deploy Edge Functions con middleware | DevOps | 🔴 Crítico | 🔴 Pendiente |
 | 7.2-7.4 | Onboarding emails (SQL + EF + cron) | Backend | 🔴 Alta | 🔴 Pendiente |
 | 7.10 | AdminCRM refactor | Frontend | 🟡 Media | ✅ |
