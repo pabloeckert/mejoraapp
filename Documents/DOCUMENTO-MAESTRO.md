@@ -33,9 +33,9 @@
 
 MejoraApp es el MVP digital de **Mejora Continua**, comunidad de negocios para líderes empresariales argentinos. App funcional en producción con muro anónimo moderado por IA, contenido de valor, diagnóstico estratégico y panel admin.
 
-**Estado general:** E1–E6 ✅ completas · E7 🔄 (deploy pendiente + onboarding emails)
-**Líneas de código:** ~17,500 (154 archivos TS/TSX) · **Tests:** 103+ unit · 25 E2E · 7 a11y
-**Tablas DB:** 23 · **Edge Functions:** 7 · **Analytics:** 28+ eventos
+**Estado general:** E1–E6 ✅ completas · E7 🔄 (deploy Vercel pendiente, onboarding emails pendiente)
+**Líneas de código:** ~20,000 (175 archivos TS/TSX) · **Tests:** 312 unit (15 archivos) · 25 E2E · 7 a11y
+**Tablas DB:** 23 · **Edge Functions:** 7 · **Analytics:** 28+ eventos · **Validation schemas:** 11 (zod)
 
 ---
 
@@ -60,7 +60,8 @@ src/
 ├── lib/                # utils.ts, analytics.ts, sentry.ts, push.ts, pdfExport.ts, plans.ts, ab-testing.ts, validation.ts
 ├── repositories/       # index.ts (Repository Layer sobre Supabase)
 ├── services/           # Business logic layer (diagnostic, wall, content)
-├── i18n/               # locales/index.ts (es/en, 130+ claves)
+├── i18n/               # locales/index.ts (es/en, 160+ claves)
+├── types/              # crm.ts (tipos CRM extendidos)
 └── App.tsx             # Router + providers
 ```
 
@@ -196,6 +197,7 @@ Vercel → Deployments → Promover versión anterior.
 | Services | 3 (diagnostic, wall, content) |
 | Validation schemas | 11 (zod) |
 | Migraciones SQL | 17 |
+| i18n claves | 160+ (es/en) |
 
 ---
 
@@ -230,7 +232,7 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 | 7.5 | Consolidar docs | 🟡 | ✅ |
 | 7.6 | GitHub Pages configurado | 🟡 | ✅ |
 | 7.7 | Migración gamificación ejecutada | 🟡 | ✅ |
-| 7.8 | Migrar a Vercel | 🔴 | 🟡 En progreso (tsconfig fix aplicado) |
+| 7.8 | Migrar a Vercel | 🔴 | ✅ En vivo (HTTP 200) |
 | 7.9 | Deploy Edge Functions migradas a middleware | 🔴 | 🔴 Pendiente |
 | 7.10 | AdminCRM refactor (900→34 líneas) | 🟡 | ✅ 2026-04-29 |
 | 7.11 | Skeleton components (5 variantes) | 🟡 | ✅ 2026-04-29 |
@@ -242,21 +244,15 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 
 | Fecha | Resumen |
 |-------|---------|
-| 2026-04-29 | **Autodev session 3: validation + i18n + PWA** — Zod validation schemas (11 schemas, 44 tests). i18n English translations completas (30+ keys). PWA manifest fix (start_url, shortcuts, maskable icons). Service worker icon paths fix. 312 tests total. |
-| 2026-04-29 | **Autodev session 2: component tests + integration tests** — 119 nuevos tests (103→222). 12 test files cubriendo: components, hooks, services, admin, integration, security, i18n, analytics, diagnostic data, badges, CORS, CSP, PWA, freemium. ErrorBoundary testing. Lighthouse CI. lint-staged. Repository error handling. |
-| 2026-04-29 | **Autodev session 1: services layer + hardening + tests + bug fix** — Services layer (diagnostic, wall, content). 39 nuevos tests (103→142). Bug fix computed property en useWallInteractions. Edge function hardening (HTML sanitization, validation whitelist). Design tokens (spacing, shadows, transitions). Deploy verification script. SEO structured data. PR template + CODEOWNERS. env.example documentado. CI mejorado (lint + bundle size). |
-| 2026-04-29 | **Fix Vercel build + plan optimizado + análisis completo** — Fix tsconfig.json (eliminado references que causaba ENOENT en Vercel). DOCUMENTO-MAESTRO reestructurado con plan optimizado E7-E12 priorizado por impacto. Análisis 30+ perspectivas actualizado. Build + 103 tests passing. |
-| 2026-04-29 | **Setup Vercel + Deploy intento** — Credenciales Supabase configuradas (URL, publishable key, project ID). Repo importado en Vercel. 3 env vars guardadas (Production + Preview). Deploy falló: `tsconfig.node.json` no encontrado por esbuild en entorno Vercel (error ENOENT). Archivo existe en git. Pendiente: resolver build error + redeploy sin cache. Push `75284ae`. |
-| 2026-04-29 | **Refactor AdminCRM + Skeleton + Health Check** — AdminCRM 900→34 líneas (split en 4 módulos). Skeleton components (Card, Table, KPI, Chart, List). Deploy health check (3 intentos post-deploy). 103 tests passing. Push `d75b800`. |
-| 2026-04-29 | **Consolidación definitiva + análisis 30+ roles optimizado** — DOCUMENTO-MAESTRO reestructurado como fuente única. Guía setup, glosario y changelog integrados. Plan optimizado E7-E12 con prioridades concretas. Push `5ecfb06`. |
-| 2026-04-29 | **Setup Vercel en progreso** — Usuario creó cuenta Vercel con GitHub. Importando repo `MejoraApp`. Pendiente: env vars + deploy. |
-| 2026-04-28 | **Sesión completa: análisis + refactor + setup Vercel** — Providers.tsx compositor. ReportDialog en muro. Middleware compartido para Edge Functions. 4 Edge Functions migradas. GLOSARIO.md creado. Setup Vercel guiado. |
-| 2026-04-28 | **Consolidación documentación total** — DOCUMENTO-MAESTRO compactado (915→396 líneas). README actualizado. |
+| 2026-04-29 | **SESIÓN AUTODEV COMPLETA — 19 commits, 103→312 tests, app en vivo** — Sesión autónoma completa sin intervención del usuario. Trabajo desde las 30+ perspectivas profesionales. **Fix crítico:** tsconfig.json Vercel build error (ENOENT). **Bug fix:** computed property en useWallInteractions (comentarios no cargaban). **Services layer:** diagnostic.service.ts, wall.service.ts, content.service.ts. **Validation:** 11 schemas zod (login, signup, profile, wall post, comment, content, CRM, NPS). **Edge function hardening:** HTML sanitization, action whitelist, input validation. **Design tokens:** spacing, shadows, transitions en tailwind.config. **Accessibility:** ARIA labels en BottomNav, AppHeader, Muro. **i18n:** English translations completas (160+ claves). **PWA:** manifest fix (start_url, shortcuts, maskable icons). **SEO:** JSON-LD structured data. **DevOps:** deploy verification script, Lighthouse CI, lint-staged, bundle size check. **Tests:** 312 passing (15 archivos). **Docs:** PR template, CODEOWNERS, env.example. **Deploy:** Push a main → app.mejoraok.com en vivo (HTTP 200). |
+| 2026-04-29 | Setup Vercel + AdminCRM refactor + Skeleton + Health Check |
+| 2026-04-29 | Consolidación definitiva + análisis 30+ roles |
+| 2026-04-28 | Middleware migration + Vercel setup + Providers refactor |
+| 2026-04-28 | Consolidación documentación total |
 | 2026-04-27 | GitHub Pages fix + Vercel setup + onboarding email prep |
 | 2026-04-26 | Login UI + renombre Mirror + admin setup + Realtime fix |
 | 2026-04-26 | Consolidación docs v2 · E6 completa (12/12) |
-| 2026-04-25 | CRM integrado · VAPID keys configuradas |
-| 2026-04-25 | Optimización producción · CORS fix crítico · CSP |
+| 2026-04-25 | CRM integrado · VAPID keys · Optimización producción · CORS fix |
 | 2026-04-25 | Freemium infrastructure · Feature flags |
 | 2026-04-24 | E5 completa: Legal + E2E + UX Polish |
 
@@ -266,10 +262,10 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 
 | # | Acción | Prioridad | Estado |
 |---|--------|-----------|--------|
-| 1 | Redeploy en Vercel (sin cache) — tsconfig fix aplicado | 🔴 Crítico | 🟡 Listo para redeploy |
-| 2 | Crear cuenta Resend + verificar dominio `mejoraok.com` | 🔴 Crítico | 🔴 Pendiente |
-| 3 | Ejecutar SQL `onboarding_emails` en Supabase SQL Editor | 🔴 Alta | 🔴 Pendiente |
-| 4 | Desplegar EF `send-onboarding-email` | 🔴 Alta | 🔴 Pendiente |
+| 1 | Crear cuenta Resend + verificar dominio `mejoraok.com` | 🔴 Alta | 🔴 Pendiente |
+| 2 | Ejecutar SQL `onboarding_emails` en Supabase SQL Editor | 🔴 Alta | 🔴 Pendiente |
+| 3 | Desplegar EF `send-onboarding-email` | 🔴 Alta | 🔴 Pendiente |
+| 4 | Verificar deploy en Vercel (app.mejoraok.com) | 🟡 Media | ✅ En vivo (HTTP 200) |
 | 5 | Agregar `SUPABASE_SERVICE_ROLE_KEY` a GitHub Secrets | 🔴 Alta | 🔴 Pendiente |
 | 6 | Deploy Edge Functions migradas a middleware | 🔴 Alta | 🔴 Pendiente |
 | 7 | Verificar fix Realtime en producción | 🟡 Media | ⏳ Confirmar |
@@ -309,13 +305,13 @@ E7 (Deploy) ──→ E8 (Crecimiento) ──→ E10 (App Nativa)
 
 | # | Tarea | Rol | Prioridad | Estado | Blocker |
 |---|-------|-----|-----------|--------|---------|
-| 7.8 | Redeploy Vercel (sin cache) | DevOps | 🔴 Crítico | 🟡 Fix aplicado | tsconfig fix listo |
+| 7.8 | Redeploy Vercel (sin cache) | DevOps | 🔴 Crítico | ✅ En vivo (HTTP 200) | — |
 | 7.9 | Deploy Edge Functions middleware | DevOps | 🔴 Crítico | 🔴 Pendiente | Necesita `supabase functions deploy` |
 | 7.2 | SQL onboarding_emails en Supabase | Backend | 🔴 Alta | 🔴 Pendiente | Usuario ejecuta |
 | 7.3 | Deploy EF send-onboarding-email | Backend | 🔴 Alta | 🔴 Pendiente | Después de 7.2 |
 | 7.4 | Cron onboarding emails | DevOps | 🔴 Alta | 🔴 Pendiente | Después de 7.3 |
 
-**Gate de salida:** App en Vercel ✅ + Emails funcionando ✅ + EF desplegadas ✅
+**Gate de salida:** App en Vercel ✅ + Emails funcionando 🔄 + EF desplegadas 🔄
 
 ### E8 — Crecimiento y Monetización (Sprint 1 semana)
 
@@ -345,7 +341,7 @@ E7 (Deploy) ──→ E8 (Crecimiento) ──→ E10 (App Nativa)
 | 9.5 | Skeleton loading en pantallas críticas | UX Designer | 🟡 | 🟢 Bajo | ✅ 2026-04-29 (5 variantes) |
 | 9.6 | Design tokens en tailwind.config | UI Designer | 🟢 | 🟢 Bajo | ✅ 2026-04-29 (spacing, shadows, transitions) |
 | 9.7 | Storybook para componentes UI | Frontend | 🟢 | 🟡 Medio | 🔴 Pendiente |
-| 9.8 | Lighthouse CI en pipeline | DevOps | 🟢 | 🟢 Bajo | 🔴 Pendiente |
+| 9.8 | Lighthouse CI en pipeline | DevOps | 🟢 | 🟢 Bajo | ✅ 2026-04-29 |
 | 9.9 | Visual regression tests (Playwright) | QA | 🟢 | 🟡 Medio | 🔴 Pendiente |
 
 **Gate de salida:** 2FA activo + CI con health checks + Componentes refactorizados
@@ -702,16 +698,16 @@ E7 (Deploy) ──→ E8 (Crecimiento) ──→ E10 (App Nativa)
 ✅ E4: Analytics y Retención (completa)
 ✅ E5: Calidad y Robustez (completa)
 ✅ E6: Escalamiento (completa — 12/12 + CRM)
-🔄 E7: Deploy y Activación (8/12 ✅ — fix tsconfig aplicado, redeploy pendiente)
+🔄 E7: Deploy y Activación (9/12 ✅ — app en vivo, emails pendiente)
 📋 E8: Crecimiento (6 tareas) — Sprint 1 semana
-📋 E9: Escalamiento Técnico (9 tareas) — Sprint 1-2 semanas
+📋 E9: Escalamiento Técnico (6/9 ✅) — Sprint 1-2 semanas
 ⏳ E10: App Nativa (evaluar si 30+ DAU)
 📋 E11: Compliance (6 tareas) — Sprint 1 semana
 📋 E12: Data & ML (solo si hay tracción)
 ```
 
 **Tiempo estimado E7-E12:** 4-6 semanas
-**Próximo paso:** Completar E7 (Vercel redeploy + Resend + EF deploy) → luego E8
+**Próximo paso:** Completar E7 (emails onboarding) → luego E8
 
 ---
 
