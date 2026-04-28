@@ -184,7 +184,7 @@ Vercel → Deployments → Promover versión anterior.
 |---------|-------|
 | Líneas de código (TS/TSX) | ~19,500 |
 | Archivos fuente | 170 |
-| Tests unitarios | 222 (100% passing, 12 archivos) |
+| Tests unitarios | 268 (100% passing, 14 archivos) |
 | Tests E2E | 25 (Playwright) |
 | Tests accesibilidad | 7 (axe-core) |
 | Tablas DB | 23 (19 core + 4 CRM) |
