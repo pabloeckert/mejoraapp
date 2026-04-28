@@ -1,0 +1,15 @@
+# Code Owners — MejoraApp
+# Estos owners son requeridos para review en PRs a main
+
+# Default: owner del proyecto
+* @pabloeckert
+
+# CI/CD y infraestructura
+.github/ @pabloeckert
+scripts/ @pabloeckert
+
+# Edge Functions (backend)
+supabase/ @pabloeckert
+
+# Documentación
+Documents/ @pabloeckert
