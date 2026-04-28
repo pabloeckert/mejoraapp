@@ -43,6 +43,28 @@ jobs:
           test -f dist/index.html || (echo "❌ Build failed" && exit 1)
           echo "✅ Build OK — $(du -sh dist/)"
 
+      - name: Health check (post-deploy)
+        if: success()
+        run: |
+          echo "⏳ Waiting 30s for Vercel deployment to propagate..."
+          sleep 30
+          for i in 1 2 3; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 https://app.mejoraok.com || echo "000")
+            if [ "$STATUS" = "200" ]; then
+              echo "✅ Health check passed (HTTP $STATUS) — attempt $i"
+              exit 0
+            fi
+            echo "⚠️ Attempt $i: HTTP $STATUS — retrying in 10s..."
+            sleep 10
+          done
+          echo "❌ Health check failed after 3 attempts"
+          exit 1
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::Deploy pipeline failed for commit ${{ github.sha }}. Check logs above."
+
       - name: Build summary
         if: always()
         run: |
@@ -50,3 +72,4 @@ jobs:
           echo "- Status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
           echo "- Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
           echo "- Deploy: Vercel auto-deploys from main" >> $GITHUB_STEP_SUMMARY
+          echo "- Health: ${{ job.status == 'success' && '✅ OK' || '❌ Failed' }}" >> $GITHUB_STEP_SUMMARY
