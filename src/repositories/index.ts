@@ -7,10 +7,27 @@
  * Uso:
  *   import { wallRepo, contentRepo, profileRepo } from "@/repositories";
  *   const posts = await wallRepo.getPosts(0, 20);
+ *
+ * NOTA: Los services/ ya encapsulan la lógica de negocio.
+ * Los repositorios son la capa más baja (solo DB).
+ * Para lógica de negocio, usar services/ en su lugar.
  */
 
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+
+// ── Error Wrapper ──────────────────────────────────────────────
+/** Wraps Supabase errors with context for easier debugging */
+function throwIfError(
+  error: { message: string; code?: string } | null,
+  context: string
+): void {
+  if (error) {
+    const msg = `[Repository:${context}] ${error.message}`;
+    console.error(msg, error);
+    throw new Error(msg);
+  }
+}
 
 // ── Types ──────────────────────────────────────────────────────
 type WallPost = Tables<"wall_posts">;
@@ -30,7 +47,7 @@ export const wallRepo = {
       .eq("status", "approved")
       .order("created_at", { ascending: false })
       .range(from, from + limit - 1);
-    if (error) throw error;
+    throwIfError(error, "wallRepo.getPosts");
     return data ?? [];
   },
 
@@ -41,7 +58,7 @@ export const wallRepo = {
       .eq("post_id", postId)
       .eq("status", "approved")
       .order("created_at", { ascending: true });
-    if (error) throw error;
+    throwIfError(error, "wallRepo.getComments");
     return data ?? [];
   },
 
@@ -53,7 +70,7 @@ export const wallRepo = {
       .insert({ content, user_id: user.id })
       .select("id")
       .single();
-    if (error) throw error;
+    throwIfError(error, "wallRepo.createPost");
     return data.id;
   },
 
@@ -65,7 +82,7 @@ export const wallRepo = {
       .insert({ post_id: postId, content, user_id: user.id })
       .select("id")
       .single();
-    if (error) throw error;
+    throwIfError(error, "wallRepo.createComment");
     return data.id;
   },
 
@@ -95,7 +112,7 @@ export const wallRepo = {
       .delete()
       .eq("id", postId)
       .eq("user_id", user.id);
-    if (error) throw error;
+    throwIfError(error, "wallRepo.deletePost");
   },
 };
 
@@ -109,7 +126,7 @@ export const contentRepo = {
       .order("created_at", { ascending: false });
     if (category) query = query.eq("categoria_id", category);
     const { data, error } = await query;
-    if (error) throw error;
+    throwIfError(error, "contentRepo.getPosts");
     return data ?? [];
   },
 
@@ -120,7 +137,7 @@ export const contentRepo = {
       .eq("estado", "publicado")
       .or(`titulo.ilike.%${query}%,resumen.ilike.%${query}%,contenido.ilike.%${query}%`)
       .order("created_at", { ascending: false });
-    if (error) throw error;
+    throwIfError(error, "contentRepo.searchPosts");
     return data ?? [];
   },
 };
@@ -133,7 +150,7 @@ export const profileRepo = {
       .select("*")
       .eq("user_id", userId)
       .maybeSingle();
-    if (error) throw error;
+    throwIfError(error, "profileRepo.get");
     return data;
   },
 
@@ -142,7 +159,7 @@ export const profileRepo = {
       .from("profiles")
       .update(updates)
       .eq("user_id", userId);
-    if (error) throw error;
+    throwIfError(error, "profileRepo.update");
   },
 
   async isComplete(userId: string): Promise<boolean> {
@@ -160,7 +177,7 @@ export const diagnosticRepo = {
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(limit);
-    if (error) throw error;
+    throwIfError(error, "diagnosticRepo.getHistory");
     return data ?? [];
   },
 
@@ -170,7 +187,7 @@ export const diagnosticRepo = {
       .insert(result)
       .select("id")
       .single();
-    if (error) throw error;
+    throwIfError(error, "diagnosticRepo.save");
     return data.id;
   },
 };
@@ -182,7 +199,7 @@ export const novedadesRepo = {
       .from("novedades")
       .select("*")
       .order("fecha_publicacion", { ascending: false });
-    if (error) throw error;
+    throwIfError(error, "novedadesRepo.getAll");
     return data ?? [];
   },
 };
