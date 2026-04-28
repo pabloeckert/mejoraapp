@@ -72,7 +72,7 @@ export function useWallInteractions(userId: string | undefined) {
           .eq("post_id", postId)
           .eq("status", "approved")
           .order("created_at", { ascending: true });
-        setCommentsMap((prev) => ({ ...prev, postId: (data as WallComment[]) ?? [] }));
+        setCommentsMap((prev) => ({ ...prev, [postId]: (data as WallComment[]) ?? [] }));
         setLoadingComments((prev) => {
           const next = new Set(prev);
           next.delete(postId);
