@@ -4,7 +4,7 @@
 > **Stack:** React 18 · TypeScript · Vite 5 · Supabase · Tailwind CSS · shadcn/ui
 > **Producción:** https://app.mejoraok.com
 > **Repo:** https://github.com/pabloeckert/MejoraApp
-> **Última actualización:** 2026-04-28
+> **Última actualización:** 2026-04-29
 
 ---
 
@@ -219,8 +219,9 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 
 | Fecha | Resumen |
 |-------|---------|
-| 2026-04-28 | **Sesión completa: análisis + refactor + setup Vercel** — DOCUMENTO-MAESTRO reestructurado con 30+ perspectivas profesionales. Providers.tsx compositor. ReportDialog en muro. Middleware compartido para Edge Functions. 4 Edge Functions migradas (moderate-post, moderate-comment, verify-admin, admin-action). GLOSARIO.md creado. Setup Vercel guiado (en progreso). 3 commits: `4643837`, `b8c408c`, `0a56d96`. |
-| 2026-04-28 | **Consolidación documentación total** — DOCUMENTO-MAESTRO compactado (915→396 líneas). README actualizado. Push `2d700e3`. |
+| 2026-04-29 | **Consolidación definitiva + análisis 30+ roles optimizado** — DOCUMENTO-MAESTRO reestructurado como fuente única. Guía setup, glosario y changelog integrados. Plan optimizado E7-E12 con prioridades concretas. Push automático. |
+| 2026-04-28 | **Sesión completa: análisis + refactor + setup Vercel** — Providers.tsx compositor. ReportDialog en muro. Middleware compartido para Edge Functions. 4 Edge Functions migradas. GLOSARIO.md creado. Setup Vercel guiado. |
+| 2026-04-28 | **Consolidación documentación total** — DOCUMENTO-MAESTRO compactado (915→396 líneas). README actualizado. |
 | 2026-04-27 | GitHub Pages fix + Vercel setup + onboarding email prep |
 | 2026-04-26 | Login UI + renombre Mirror + admin setup + Realtime fix |
 | 2026-04-26 | Consolidación docs v2 · E6 completa (12/12) |
@@ -228,65 +229,98 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 | 2026-04-25 | Optimización producción · CORS fix crítico · CSP |
 | 2026-04-25 | Freemium infrastructure · Feature flags |
 | 2026-04-24 | E5 completa: Legal + E2E + UX Polish |
-| 2026-04-24 | E4 completa: PostHog + Retención + Gamificación |
 
 ---
 
 ## 8. Acciones Pendientes del Usuario
 
-| # | Acción | Estado |
-|---|--------|--------|
-| 1 | Conectar repo a Vercel | 🟡 En progreso — GitHub App instalada, falta importar repo + env vars + deploy |
-| 2 | Crear cuenta Resend + verificar dominio | 🔴 Resend.com → Add Domain `mejoraok.com` |
-| 3 | Ejecutar SQL onboarding_emails en Supabase | 🔴 `supabase/migrations/20260426000000_onboarding_emails.sql` |
-| 4 | Desplegar EF send-onboarding-email | 🔴 `supabase functions deploy send-onboarding-email` |
-| 5 | Agregar SUPABASE_SERVICE_ROLE_KEY a GitHub Secrets | 🔴 Para cron onboarding |
-| 6 | Deploy Edge Functions migradas a middleware | 🔴 `supabase functions deploy moderate-post moderate-comment verify-admin admin-action` |
-| 7 | Verificar fix Realtime en producción | ⏳ Confirmar que error ya no aparece |
+| # | Acción | Prioridad | Estado |
+|---|--------|-----------|--------|
+| 1 | Conectar repo a Vercel (import + env vars + deploy) | 🔴 Crítico | 🟡 En progreso |
+| 2 | Crear cuenta Resend + verificar dominio `mejoraok.com` | 🔴 Crítico | 🔴 Pendiente |
+| 3 | Ejecutar SQL `onboarding_emails` en Supabase SQL Editor | 🔴 Alta | 🔴 Pendiente |
+| 4 | Desplegar EF `send-onboarding-email` | 🔴 Alta | 🔴 Pendiente |
+| 5 | Agregar `SUPABASE_SERVICE_ROLE_KEY` a GitHub Secrets | 🔴 Alta | 🔴 Pendiente |
+| 6 | Deploy Edge Functions migradas a middleware | 🔴 Alta | 🔴 Pendiente |
+| 7 | Verificar fix Realtime en producción | 🟡 Media | ⏳ Confirmar |
 
 ---
 
 ## 9. Plan Optimizado — Próximas Etapas (E7-E12)
 
-### E7 — Deploy y Activación 🔄 (actual)
-Pendiente: conectar Vercel · onboarding emails (SQL + EF + cron)
+### E7 — Deploy y Activación 🔄 (actual — completar esta semana)
 
-### E8 — Crecimiento y Monetización (Sprint 1 semana)
-| # | Tarea | Prioridad |
-|---|-------|-----------|
-| 8.1 | Poblar CRM con datos reales | 🔴 Alta |
-| 8.2 | Definir corte free/premium y activar | 🔴 Alta |
-| 8.3 | A/B testing en onboarding | 🟡 Media |
-| 8.4 | Blog/SEO orgánico en landing | 🟡 Media |
-| 8.5 | Email onboarding: poblar templates finales | 🟡 Media |
+| # | Tarea | Prioridad | Dependencia |
+|---|-------|-----------|-------------|
+| 7.8 | Importar repo en Vercel + env vars + deploy | 🔴 Crítico | Usuario |
+| 7.9 | Deploy Edge Functions con middleware | 🔴 Crítico | Supabase CLI |
+| 7.2-7.4 | Onboarding emails (SQL + EF + cron) | 🔴 Alta | Resend + Supabase |
+
+**Done criteria:** App servida desde Vercel, emails onboarding funcionando, Edge Functions desplegadas.
+
+### E8 — Crecimiento y Activación (Sprint 1 semana)
+
+| # | Tarea | Rol responsable | Prioridad |
+|---|-------|-----------------|-----------|
+| 8.1 | Definir North Star Metric (30 DAU, 3+ sesiones/semana) | Product Manager | 🔴 Alta |
+| 8.2 | Poblar CRM con datos reales (10+ clientes) | Business Dev | 🔴 Alta |
+| 8.3 | Activar freemium: definir corte free/premium | Product Owner | 🔴 Alta |
+| 8.4 | Funnel analytics: Signup→Onboarding→Post→Return | Growth Manager | 🟡 Media |
+| 8.5 | A/B testing en onboarding (variantes) | Growth Manager | 🟡 Media |
+| 8.6 | Email templates finales (day1/day3/day7) | Content Manager | 🟡 Media |
+
+**Done criteria:** Freemium activo, CRM poblado, funnel midiendo, emails enviándose.
 
 ### E9 — Escalamiento Técnico (Sprint 1-2 semanas)
-| # | Tarea | Prioridad |
-|---|-------|-----------|
-| 9.1 | Migrar hosting a Vercel | 🔴 Alta (en progreso) |
-| 9.2 | CDN + edge caching | 🔴 Alta (incluido en Vercel) |
-| 9.3 | 2FA para admins | 🔴 Alta |
-| 9.4 | Visual regression tests | 🟢 Baja |
-| 9.5 | Lighthouse CI en pipeline | 🟢 Baja |
 
-### E10 — App Nativa (evaluar)
-Solo si 30+ DAU. PWA es suficiente por ahora.
+| # | Tarea | Rol responsable | Prioridad |
+|---|-------|-----------------|-----------|
+| 9.1 | 2FA para admins (Supabase MFA) | Cybersecurity | 🔴 Alta |
+| 9.2 | Health checks post-deploy en CI | DevOps/SRE | 🔴 Alta |
+| 9.3 | Separar `lib/` en `lib/` (utils) + `services/` (lógica) | Software Architect | 🟡 Media |
+| 9.4 | Reducir componentes >300 líneas (AdminCRM, Muro, DiagnosticTest) | Frontend Dev | 🟡 Media |
+| 9.5 | Skeleton loading en pantallas críticas | UX Designer | 🟡 Media |
+| 9.6 | Design tokens formales en `tailwind.config.ts` | UI Designer | 🟢 Baja |
+| 9.7 | Storybook para componentes UI | Frontend Dev | 🟢 Baja |
+| 9.8 | Lighthouse CI en pipeline | DevOps | 🟢 Baja |
+| 9.9 | Visual regression tests (Playwright) | QA Automation | 🟢 Baja |
+
+**Done criteria:** 2FA activo, CI con health checks, componentes refactorizados, skeleton loading en muro/diagnóstico.
+
+### E10 — App Nativa (evaluar si 30+ DAU)
+
+| # | Tarea | Prioridad | Condición |
+|---|-------|-----------|-----------|
+| 10.1 | Evaluar Capacitor para wrapper nativo | ⏳ | Solo si DAU > 30 |
+| 10.2 | Push notifications nativas iOS | ⏳ | Solo si >40% usuarios iOS |
+| 10.3 | App Store / Play Store deployment | ⏳ | Solo si 10.1 + 10.2 |
+
+**Decisión:** PWA es suficiente por ahora. No invertir hasta tener tracción.
 
 ### E11 — Operaciones y Compliance (Sprint 1 semana)
-| # | Tarea | Prioridad |
-|---|-------|-----------|
-| 11.1 | Política de retención de datos | 🟡 Media |
-| 11.2 | DPIA | 🟡 Media |
-| 11.3 | WAF rules (Cloudflare) | 🟡 Media |
-| 11.4 | SLO definition (99.9%) | 🟢 Baja |
+
+| # | Tarea | Rol responsable | Prioridad |
+|---|-------|-----------------|-----------|
+| 11.1 | DPIA (Data Protection Impact Assessment) | DPO/Legal | 🟡 Media |
+| 11.2 | Procedimiento breach notification (72h GDPR) | DPO | 🟡 Media |
+| 11.3 | Registro de actividades de procesamiento | Legal | 🟡 Media |
+| 11.4 | WAF rules (Cloudflare free tier) | Cybersecurity | 🟡 Media |
+| 11.5 | SLO definition: 99.9% uptime (43 min/mes) | SRE | 🟢 Baja |
+| 11.6 | Runbook incidentes (Supabase caído, rate limit, moderación IA falla) | SRE | 🟢 Baja |
+
+**Done criteria:** DPIA completado, WAF activo, SLO definido, runbook creado.
 
 ### E12 — Data & ML (solo si hay tracción)
-| # | Tarea | Prioridad |
-|---|-------|-----------|
-| 12.1 | Data warehouse (Supabase → BigQuery/ClickHouse) | 🟡 Media |
-| 12.2 | Pipeline ETL para BI | 🟡 Media |
-| 12.3 | Modelo predictivo de churn | 🟢 Baja |
-| 12.4 | Recomendaciones ML sobre collaborative filtering | 🟢 Baja |
+
+| # | Tarea | Prioridad | Condición |
+|---|-------|-----------|-----------|
+| 12.1 | Dashboard ejecutivo consolidado (PostHog) | 🟡 Media | Siempre |
+| 12.2 | Pipeline ETL: Supabase → Data Warehouse | 🟡 Media | Si 200+ usuarios |
+| 12.3 | Clustering de usuarios por comportamiento | 🟢 Baja | Si 500+ usuarios |
+| 12.4 | Modelo predictivo de churn | 🟢 Baja | Si 1000+ usuarios |
+| 12.5 | Recomendaciones ML (collaborative filtering) | 🟢 Baja | Si 1000+ usuarios |
+
+**Decisión:** Data warehouse solo con tracción significativa. Rule-based recommendations son suficientes para MVP.
 
 ---
 
@@ -295,207 +329,193 @@ Solo si 30+ DAU. PWA es suficiente por ahora.
 ### 🔧 ÁREA TÉCNICA
 
 #### Software Architect (8/10)
-- **Fortalezas:** Separación clara Frontend/Backend. Repository Pattern sobre Supabase. Lazy loading por ruta. Providers encapsulados (Auth, Theme, I18n).
-- **Deuda técnica menor:** `App.tsx` con 6 providers anidados — considerar compositor. `src/lib/` mezcla utilidades con lógica de negocio (analytics, sentry, plans).
-- **Recomendación:** Extraer un `AppProvider` que componga todos los providers. Separar `lib/` en `lib/` (utilidades puras) y `services/` (lógica de negocio).
+- **Fortalezas:** Separación clara Front/Back. Repository Pattern. Lazy loading. Providers encapsulados.
+- **Deuda técnica:** `lib/` mezcla utils con lógica de negocio. Componentes >300 líneas (AdminCRM 900, Muro 604, DiagnosticTest 576).
+- **Plan:** E9.3 separar `lib/` + `services/`. E9.4 descomponer componentes grandes. Extraer sub-componentes de AdminCRM.
 
 #### Cloud Architect (7/10)
-- **Fortalezas:** Supabase como BaaS managed elimina ops de DB. Edge Functions serverless. Vercel para hosting con CDN global.
-- **Riesgo:** Lock-in moderado en Supabase (RLS, Edge Functions, Auth). Si hay que migrar, el esfuerzo es medio-alto.
-- **Recomendación:** El Repository Layer ya abstrae Supabase — bien. Considerar un adapter pattern para Auth si hay que migrar. Vercel region `gru1` (São Paulo) es correcto para LATAM.
+- **Fortalezas:** Supabase BaaS managed. Edge Functions serverless. Vercel CDN global. Region `gru1` (São Paulo) correcta para LATAM.
+- **Riesgo:** Lock-in moderado en Supabase. Repository Layer ya abstrae — bien.
+- **Plan:** Adapter pattern para Auth si se migra. Monitorear costos Supabase al escalar.
 
 #### Backend Developer (8/10)
-- **Fortalezas:** 23 tablas bien normalizadas. RLS en todas las tablas. Edge Functions con rate limiting, audit log, CORS centralizado. Fallback IA multi-provider.
-- **Mejoras:** Las Edge Functions podrían compartir más middleware (auth check, rate limit). Falta validación de input server-side en algunos endpoints.
-- **Recomendación:** Crear un middleware chain en `_shared/middleware.ts` que encadene auth → rate-limit → validate → handler.
+- **Fortalezas:** 23 tablas normalizadas. RLS completo. Middleware chain en Edge Functions. Fallback IA multi-provider.
+- **Mejoras:** Falta validación input server-side. Falta `EXPLAIN ANALYZE` de queries críticas.
+- **Plan:** E9 agregar zod validation en Edge Functions. Auditar queries del muro con EXPLAIN.
 
 #### Frontend Developer (7/10)
-- **Fortalezas:** React 18 + TypeScript estricto. 30+ componentes shadcn/ui reutilizables. Lazy loading. Custom hooks para lógica compleja (useWallInteractions, usePullToRefresh).
-- **Deuda técnica:** Algunos componentes grandes (>300 líneas): `Muro.tsx`, `AdminCRM.tsx`. Testing de componentes podría ser más granular.
-- **Recomendación:** Extraer sub-componentes de los archivos grandes. Agregar Storybook para documentar componentes UI.
+- **Fortalezas:** React 18 + TypeScript estricto. 30+ shadcn/ui components. Custom hooks. Lazy loading.
+- **Deuda:** AdminCRM.tsx (900 líneas), Muro.tsx (604), DiagnosticTest.tsx (576). Testing de componentes poco granular.
+- **Plan:** E9.4 descomponer en sub-componentes. Agregar tests de componente por feature.
 
 #### iOS Developer (N/A — PWA)
-- **Estado:** App es PWA, no nativa. `manifest.json` configurado, Service Worker network-first.
-- **Evaluación:** Para el DAU actual (<30), PWA es la decisión correcta. Instalable en iOS desde Safari.
-- **Riesgo iOS:** Push notifications en iOS PWA tienen soporte limitado desde iOS 16.4+.
-- **Recomendación:** Monitorear adopción PWA en iOS. Si >40% de usuarios son iOS y necesitan push nativo, evaluar wrapper (Capacitor).
+- **Estado:** PWA instalable en iOS Safari. Push limitado (iOS 16.4+).
+- **Plan:** E10 evaluar Capacitor si >40% usuarios iOS necesitan push nativo.
 
 #### Android Developer (N/A — PWA)
-- **Estado:** PWA instalable en Android Chrome con push notifications completas.
-- **Evaluación:** Soporte nativo excelente para PWA en Android.
-- **Recomendación:** Priorizar experiencia Android en testing. El manifest ya tiene iconos y theme color.
+- **Estado:** PWA con push completo en Android Chrome.
+- **Plan:** Priorizar Android en testing. Manifest ya configurado.
 
 #### DevOps Engineer (8/10)
-- **Fortalezas:** CI con GitHub Actions (lint + test + build). Deploy automático a Vercel. Staging separado. Rollback via Vercel. Concurrency control en workflows.
-- **Mejoras:** Falta monitoring post-deploy (health checks). No hay alertas si el build falla en producción.
-- **Recomendación:** Agregar workflow step que haga `curl` al endpoint post-deploy y verifique 200. Agregar notificación Slack/Discord si deploy falla.
+- **Fortalezas:** CI con GitHub Actions. Deploy automático. Staging. Rollback. Concurrency control.
+- **Falta:** Health checks post-deploy. Alertas si build falla en producción.
+- **Plan:** E9.2 agregar health check (`curl` post-deploy → 200). Notificación Discord si deploy falla.
 
-#### Site Reliability Engineer — SRE (7/10)
-- **Fortalezas:** Sentry para error tracking. CSP headers. Rate limiting contra abuso. Service Worker para offline resilience.
-- **Falta:** SLO/SLI definition. No hay métricas de uptime. No hay runbook para incidentes.
-- **Recomendación:** Definir SLO: 99.9% uptime (43 min/mes downtime permitido). Crear runbook básico para: caída de Supabase, rate limit excedido, moderación IA falla.
+#### SRE (7/10)
+- **Fortalezas:** Sentry error tracking. CSP headers. Rate limiting. Service Worker offline.
+- **Falta:** SLO/SLI. No hay uptime metrics. No runbook.
+- **Plan:** E11.5 SLO 99.9%. E11.6 runbook básico para incidentes.
 
 #### Cybersecurity Architect (9/10)
-- **Fortalezas:** RLS en TODAS las tablas. Edge Functions como gatekeeper. Rate limiting por tipo de operación. CSP, CORS centralizado. Admin audit log. Self-demotion prevention. Moderación IA como capa de contenido.
-- **Mejoras:** Falta 2FA para admins. No hay WAF. Tokens JWT sin rotación explícita.
-- **Recomendación:** Implementar 2FA via Supabase MFA. Agregar Cloudflare como WAF. Definir política de rotación de secrets.
+- **Fortalezas:** RLS en todas las tablas. Edge Functions gatekeeper. Rate limiting. CSP/CORS. Admin audit. Self-demotion prevention.
+- **Falta:** 2FA para admins. WAF. Rotación de secrets.
+- **Plan:** E9.1 2FA via Supabase MFA. E11.4 Cloudflare WAF.
 
 #### Data Engineer (6/10)
-- **Fortalezas:** 23 tablas bien estructuradas. Vistas materializadas para CRM. RPC para dashboards.
-- **Falta:** No hay pipeline ETL. No hay data warehouse. Analytics en PostHog pero sin consolidar con datos de Supabase.
-- **Recomendación:** Cuando haya tracción significativa, crear pipeline: Supabase → ETL → Data Warehouse → BI dashboards.
+- **Fortalezas:** 23 tablas estructuradas. Vistas materializadas CRM. RPC dashboards.
+- **Falta:** Sin pipeline ETL. Sin data warehouse. PostHog sin consolidar con Supabase.
+- **Plan:** E12.2 pipeline cuando haya 200+ usuarios.
 
-#### Machine Learning Engineer (5/10)
-- **Fortalezas:** Moderación IA con fallback multi-provider (Gemini → Groq → OpenRouter). Sistema de recomendaciones por perfil básico.
-- **Falta:** No hay modelo propio. Recomendaciones son rule-based, no ML. No hay pipeline de entrenamiento.
-- **Recomendación:** Para MVP actual, rule-based es suficiente. Cuando haya 500+ usuarios, evaluar collaborative filtering para contenido.
+#### ML Engineer (5/10)
+- **Fortalezas:** Moderación IA con fallback. Recomendaciones rule-based por perfil.
+- **Falta:** Sin modelo propio. Sin pipeline entrenamiento.
+- **Plan:** E12.5 collaborative filtering solo si 1000+ usuarios. Rule-based es suficiente para MVP.
 
-#### QA Automation Engineer (8/10)
-- **Fortalezas:** 103+ tests unitarios. 25 E2E (Playwright). 7 tests accesibilidad (axe-core). CI pipeline con coverage.
-- **Mejoras:** No hay visual regression testing. Tests de integración podrían cubrir más Edge Functions.
-- **Recomendación:** Agregar Playwright visual comparison para pantallas críticas. Agregar tests de carga para endpoints públicos.
+#### QA Automation (8/10)
+- **Fortalezas:** 103+ unit tests. 25 E2E Playwright. 7 a11y tests axe-core. CI con coverage.
+- **Falta:** Sin visual regression. Tests integración podrían cubrir más Edge Functions.
+- **Plan:** E9.9 visual regression. E9.8 Lighthouse CI.
 
-#### Database Administrator — DBA (8/10)
-- **Fortalezas:** 23 tablas normalizadas. Índices implícitos en foreign keys. Migraciones versionadas (17 archivos). RLS policies documentadas.
-- **Mejoras:** No hay EXPLAIN ANALYZE de queries críticas. No hay particionamiento para tablas de logs.
-- **Recomendación:** Auditar queries del muro (más traffic) con EXPLAIN. Considerar particionar `moderation_log` y `admin_audit_log` por mes cuando crezcan.
+#### DBA (8/10)
+- **Fortalezas:** 23 tablas normalizadas. Migraciones versionadas (17 archivos). RLS documentada.
+- **Falta:** Sin EXPLAIN ANALYZE. Sin particionamiento para logs.
+- **Plan:** Auditar queries muro con EXPLAIN. Particionar `moderation_log` y `admin_audit_log` cuando crezcan.
 
 ---
 
 ### 📦 ÁREA DE PRODUCTO Y GESTIÓN
 
 #### Product Manager (7/10)
-- **Fortalezas:** MVP bien definido con 7 etapas claras. Priorización basada en impacto. Feature flags para freemium (preparado).
-- **Riesgo:** No hay métricas de éxito definidas (¿cuántos DAU es éxito? ¿qué conversión freemium?).
-- **Recomendación:** Definir North Star Metric. Ejemplo: "30 DAU activos con 3+ sesiones/semana". Medir desde día 1.
+- **Fortalezas:** MVP bien definido. 7 etapas claras. Feature flags para freemium.
+- **Falta:** No hay North Star Metric definida. No hay métricas de éxito cuantificadas.
+- **Plan:** E8.1 definir: "30 DAU activos con 3+ sesiones/semana".
 
 #### Product Owner (7/10)
-- **Fortalezas:** Backlog implicito en el plan E7-E12. Prioridades claras (🔴🟡🟢). Cada etapa tiene entregables concretos.
-- **Mejoras:** Falta user stories formales. No hay acceptance criteria explícito.
-- **Recomendación:** Para E8+, escribir user stories: "Como [rol], quiero [feature], para [beneficio]" con criterios de aceptación.
+- **Fortalezas:** Backlog en plan E7-E12. Prioridades 🔴🟡🟢. Entregables concretos.
+- **Falta:** User stories formales. Acceptance criteria.
+- **Plan:** E8+ escribir user stories con criterios de aceptación.
 
-#### Scrum Master / Agile Coach (6/10)
-- **Estado:** Proyecto es solo dev (1 persona). No necesita Scrum formal.
-- **Fortalezas:** Sprints implícitos por etapa. Changelog como retrospectiva.
-- **Recomendación:** Mantener el ritmo actual. Cuando haya más miembros, implementar ceremonias mínimas: daily async + retro semanal.
+#### Scrum Master (6/10)
+- **Estado:** Solo dev. No necesita Scrum formal.
+- **Plan:** Mantener ritmo. Cuando haya 2+ miembros: daily async + retro semanal.
 
 #### UX Researcher (6/10)
-- **Fortalezas:** Onboarding con skip (respeta al usuario). NPS survey implementado. Empty states con CTA.
-- **Falta:** No hay entrevistas de usuario documentadas. No hay heatmap ni session recording.
-- **Recomendación:** Agregar PostHog session recordings (gratis hasta 15k events). Entrevistar 5 usuarios reales antes de E8.
+- **Fortalezas:** Onboarding con skip. NPS survey. Empty states con CTA.
+- **Falta:** Sin entrevistas de usuario documentadas. Sin heatmap/session recording.
+- **Plan:** Activar PostHog session recordings. Entrevistar 5 usuarios reales antes de E8.
 
 #### UX Designer (8/10)
-- **Fortalezas:** Mobile-first. Navegación bottom nav. Onboarding progresivo. Pull-to-refresh. Infinite scroll. Feedback visual en todas las acciones.
-- **Mejoras:** Diagnóstico podría tener progress indicator más visible. Muro podría beneficiarse de skeleton loading.
-- **Recomendación:** Agregar skeleton screens en lugar de spinners para perceived performance.
+- **Fortalezas:** Mobile-first. Bottom nav. Onboarding progresivo. Pull-to-refresh. Infinite scroll. Feedback visual.
+- **Mejoras:** Progress indicator en diagnóstico. Skeleton loading en muro.
+- **Plan:** E9.5 skeleton screens en lugar de spinners.
 
 #### UI Designer (7/10)
-- **Fortalezas:** shadcn/ui como base de componentes. Tipografía BwModelica (custom). Escala tipográfica definida. Contraste WCAG AA.
-- **Mejoras:** Sin design tokens formales. Colores hardcodeados en algunos componentes.
-- **Recomendación:** Extraer design tokens a `tailwind.config.ts` (ya existe pero subutilizado). Documentar paleta de colores en el design system.
+- **Fortalezas:** shadcn/ui base. Tipografía BwModelica custom. Escala tipográfica. Contraste WCAG AA.
+- **Falta:** Sin design tokens formales. Colores hardcodeados en algunos componentes.
+- **Plan:** E9.6 extraer design tokens a `tailwind.config.ts`.
 
 #### UX Writer (8/10)
-- **Fortalezas:** Voz argentina con voseo consistente. Microcopy humanizado ("Esta página se perdió en el camino"). Empty states con personalidad.
-- **Mejoras:** Falta glossary de términos del producto.
-- **Recomendación:** Crear glosario en Documents/ con términos clave: "Mirror", "Muro", "Contenido de Valor".
+- **Fortalezas:** Voz argentina con voseo. Microcopy humanizado. Empty states con personalidad.
+- **Falta:** Glosario ya creado (GLOSARIO.md).
+- **Plan:** Mantener glosario actualizado. Agregar context comments en claves i18n.
 
 #### Localization Manager (7/10)
-- **Fortalezas:** i18n implementado (es/en, 130+ claves). Detección automática de idioma. Persistencia.
-- **Falta:** No hay proceso de traducción. No hay context para traductores.
-- **Recomendación:** Para expansión a otros mercados, agregar context comments en las claves i18n.
+- **Fortalezas:** i18n es/en, 130+ claves. Auto-detección. Persistencia.
+- **Falta:** Sin proceso de traducción formal.
+- **Plan:** Para expansión, agregar context comments en claves i18n.
 
 #### Delivery Manager (8/10)
-- **Fortalezas:** Deploy automático. Staging separado. Rollback definido. CI con tests obligatorios.
-- **Mejoras:** No hay feature branches workflow (todo va a main directo).
-- **Recomendación:** Para equipo de 2+ personas, implementar feature branches + PR reviews.
+- **Fortalezas:** Deploy automático. Staging. Rollback. CI obligatorio.
+- **Falta:** Todo va a main directo (sin feature branches).
+- **Plan:** Con 2+ personas: feature branches + PR reviews.
 
 ---
 
 ### 📈 ÁREA COMERCIAL Y DE CRECIMIENTO
 
 #### Growth Manager (6/10)
-- **Fortalezas:** Sistema de referidos implementado. A/B testing framework. Onboarding optimizado.
-- **Falta:** No hay funnel analytics completo. No hay estrategia de activación post-signup.
-- **Recomendación:** Definir funnel: Signup → Onboarding Complete → First Post → Return Visit → Premium. Medir conversión en cada step.
+- **Fortalezas:** Referidos. A/B testing framework. Onboarding optimizado.
+- **Falta:** Funnel analytics completo. Estrategia activación post-signup.
+- **Plan:** E8.4 definir funnel: Signup→Onboarding→First Post→Return→Premium.
 
 #### ASO Specialist (N/A — Web App)
-- **Estado:** App es web/PWA, no en App Store. No aplica ASO tradicional.
 - **Alternativa:** SEO para web (ver SEO Specialist).
 
-#### Performance Marketing Manager (5/10)
-- **Fortalezas:** PostHog para tracking. A/B testing para optimización.
-- **Falta:** No hay paid ads. No hay attribution tracking. No hay pixel de Meta/Google.
-- **Recomendación:** Cuando haya presupuesto de marketing, integrar Meta Pixel + Google Ads conversion tracking en PostHog.
+#### Performance Marketing (5/10)
+- **Fortalezas:** PostHog tracking. A/B testing.
+- **Falta:** Sin paid ads. Sin attribution. Sin pixel Meta/Google.
+- **Plan:** Cuando haya presupuesto: Meta Pixel + Google Ads en PostHog.
 
 #### SEO Specialist (7/10)
-- **Fortalezas:** robots.txt configurado. sitemap.xml. JSON-LD structured data. FAQ visible. Páginas estáticas (términos, privacidad).
-- **Mejoras:** SPA con lazy loading puede dificultar crawling. Falta meta tags dinámicos por ruta.
-- **Recomendación:** Agregar react-helmet para meta tags dinámicos. Considerar SSR/SSG para landing (Next.js migration si el SEO es crítico).
+- **Fortalezas:** robots.txt. sitemap.xml. JSON-LD. FAQ visible.
+- **Falta:** SPA puede dificultar crawling. Sin meta tags dinámicos.
+- **Plan:** Agregar react-helmet. Considerar SSR para landing si SEO es crítico.
 
-#### Business Development Manager (6/10)
-- **Fortalezas:** CRM propio integrado en admin. Tracking de interacciones comerciales. Dashboard de ventas.
-- **Falta:** No hay integración con herramientas externas (HubSpot, Pipedrive). No hay pipeline de leads.
-- **Recomendación:** Para MVP, el CRM interno es suficiente. Migrar a HubSpot cuando haya 10+ clientes activos.
+#### Business Development (6/10)
+- **Fortalezas:** CRM integrado en admin. Tracking interacciones. Dashboard ventas.
+- **Falta:** Sin integración HubSpot/Pipedrive.
+- **Plan:** CRM interno es suficiente para MVP. Migrar a HubSpot con 10+ clientes activos.
 
 #### Account Manager (N/A — MVP)
-- **Estado:** No aplica aún. CRM admin es el precursor.
-- **Recomendación:** Cuando haya 20+ clientes, definir proceso de account management basado en datos del CRM.
+- **Plan:** Con 20+ clientes, definir proceso de account management.
 
 #### Content Manager (7/10)
-- **Fortalezas:** 4 categorías de contenido. Generación IA de contenido. Contenido programado. Recomendaciones por perfil.
-- **Mejoras:** No hay calendario editorial. No hay workflow de aprobación de contenido.
-- **Recomendación:** Crear calendario editorial en el CRM admin. Agregar estado "borrador → revisión → publicado".
+- **Fortalezas:** 4 categorías. Generación IA. Contenido programado. Recomendaciones por perfil.
+- **Falta:** Sin calendario editorial. Sin workflow aprobación.
+- **Plan:** Crear calendario editorial en CRM admin. Estado borrador→revisión→publicado.
 
 #### Community Manager (7/10)
-- **Fortalezas:** Muro anónimo con moderación IA. Badges y ranking para engagement. Community rules.
-- **Falta:** No hay herramientas de moderación manual (solo IA). No hay sistema de reportes de usuarios.
-- **Recomendación:** Agregar botón "Reportar" en posts/comentarios. Crear dashboard de moderación en admin.
+- **Fortalezas:** Muro anónimo con moderación IA. Badges. Ranking. Community rules.
+- **Falta:** Sin herramientas de moderación manual. Sin sistema de reportes de usuarios.
+- **Plan:** ReportDialog ya implementado. Dashboard de moderación en admin.
 
 ---
 
 ### ⚖️ ÁREA DE OPERACIONES, LEGAL Y ANÁLISIS
 
-#### Business Intelligence Analyst (6/10)
-- **Fortalezas:** PostHog con 28+ eventos. CRM dashboard con vistas SQL. NPS tracking.
-- **Falta:** No hay dashboards consolidados. Datos dispersos entre PostHog y Supabase.
-- **Recomendación:** Crear dashboard ejecutivo en PostHog con: DAU, posts/día, diagnósticos/día, NPS promedio, conversión freemium.
+#### BI Analyst (6/10)
+- **Fortalezas:** PostHog 28+ eventos. CRM dashboard SQL. NPS tracking.
+- **Falta:** Sin dashboards consolidados. Datos dispersos.
+- **Plan:** E12.1 dashboard ejecutivo: DAU, posts/día, diagnósticos/día, NPS, conversión.
 
 #### Data Scientist (5/10)
-- **Fortalezas:** Datos de engagement disponibles. NPS data. Diagnósticos con scores.
-- **Falta:** No hay análisis predictivo. No hay segmentación de usuarios.
-- **Recomendación:** Cuando haya 200+ usuarios, hacer clustering de usuarios por comportamiento para personalizar experiencia.
+- **Fortalezas:** Engagement data. NPS. Diagnósticos con scores.
+- **Falta:** Sin análisis predictivo. Sin segmentación.
+- **Plan:** E12.3 clustering con 200+ usuarios.
 
-#### Legal & Compliance Officer (7/10)
-- **Fortalezas:** Política de privacidad. Términos de servicio. Cookie consent. "Mis Datos" (GDPR). Data deletion implementada.
-- **Falta:** No hay DPIA. No hay registro de procesamiento de datos. No hay DPO designado.
-- **Recomendación:** Completar DPIA antes de escalar. Registrar procesamiento de datos ante autoridad competente si aplica.
+#### Legal & Compliance (7/10)
+- **Fortalezas:** Política privacidad. Términos servicio. Cookie consent. "Mis Datos" (GDPR). Data deletion.
+- **Falta:** Sin DPIA. Sin registro procesamiento. Sin DPO designado.
+- **Plan:** E11.1 DPIA antes de escalar.
 
-#### Data Protection Officer — DPO (6/10)
-- **Fortalezas:** Usuario puede ver y eliminar sus datos. Cookie consent con opt-in. Anonimización en muro.
-- **Falta:** No hay procedimiento de breach notification. No hay registro de actividades de procesamiento.
-- **Recomendación:** Crear procedimiento de notificación de brechas (72h GDPR). Documentar base legal de cada tratamiento de datos.
+#### DPO (6/10)
+- **Fortalezas:** Usuario puede ver/eliminar datos. Cookie opt-in. Anonimización muro.
+- **Falta:** Sin breach notification. Sin registro actividades procesamiento.
+- **Plan:** E11.2 procedimiento breach notification (72h GDPR).
 
-#### Customer Success Manager (5/10)
-- **Fortalezas:** NPS survey. Email post-diagnóstico. WhatsApp CTA para soporte.
-- **Falta:** No hay health score de usuarios. No hay proceso de re-engagement para usuarios inactivos.
-- **Recomendación:** Crear health score basado en: última visita, posts, diagnósticos. Automatizar email de re-engagement a los 7 días de inactividad.
+#### Customer Success (5/10)
+- **Fortalezas:** NPS survey. Email post-diagnóstico. WhatsApp CTA.
+- **Falta:** Sin health score. Sin re-engagement automatizado.
+- **Plan:** Health score basado en: última visita, posts, diagnósticos. Email re-engagement a 7 días inactividad.
 
-#### Technical Support Tier 1 (N/A — MVP)
-- **Estado:** WhatsApp CTA como soporte Tier 1.
-- **Recomendación:** Cuando haya 50+ tickets/mes, implementar sistema de tickets (Intercom, Crisp).
+#### Technical Support T1/T2/T3 (N/A — MVP)
+- **Estado:** WhatsApp como soporte T1. Dev resuelve T2. Sentry para T3.
+- **Plan:** Con 50+ tickets/mes: implementar sistema tickets (Intercom/Crisp).
 
-#### Technical Support Tier 2 (N/A — MVP)
-- **Estado:** Dev resuelve directamente.
-- **Recomendación:** Documentar troubleshooting guide en Documents/.
-
-#### Technical Support Tier 3 (N/A — MVP)
-- **Estado:** Dev + Sentry para bugs.
-- **Recomendación:** Sentry ya captura errores. Agregar alertas automáticas para errores críticos.
-
-#### Revenue Operations — RevOps (5/10)
-- **Fortalezas:** CRM con pipeline comercial. Feature flags para freemium. Tracking de interacciones.
-- **Falta:** No hay métricas de revenue. No hay forecast. No hay integración con herramientas de facturación.
-- **Recomendación:** Cuando haya revenue, integrar con herramientas de facturación (Mercado Pago para LATAM). Crear dashboard de MRR, churn, LTV.
+#### RevOps (5/10)
+- **Fortalezas:** CRM pipeline. Feature flags freemium. Tracking interacciones.
+- **Falta:** Sin métricas revenue. Sin forecast. Sin facturación.
+- **Plan:** Integrar Mercado Pago cuando haya revenue. Dashboard MRR/churn/LTV.
 
 ---
 
@@ -504,8 +524,8 @@ Solo si 30+ DAU. PWA es suficiente por ahora.
 | Área | Score | Estado | Top Prioridad |
 |------|-------|--------|---------------|
 | **Seguridad** | 9/10 | ✅ Excelente | 2FA para admins |
-| **Backend** | 8/10 | ✅ Sólido | Middleware chain |
-| **Frontend** | 7/10 | ✅ Funcional | Reducir tamaño componentes |
+| **Backend** | 8/10 | ✅ Sólido | Validación input server-side |
+| **Frontend** | 7/10 | ✅ Funcional | Descomponer componentes grandes |
 | **UX/UI** | 8/10 | ✅ Buena | Skeleton loading |
 | **DevOps/CI-CD** | 8/10 | ✅ Completo | Health checks post-deploy |
 | **Analytics/BI** | 8/10 | ✅ PostHog integrado | Dashboard ejecutivo |
@@ -577,14 +597,35 @@ Solo si 30+ DAU. PWA es suficiente por ahora.
 
 ---
 
-## 14. Archivos en Documents/
+## 14. Glosario
+
+| Término | Definición |
+|---------|-----------|
+| **MejoraApp** | Nombre del producto. App digital de la comunidad Mejora Continua. |
+| **Mejora Continua** | Comunidad de líderes empresariales argentinos. |
+| **Mirror** | Diagnóstico estratégico interactivo. El usuario responde preguntas y recibe perfil + puntaje. |
+| **Muro** | Feed anónimo donde miembros comparten dudas, experiencias y reflexiones sobre negocios. |
+| **Contenido de Valor** | Artículos, videos, infografías y PDFs generados por IA o curados por admin. |
+| **Novedades** | Noticias y anuncios de la comunidad. CRUD admin. |
+| **RLS** | Row Level Security. Políticas de seguridad a nivel de fila en PostgreSQL/Supabase. |
+| **Edge Function** | Función serverless en Supabase (Deno). Ejecuta lógica de negocio del lado del servidor. |
+| **Moderación IA** | Sistema que usa IA (Gemini → Groq → OpenRouter) para aprobar/rechazar posts y comentarios. |
+| **Rate Limiting** | Límite de requests por minuto por usuario. Previene abuso. |
+| **PWA** | Progressive Web App. Permite instalar la app sin App Store. |
+| **Feature Flag** | Interruptor que activa/desactiva features. Actualmente en modo ALL_FREE. |
+| **Freemium** | Modelo de negocio con tier gratuito y premium. Preparado pero no activado. |
+| **Badge** | Insignia que gana el usuario por acciones (primer post, 5 posts, perfil completo). |
+| **Ranking** | Leaderboard de la comunidad basado en badges y actividad. |
+| **NPS** | Net Promotor Score. Encuesta de satisfacción (0-10). |
+| **Referido** | Sistema de invitación. Usuarios invitan a otros miembros. |
+
+---
+
+## 15. Archivos en Documents/
 
 | Archivo | Propósito |
 |---------|-----------|
 | `DOCUMENTO-MAESTRO.md` | **Este archivo** — fuente única de verdad |
-| `GUIA-SETUP-INICIAL.md` | Guía paso a paso: Vercel + Resend + onboarding emails |
-| `GLOSARIO.md` | Glosario de términos del producto (para equipo, traductores, docs) |
-| `CHANGELOG-2026-04-28.md` | Changelog de la sesión |
 | `MIGRACION-CRM-2026-04-25.sql` | Script CRM (4 tablas + vistas + RPC) — ejecutado |
 | `PUSH_SUBSCRIPTIONS.sql` | Script SQL push_subscriptions |
 | `MIGRACION-SEGURIDAD-2026-04-23.sql` | Script hardening — ejecutado |
@@ -592,9 +633,11 @@ Solo si 30+ DAU. PWA es suficiente por ahora.
 | `CLEAN_SETUP.sql` | Setup limpio completo de DB |
 | `SECURITY_HARDENING.sql` | Hardening pre-launch |
 
+> **Nota:** `GUIA-SETUP-INICIAL.md`, `GLOSARIO.md` y `CHANGELOG-*.md` se integraron en este documento (§13, §14, §7 respectivamente).
+
 ---
 
-## 15. Cronograma
+## 16. Cronograma
 
 ```
 ✅ E1: Seguridad (completa)
@@ -603,16 +646,16 @@ Solo si 30+ DAU. PWA es suficiente por ahora.
 ✅ E4: Analytics y Retención (completa)
 ✅ E5: Calidad y Robustez (completa)
 ✅ E6: Escalamiento (completa — 12/12 + CRM)
-🔄 E7: Deploy y Activación (6/8 ✅ — pendiente: Vercel + onboarding emails)
-📋 E8: Crecimiento (5 tareas) — Sprint 1 semana
-🔄 E9: Escalamiento Técnico (9.1-9.2 en progreso)
-📋 E10: App Nativa (evaluar)
-📋 E11: Compliance (4 tareas) — Sprint 1 semana
+🔄 E7: Deploy y Activación (7/9 ✅ — pendiente: Vercel + onboarding emails + EF deploy)
+📋 E8: Crecimiento (6 tareas) — Sprint 1 semana
+📋 E9: Escalamiento Técnico (9 tareas) — Sprint 1-2 semanas
+⏳ E10: App Nativa (evaluar si 30+ DAU)
+📋 E11: Compliance (6 tareas) — Sprint 1 semana
 📋 E12: Data & ML (solo si hay tracción)
 ```
 
 **Tiempo estimado E7-E12:** 4-6 semanas
-**Próximo paso:** Conectar Vercel + crear Resend + ejecutar SQL onboarding_emails
+**Próximo paso:** Completar E7 (Vercel + Resend + EF deploy) → luego E8
 
 ---
 
