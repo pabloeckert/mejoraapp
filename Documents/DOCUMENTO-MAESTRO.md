@@ -219,7 +219,9 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 
 | Fecha | Resumen |
 |-------|---------|
-| 2026-04-29 | **Consolidación definitiva + análisis 30+ roles optimizado** — DOCUMENTO-MAESTRO reestructurado como fuente única. Guía setup, glosario y changelog integrados. Plan optimizado E7-E12 con prioridades concretas. Push automático. |
+| 2026-04-29 | **Refactor AdminCRM + Skeleton + Health Check** — AdminCRM 900→34 líneas (split en 4 módulos: CRMDashboard, CRMClientsTab, CRMInteractionsTab, CRMProductsTab + constants). Skeleton components (Card, Table, KPI, Chart, List). Deploy health check (3 intentos post-deploy). 103 tests passing. Push `d75b800`. |
+| 2026-04-29 | **Consolidación definitiva + análisis 30+ roles optimizado** — DOCUMENTO-MAESTRO reestructurado como fuente única. Guía setup, glosario y changelog integrados. Plan optimizado E7-E12 con prioridades concretas. Push `5ecfb06`. |
+| 2026-04-29 | **Setup Vercel en progreso** — Usuario creó cuenta Vercel con GitHub. Importando repo `MejoraApp`. Pendiente: env vars + deploy. |
 | 2026-04-28 | **Sesión completa: análisis + refactor + setup Vercel** — Providers.tsx compositor. ReportDialog en muro. Middleware compartido para Edge Functions. 4 Edge Functions migradas. GLOSARIO.md creado. Setup Vercel guiado. |
 | 2026-04-28 | **Consolidación documentación total** — DOCUMENTO-MAESTRO compactado (915→396 líneas). README actualizado. |
 | 2026-04-27 | GitHub Pages fix + Vercel setup + onboarding email prep |
@@ -236,7 +238,7 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 
 | # | Acción | Prioridad | Estado |
 |---|--------|-----------|--------|
-| 1 | Conectar repo a Vercel (import + env vars + deploy) | 🔴 Crítico | 🟡 En progreso |
+| 1 | Crear cuenta Vercel + importar repo + env vars + deploy | 🔴 Crítico | 🟡 En progreso (cuenta creada, importando repo) |
 | 2 | Crear cuenta Resend + verificar dominio `mejoraok.com` | 🔴 Crítico | 🔴 Pendiente |
 | 3 | Ejecutar SQL `onboarding_emails` en Supabase SQL Editor | 🔴 Alta | 🔴 Pendiente |
 | 4 | Desplegar EF `send-onboarding-email` | 🔴 Alta | 🔴 Pendiente |
@@ -250,11 +252,14 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 
 ### E7 — Deploy y Activación 🔄 (actual — completar esta semana)
 
-| # | Tarea | Prioridad | Dependencia |
-|---|-------|-----------|-------------|
-| 7.8 | Importar repo en Vercel + env vars + deploy | 🔴 Crítico | Usuario |
-| 7.9 | Deploy Edge Functions con middleware | 🔴 Crítico | Supabase CLI |
-| 7.2-7.4 | Onboarding emails (SQL + EF + cron) | 🔴 Alta | Resend + Supabase |
+| # | Tarea | Prioridad | Estado |
+|---|-------|-----------|--------|
+| 7.8 | Importar repo en Vercel + env vars + deploy | 🔴 Crítico | 🟡 En progreso (cuenta creada, importando) |
+| 7.9 | Deploy Edge Functions con middleware | 🔴 Crítico | 🔴 Pendiente (requiere Supabase CLI) |
+| 7.2-7.4 | Onboarding emails (SQL + EF + cron) | 🔴 Alta | 🔴 Pendiente (requiere Resend) |
+| 7.10 | AdminCRM refactor (900→34 líneas) | 🟡 Media | ✅ Completado 2026-04-29 |
+| 7.11 | Skeleton components (5 variantes) | 🟡 Media | ✅ Completado 2026-04-29 |
+| 7.12 | Deploy health check post-deploy | 🟡 Media | ✅ Completado 2026-04-29 |
 
 **Done criteria:** App servida desde Vercel, emails onboarding funcionando, Edge Functions desplegadas.
 
