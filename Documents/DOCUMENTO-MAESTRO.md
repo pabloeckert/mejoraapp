@@ -59,6 +59,7 @@ src/
 ├── integrations/supabase/  # client.ts, types.ts
 ├── lib/                # utils.ts, analytics.ts, sentry.ts, push.ts, pdfExport.ts, plans.ts, ab-testing.ts
 ├── repositories/       # index.ts (Repository Layer sobre Supabase)
+├── services/           # Business logic layer (diagnostic, wall, content)
 ├── i18n/               # locales/index.ts (es/en, 130+ claves)
 └── App.tsx             # Router + providers
 ```
@@ -181,9 +182,9 @@ Vercel → Deployments → Promover versión anterior.
 
 | Métrica | Valor |
 |---------|-------|
-| Líneas de código (TS/TSX) | ~17,500 |
-| Archivos fuente | 154 |
-| Tests unitarios | 103+ (100% passing) |
+| Líneas de código (TS/TSX) | ~18,500 |
+| Archivos fuente | 164 |
+| Tests unitarios | 142 (100% passing) |
 | Tests E2E | 25 (Playwright) |
 | Tests accesibilidad | 7 (axe-core) |
 | Tablas DB | 23 (19 core + 4 CRM) |
@@ -192,6 +193,7 @@ Vercel → Deployments → Promover versión anterior.
 | Bundle gzipped | ~355KB |
 | Componentes UI | 30+ (shadcn/ui) |
 | Hooks custom | 11 |
+| Services | 3 (diagnostic, wall, content) |
 | Migraciones SQL | 17 |
 
 ---
@@ -239,6 +241,7 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 
 | Fecha | Resumen |
 |-------|---------|
+| 2026-04-29 | **Autodev session: services layer + hardening + tests + bug fix** — Services layer (diagnostic, wall, content). 39 nuevos tests (103→142). Bug fix computed property en useWallInteractions. Edge function hardening (HTML sanitization, validation whitelist). Design tokens (spacing, shadows, transitions). Deploy verification script. SEO structured data. PR template + CODEOWNERS. env.example documentado. CI mejorado (lint + bundle size). |
 | 2026-04-29 | **Fix Vercel build + plan optimizado + análisis completo** — Fix tsconfig.json (eliminado references que causaba ENOENT en Vercel). DOCUMENTO-MAESTRO reestructurado con plan optimizado E7-E12 priorizado por impacto. Análisis 30+ perspectivas actualizado. Build + 103 tests passing. |
 | 2026-04-29 | **Setup Vercel + Deploy intento** — Credenciales Supabase configuradas (URL, publishable key, project ID). Repo importado en Vercel. 3 env vars guardadas (Production + Preview). Deploy falló: `tsconfig.node.json` no encontrado por esbuild en entorno Vercel (error ENOENT). Archivo existe en git. Pendiente: resolver build error + redeploy sin cache. Push `75284ae`. |
 | 2026-04-29 | **Refactor AdminCRM + Skeleton + Health Check** — AdminCRM 900→34 líneas (split en 4 módulos). Skeleton components (Card, Table, KPI, Chart, List). Deploy health check (3 intentos post-deploy). 103 tests passing. Push `d75b800`. |
@@ -330,17 +333,17 @@ E7 (Deploy) ──→ E8 (Crecimiento) ──→ E10 (App Nativa)
 
 **Objetivo:** 2FA, CI robusto, código descompuesto.
 
-| # | Tarea | Rol | Impacto | Esfuerzo |
-|---|-------|-----|---------|----------|
-| 9.1 | 2FA para admins (Supabase MFA) | Cybersecurity | 🔴 | 🟡 Medio |
-| 9.2 | Health checks post-deploy en CI | DevOps/SRE | 🔴 | 🟢 Bajo |
-| 9.3 | Separar `lib/` en `lib/` + `services/` | SW Architect | 🟡 | 🟡 Medio |
-| 9.4 | Descomponer componentes >300 líneas | Frontend | 🟡 | 🟡 Medio |
-| 9.5 | Skeleton loading en pantallas críticas | UX Designer | 🟡 | 🟢 Bajo |
-| 9.6 | Design tokens en tailwind.config | UI Designer | 🟢 | 🟢 Bajo |
-| 9.7 | Storybook para componentes UI | Frontend | 🟢 | 🟡 Medio |
-| 9.8 | Lighthouse CI en pipeline | DevOps | 🟢 | 🟢 Bajo |
-| 9.9 | Visual regression tests (Playwright) | QA | 🟢 | 🟡 Medio |
+| # | Tarea | Rol | Impacto | Esfuerzo | Estado |
+|---|-------|-----|---------|----------|--------|
+| 9.1 | 2FA para admins (Supabase MFA) | Cybersecurity | 🔴 | 🟡 Medio | 🔴 Pendiente |
+| 9.2 | Health checks post-deploy en CI | DevOps/SRE | 🔴 | 🟢 Bajo | ✅ 2026-04-29 (verify-deploy.sh) |
+| 9.3 | Separar `lib/` en `lib/` + `services/` | SW Architect | 🟡 | 🟡 Medio | ✅ 2026-04-29 (3 services creados) |
+| 9.4 | Descomponer componentes >300 líneas | Frontend | 🟡 | 🟡 Medio | 🟡 Parcial (AdminCRM ✅, Muro/DiagnosticTest pendiente) |
+| 9.5 | Skeleton loading en pantallas críticas | UX Designer | 🟡 | 🟢 Bajo | ✅ 2026-04-29 (5 variantes) |
+| 9.6 | Design tokens en tailwind.config | UI Designer | 🟢 | 🟢 Bajo | ✅ 2026-04-29 (spacing, shadows, transitions) |
+| 9.7 | Storybook para componentes UI | Frontend | 🟢 | 🟡 Medio | 🔴 Pendiente |
+| 9.8 | Lighthouse CI en pipeline | DevOps | 🟢 | 🟢 Bajo | 🔴 Pendiente |
+| 9.9 | Visual regression tests (Playwright) | QA | 🟢 | 🟡 Medio | 🔴 Pendiente |
 
 **Gate de salida:** 2FA activo + CI con health checks + Componentes refactorizados
 
