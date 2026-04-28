@@ -5,20 +5,11 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     },
     "skipLibCheck": true,
     "strictNullChecks": false
   },
-  "files": [],
-  "references": [
-    {
-      "path": "./tsconfig.app.json"
-    },
-    {
-      "path": "./tsconfig.node.json"
-    }
-  ]
+  "include": ["src", "vite.config.ts"],
+  "exclude": ["node_modules", "dist"]
 }
