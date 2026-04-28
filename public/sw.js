@@ -52,8 +52,8 @@ self.addEventListener("push", (event) => {
   const title = payload.title || "MejoraApp";
   const options = {
     body: payload.body || "",
-    icon: payload.icon || "/app/icon-192.png",
-    badge: payload.badge || "/app/icon-192.png",
+    icon: payload.icon || "/favicon.png",
+    badge: payload.badge || "/favicon.png",
     data: { url: payload.url || "/" },
     tag: payload.tag || "mejoraapp-notification",
     renotify: true,
