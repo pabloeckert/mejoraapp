@@ -57,7 +57,7 @@ src/
 ├── hooks/              # useWallInteractions, usePullToRefresh, useBadges, useRanking, useCRM
 ├── data/               # diagnosticData.ts, badges.ts
 ├── integrations/supabase/  # client.ts, types.ts
-├── lib/                # utils.ts, analytics.ts, sentry.ts, push.ts, pdfExport.ts, plans.ts, ab-testing.ts
+├── lib/                # utils.ts, analytics.ts, sentry.ts, push.ts, pdfExport.ts, plans.ts, ab-testing.ts, validation.ts
 ├── repositories/       # index.ts (Repository Layer sobre Supabase)
 ├── services/           # Business logic layer (diagnostic, wall, content)
 ├── i18n/               # locales/index.ts (es/en, 130+ claves)
@@ -182,9 +182,9 @@ Vercel → Deployments → Promover versión anterior.
 
 | Métrica | Valor |
 |---------|-------|
-| Líneas de código (TS/TSX) | ~19,500 |
-| Archivos fuente | 170 |
-| Tests unitarios | 268 (100% passing, 14 archivos) |
+| Líneas de código (TS/TSX) | ~20,000 |
+| Archivos fuente | 175 |
+| Tests unitarios | 312 (100% passing, 15 archivos) |
 | Tests E2E | 25 (Playwright) |
 | Tests accesibilidad | 7 (axe-core) |
 | Tablas DB | 23 (19 core + 4 CRM) |
@@ -194,6 +194,7 @@ Vercel → Deployments → Promover versión anterior.
 | Componentes UI | 30+ (shadcn/ui) |
 | Hooks custom | 11 |
 | Services | 3 (diagnostic, wall, content) |
+| Validation schemas | 11 (zod) |
 | Migraciones SQL | 17 |
 
 ---
@@ -241,6 +242,7 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 
 | Fecha | Resumen |
 |-------|---------|
+| 2026-04-29 | **Autodev session 3: validation + i18n + PWA** — Zod validation schemas (11 schemas, 44 tests). i18n English translations completas (30+ keys). PWA manifest fix (start_url, shortcuts, maskable icons). Service worker icon paths fix. 312 tests total. |
 | 2026-04-29 | **Autodev session 2: component tests + integration tests** — 119 nuevos tests (103→222). 12 test files cubriendo: components, hooks, services, admin, integration, security, i18n, analytics, diagnostic data, badges, CORS, CSP, PWA, freemium. ErrorBoundary testing. Lighthouse CI. lint-staged. Repository error handling. |
 | 2026-04-29 | **Autodev session 1: services layer + hardening + tests + bug fix** — Services layer (diagnostic, wall, content). 39 nuevos tests (103→142). Bug fix computed property en useWallInteractions. Edge function hardening (HTML sanitization, validation whitelist). Design tokens (spacing, shadows, transitions). Deploy verification script. SEO structured data. PR template + CODEOWNERS. env.example documentado. CI mejorado (lint + bundle size). |
 | 2026-04-29 | **Fix Vercel build + plan optimizado + análisis completo** — Fix tsconfig.json (eliminado references que causaba ENOENT en Vercel). DOCUMENTO-MAESTRO reestructurado con plan optimizado E7-E12 priorizado por impacto. Análisis 30+ perspectivas actualizado. Build + 103 tests passing. |
