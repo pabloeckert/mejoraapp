@@ -182,9 +182,9 @@ Vercel → Deployments → Promover versión anterior.
 
 | Métrica | Valor |
 |---------|-------|
-| Líneas de código (TS/TSX) | ~18,500 |
-| Archivos fuente | 164 |
-| Tests unitarios | 142 (100% passing) |
+| Líneas de código (TS/TSX) | ~19,500 |
+| Archivos fuente | 170 |
+| Tests unitarios | 222 (100% passing, 12 archivos) |
 | Tests E2E | 25 (Playwright) |
 | Tests accesibilidad | 7 (axe-core) |
 | Tablas DB | 23 (19 core + 4 CRM) |
@@ -241,7 +241,8 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 
 | Fecha | Resumen |
 |-------|---------|
-| 2026-04-29 | **Autodev session: services layer + hardening + tests + bug fix** — Services layer (diagnostic, wall, content). 39 nuevos tests (103→142). Bug fix computed property en useWallInteractions. Edge function hardening (HTML sanitization, validation whitelist). Design tokens (spacing, shadows, transitions). Deploy verification script. SEO structured data. PR template + CODEOWNERS. env.example documentado. CI mejorado (lint + bundle size). |
+| 2026-04-29 | **Autodev session 2: component tests + integration tests** — 119 nuevos tests (103→222). 12 test files cubriendo: components, hooks, services, admin, integration, security, i18n, analytics, diagnostic data, badges, CORS, CSP, PWA, freemium. ErrorBoundary testing. Lighthouse CI. lint-staged. Repository error handling. |
+| 2026-04-29 | **Autodev session 1: services layer + hardening + tests + bug fix** — Services layer (diagnostic, wall, content). 39 nuevos tests (103→142). Bug fix computed property en useWallInteractions. Edge function hardening (HTML sanitization, validation whitelist). Design tokens (spacing, shadows, transitions). Deploy verification script. SEO structured data. PR template + CODEOWNERS. env.example documentado. CI mejorado (lint + bundle size). |
 | 2026-04-29 | **Fix Vercel build + plan optimizado + análisis completo** — Fix tsconfig.json (eliminado references que causaba ENOENT en Vercel). DOCUMENTO-MAESTRO reestructurado con plan optimizado E7-E12 priorizado por impacto. Análisis 30+ perspectivas actualizado. Build + 103 tests passing. |
 | 2026-04-29 | **Setup Vercel + Deploy intento** — Credenciales Supabase configuradas (URL, publishable key, project ID). Repo importado en Vercel. 3 env vars guardadas (Production + Preview). Deploy falló: `tsconfig.node.json` no encontrado por esbuild en entorno Vercel (error ENOENT). Archivo existe en git. Pendiente: resolver build error + redeploy sin cache. Push `75284ae`. |
 | 2026-04-29 | **Refactor AdminCRM + Skeleton + Health Check** — AdminCRM 900→34 líneas (split en 4 módulos). Skeleton components (Card, Table, KPI, Chart, List). Deploy health check (3 intentos post-deploy). 103 tests passing. Push `d75b800`. |
