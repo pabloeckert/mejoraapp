@@ -83,6 +83,25 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      // ── Design Tokens ──────────────────────────────────────────
+      spacing: {
+        "4.5": "1.125rem",  // 18px — used in card padding
+        "13": "3.25rem",    // 52px — bottom nav height
+        "18": "4.5rem",     // 72px — header height
+      },
+      boxShadow: {
+        "card": "0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.04)",
+        "card-hover": "0 4px 6px -1px rgb(0 0 0 / 0.06), 0 2px 4px -2px rgb(0 0 0 / 0.04)",
+        "elevated": "0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04)",
+        "nav": "0 -1px 3px 0 rgb(0 0 0 / 0.04)",
+      },
+      transitionDuration: {
+        "150": "150ms",
+        "250": "250ms",
+      },
+      transitionTimingFunction: {
+        "bounce-in": "cubic-bezier(0.34, 1.56, 0.64, 1)",
+      },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },

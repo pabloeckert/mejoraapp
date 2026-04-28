@@ -126,7 +126,10 @@ Deno.serve(
         return new Response(JSON.stringify({ error: "El contenido no puede estar vacío." }), { status: 400, headers });
       }
 
-      const content = body.content as string;
+      const content = (body.content as string).replace(/<[^>]*>/g, "").trim(); // Strip HTML tags
+      if (content.length === 0) {
+        return new Response(JSON.stringify({ error: "El contenido no puede estar vacío." }), { status: 400, headers });
+      }
       if (content.length > 1000) {
         return new Response(JSON.stringify({ error: "El contenido no puede superar los 1000 caracteres." }), { status: 400, headers });
       }

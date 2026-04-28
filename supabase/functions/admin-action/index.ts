@@ -27,6 +27,30 @@ function requireObject(val: unknown, name: string): Record<string, unknown> {
   return val as Record<string, unknown>;
 }
 
+function sanitizeHtml(val: string): string {
+  // Strip HTML tags to prevent XSS in stored content
+  return val.replace(/<[^>]*>/g, "").trim();
+}
+
+function validateStringLength(val: string, name: string, max: number): string {
+  if (val.length > max) {
+    throw new Error(`${name} no puede exceder ${max} caracteres`);
+  }
+  return val;
+}
+
+function validateAction(action: string): string {
+  const allowed = [
+    "update-profile", "create-post", "update-post-status", "delete-post",
+    "create-category", "upsert-novedad", "delete-novedad", "moderate-post",
+    "moderate-comment", "add-role", "remove-role",
+  ];
+  if (!allowed.includes(action)) {
+    throw new Error(`Acción desconocida: ${action}`);
+  }
+  return action;
+}
+
 Deno.serve(
   withMiddleware({ auth: true, admin: true, rateLimit: 30 }, async (req, ctx) => {
     const headers = { "Content-Type": "application/json" };

@@ -77,7 +77,14 @@ Deno.serve(
         return new Response(JSON.stringify({ error: "Datos incompletos." }), { status: 400, headers });
       }
 
-      const { post_id, content } = body;
+      const post_id = typeof body.post_id === "string" ? body.post_id.trim() : "";
+      if (!post_id || post_id.length > 100) {
+        return new Response(JSON.stringify({ error: "post_id inválido." }), { status: 400, headers });
+      }
+      const content = (body.content as string).replace(/<[^>]*>/g, "").trim(); // Strip HTML tags
+      if (content.length === 0) {
+        return new Response(JSON.stringify({ error: "El contenido no puede estar vacío." }), { status: 400, headers });
+      }
       if (content.length > 500) {
         return new Response(JSON.stringify({ error: "Máximo 500 caracteres." }), { status: 400, headers });
       }
