@@ -61,17 +61,7 @@ jobs:
         run: |
           echo "⏳ Waiting 30s for Vercel deployment to propagate..."
           sleep 30
-          for i in 1 2 3; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 https://app.mejoraok.com || echo "000")
-            if [ "$STATUS" = "200" ]; then
-              echo "✅ Health check passed (HTTP $STATUS) — attempt $i"
-              exit 0
-            fi
-            echo "⚠️ Attempt $i: HTTP $STATUS — retrying in 10s..."
-            sleep 10
-          done
-          echo "❌ Health check failed after 3 attempts"
-          exit 1
+          bash scripts/verify-deploy.sh https://app.mejoraok.com
 
       - name: Notify on failure
         if: failure()

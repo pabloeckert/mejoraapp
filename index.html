@@ -43,6 +43,37 @@
   <!-- Preload critical fonts -->
   <link rel="preload" href="/fonts/BwModelica-Medium.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="/fonts/BwModelica-Bold.woff2" as="font" type="font/woff2" crossorigin />
+
+  <!-- Structured Data (JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "MejoraApp",
+    "description": "Comunidad de negocios para líderes empresariales argentinos. Contenido de valor, diagnóstico estratégico y networking.",
+    "url": "https://app.mejoraok.com",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "ARS"
+    },
+    "author": {
+      "@type": "Organization",
+      "name": "Mejora Continua",
+      "url": "https://mejoraok.com"
+    },
+    "inLanguage": ["es-AR", "en"],
+    "featureList": [
+      "Muro anónimo con moderación IA",
+      "Diagnóstico estratégico interactivo",
+      "Contenido de valor curado",
+      "Gamificación y badges",
+      "CRM integrado para administradores"
+    ]
+  }
+  </script>
 </head>
 <body>
   <div id="root"></div>
