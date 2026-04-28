@@ -162,6 +162,7 @@ const PostCard = memo(
                     ? "text-destructive bg-destructive/10 font-medium"
                     : "text-muted-foreground hover:text-destructive hover:bg-destructive/5"
                 }`}
+                aria-label={confirmingDelete ? "Confirmar eliminación del post" : "Eliminar post"}
                 title={confirmingDelete ? "Tocá de nuevo para confirmar" : "Eliminar post"}
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -171,6 +172,7 @@ const PostCard = memo(
               <button
                 onClick={() => onReport(post.id, post.content)}
                 className="flex items-center gap-1 text-xs text-muted-foreground hover:text-amber-500 transition-colors px-2 py-1 rounded-full hover:bg-amber-500/5"
+                aria-label="Reportar contenido inapropiado"
                 title="Reportar contenido"
               >
                 <Flag className="w-3.5 h-3.5" />
@@ -180,6 +182,8 @@ const PostCard = memo(
               onClick={() => onLike(post.id)}
               className={`flex items-center gap-1 text-xs transition-colors px-2 py-1 rounded-full
                 ${isLiked ? "text-destructive bg-destructive/10" : "text-muted-foreground hover:text-destructive hover:bg-destructive/5"}`}
+              aria-label={isLiked ? "Quitar me gusta" : "Dar me gusta"}
+              aria-pressed={isLiked}
             >
               <Heart className={`w-3.5 h-3.5 transition-transform ${isLiked ? "fill-current scale-110" : ""}`} />
               {post.likes_count > 0 && <span>{post.likes_count}</span>}
@@ -188,6 +192,8 @@ const PostCard = memo(
             <button
               onClick={() => onToggle(post.id)}
               className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-full hover:bg-secondary"
+              aria-expanded={expanded}
+              aria-label={expanded ? "Ocultar comentarios" : "Ver comentarios"}
             >
               <MessageSquare className="w-3.5 h-3.5" />
               {post.comments_count > 0 && <span>{post.comments_count}</span>}

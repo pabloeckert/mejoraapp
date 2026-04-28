@@ -16,7 +16,7 @@ const tabs = [
 
 const BottomNav = ({ activeTab, onTabChange, badges }: BottomNavProps) => {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border" role="navigation" aria-label="Navegación principal">
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -26,6 +26,8 @@ const BottomNav = ({ activeTab, onTabChange, badges }: BottomNavProps) => {
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
+              aria-current={isActive ? "page" : undefined}
+              aria-label={`${tab.label}${hasNew ? " (nuevo contenido)" : ""}`}
               className={cn(
                 "relative flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all min-w-[72px]",
                 isActive

@@ -70,6 +70,7 @@ const AppHeader = () => {
             size="icon"
             className="h-11 w-11 rounded-full bg-secondary/80 hover:bg-secondary"
             onClick={toggleTheme}
+            aria-label={theme === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
             title={theme === "dark" ? "Modo claro" : "Modo oscuro"}
           >
             {theme === "dark" ? (
@@ -80,6 +81,7 @@ const AppHeader = () => {
           </Button>
           <button
             className="h-11 w-11 rounded-full bg-primary flex items-center justify-center hover:opacity-90 transition-opacity"
+            aria-label="Abrir perfil de usuario"
             title="Tu perfil"
             onClick={() => {
               trackProfileViewed();
@@ -92,7 +94,7 @@ const AppHeader = () => {
               <User className="w-5 h-5 text-primary-foreground" />
             )}
           </button>
-          <Button variant="ghost" size="icon" onClick={signOut} className="h-11 w-11" title="Cerrar sesión">
+          <Button variant="ghost" size="icon" onClick={signOut} className="h-11 w-11" aria-label="Cerrar sesión" title="Cerrar sesión">
             <LogOut className="w-5 h-5" />
           </Button>
         </div>
