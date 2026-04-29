@@ -129,7 +129,7 @@ export function useBadges(userId: string | undefined) {
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
-          callbackRef.current?.(payload as { new: UserBadge });
+          callbackRef.current?.(payload as unknown as { new: UserBadge });
         }
       );
       channel.subscribe();

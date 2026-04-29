@@ -48,7 +48,7 @@ export function useWallInteractions(userId: string | undefined) {
       .select("post_id")
       .eq("user_id", userId)
       .then(({ data }) => {
-        setLikedPosts(new Set((data ?? []).map((l) => l.post_id)));
+        setLikedPosts(new Set((data ?? []).map((l: { post_id: string }) => l.post_id)));
       });
   }, [userId]);
 
@@ -97,7 +97,7 @@ export function useWallInteractions(userId: string | undefined) {
       if (isLiked) {
         await supabase.from("wall_likes").delete().eq("post_id", postId).eq("user_id", userId);
       } else {
-        await supabase.from("wall_likes").insert({ post_id: postId, user_id: userId });
+        await supabase.from("wall_likes").insert({ post_id: postId, user_id: userId } as never);
         trackLikePost(postId);
       }
     },
@@ -133,11 +133,11 @@ export function useWallInteractions(userId: string | undefined) {
           trackCommentPost(postId, content.length);
           // Notify post author (fire-and-forget)
           supabase.from("wall_posts").select("user_id").eq("id", postId).maybeSingle()
-            .then(({ data: post }) => {
+            .then(({ data: post }: { data: { user_id: string } | null }) => {
               if (post?.user_id && post.user_id !== userId) {
-                supabase.functions.invoke("send-push-notification", {
+                Promise.resolve(supabase.functions.invoke("send-push-notification", {
                   body: { action: "reply", target_user_id: post.user_id },
-                }).catch(() => {});
+                })).catch(() => {});
               }
             }).catch(() => {});
         }

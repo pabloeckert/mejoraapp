@@ -48,16 +48,21 @@ src/
 ├── pages/              # 5 páginas lazy-loaded (Index, Auth, Admin, ResetPassword, NotFound)
 ├── components/
 │   ├── admin/          # 7 módulos (Contenido, IA, Muro, Novedades, Usuarios, Seguridad, CRM)
-│   │   └── crm/        # CRMDashboard, CRMClientsTab, CRMInteractionsTab, CRMProductsTab + constants
+│   │   ├── crm/        # CRMDashboard, CRMClientsTab, CRMInteractionsTab, CRMProductsTab + constants
+│   │   └── AdminSecurityMFA.tsx  # MFA enforcement warning
 │   ├── auth/           # LoginForm, SignupForm, GoogleButton, AdminLoginForm
 │   ├── tabs/           # Muro, Novedades, ContenidoDeValor
+│   ├── muro/           # PostCard, CommentItem, PostSkeleton (extraídos de Muro.tsx)
+│   ├── diagnostic/     # DiagnosticIntro, DiagnosticQuestionView, DiagnosticLoading, DiagnosticResultView
 │   ├── ui/             # 30+ componentes shadcn/ui
-│   └── [feature]       # DiagnosticTest, Onboarding, BadgeDisplay, etc.
+│   ├── SEOHead.tsx     # Meta tags dinámicos (react-helmet-async)
+│   ├── UpgradeModal.tsx # Modal de upgrade premium
+│   └── [feature]       # DiagnosticTest, Onboarding, BadgeDisplay, FeatureGate, etc.
 ├── contexts/           # AuthContext, ThemeContext, I18nContext
-├── hooks/              # useWallInteractions, usePullToRefresh, useBadges, useRanking, useCRM
+├── hooks/              # useWallInteractions, usePullToRefresh, useBadges, useRanking, useCRM, useFunnel
 ├── data/               # diagnosticData.ts, badges.ts
 ├── integrations/supabase/  # client.ts, types.ts
-├── lib/                # utils.ts, analytics.ts, sentry.ts, push.ts, pdfExport.ts, plans.ts, ab-testing.ts, validation.ts
+├── lib/                # utils.ts, analytics.ts, funnel.ts, sentry.ts, push.ts, pdfExport.ts, plans.ts, ab-testing.ts, validation.ts
 ├── repositories/       # index.ts (Repository Layer sobre Supabase)
 ├── services/           # Business logic layer (diagnostic, wall, content)
 ├── i18n/               # locales/index.ts (es/en, 160+ claves)
@@ -183,8 +188,8 @@ Vercel → Deployments → Promover versión anterior.
 
 | Métrica | Valor |
 |---------|-------|
-| Líneas de código (TS/TSX) | ~20,000 |
-| Archivos fuente | 175 |
+| Líneas de código (TS/TSX) | ~21,500 |
+| Archivos fuente | 165 |
 | Tests unitarios | 312 (100% passing, 15 archivos) |
 | Tests E2E | 25 (Playwright) |
 | Tests accesibilidad | 7 (axe-core) |
@@ -193,7 +198,7 @@ Vercel → Deployments → Promover versión anterior.
 | Eventos analytics | 28+ |
 | Bundle gzipped | ~355KB |
 | Componentes UI | 30+ (shadcn/ui) |
-| Hooks custom | 11 |
+| Hooks custom | 12 |
 | Services | 3 (diagnostic, wall, content) |
 | Validation schemas | 11 (zod) |
 | Migraciones SQL | 17 |
@@ -233,7 +238,7 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 | 7.6 | GitHub Pages configurado | 🟡 | ✅ |
 | 7.7 | Migración gamificación ejecutada | 🟡 | ✅ |
 | 7.8 | Migrar a Vercel | 🔴 | ✅ En vivo (HTTP 200) |
-| 7.9 | Deploy Edge Functions migradas a middleware | 🔴 | 🔴 Pendiente |
+| 7.9 | Deploy Edge Functions migradas a middleware | 🔴 | ✅ 2026-04-30 (código migrado, pendiente deploy) |
 | 7.10 | AdminCRM refactor (900→34 líneas) | 🟡 | ✅ 2026-04-29 |
 | 7.11 | Skeleton components (5 variantes) | 🟡 | ✅ 2026-04-29 |
 | 7.12 | Deploy health check post-deploy | 🟡 | ✅ 2026-04-29 |
@@ -244,6 +249,7 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 
 | Fecha | Resumen |
 |-------|---------|
+| 2026-04-30 | **MEJORAS PROFUNDAS — 7 commits, refactor + funnel + freemium + MFA + SEO + Edge Functions** — Análisis completo del repo + documentos MejoraApp.docx y Yo-lo-haria-asi.docx. **Refactor Muro.tsx:** 610→386 líneas, extraído PostCard (169L), CommentItem (24L), PostSkeleton (17L). **Refactor DiagnosticTest.tsx:** 576→188 líneas, extraído DiagnosticIntro (82L), DiagnosticQuestionView (104L), DiagnosticLoading (11L), DiagnosticResultView (236L). Progress bar visible. **Funnel Tracking:** Sistema NSM completo (`src/lib/funnel.ts`), 7 pasos instrumentados (signup→onboarding→first_visit→first_post→return_d1→return_d7→premium_intent), integrado en AuthContext, Onboarding, Muro, Index, FeatureGate. **Freemium:** Plan freemium activo con features diferenciados (free vs premium), `PREMIUM_FEATURES` list, `isPremium()` helper, UpgradeModal. **MFA Admin:** AdminSecurityMFA component, verificación de MFA via Supabase, banner de advertencia en Admin. **SEO:** react-helmet-async, SEOHead component, OG tags, Twitter Cards, canonical URLs, configs por página. **Edge Functions:** Las 3 legacy (generate-content, send-push-notification, send-diagnostic-email) migradas a `withMiddleware`. Todas las 7 funciones usan middleware compartido. **Tests:** 312 passing. **Build:** OK. **Docs:** CHANGELOG.md creado, DOCUMENTO-MAESTRO actualizado. |
 | 2026-04-29 | **SESIÓN AUTODEV COMPLETA — 19 commits, 103→312 tests, app en vivo** — Sesión autónoma completa sin intervención del usuario. Trabajo desde las 30+ perspectivas profesionales. **Fix crítico:** tsconfig.json Vercel build error (ENOENT). **Bug fix:** computed property en useWallInteractions (comentarios no cargaban). **Services layer:** diagnostic.service.ts, wall.service.ts, content.service.ts. **Validation:** 11 schemas zod (login, signup, profile, wall post, comment, content, CRM, NPS). **Edge function hardening:** HTML sanitization, action whitelist, input validation. **Design tokens:** spacing, shadows, transitions en tailwind.config. **Accessibility:** ARIA labels en BottomNav, AppHeader, Muro. **i18n:** English translations completas (160+ claves). **PWA:** manifest fix (start_url, shortcuts, maskable icons). **SEO:** JSON-LD structured data. **DevOps:** deploy verification script, Lighthouse CI, lint-staged, bundle size check. **Tests:** 312 passing (15 archivos). **Docs:** PR template, CODEOWNERS, env.example. **Deploy:** Push a main → app.mejoraok.com en vivo (HTTP 200). |
 | 2026-04-29 | Setup Vercel + AdminCRM refactor + Skeleton + Health Check |
 | 2026-04-29 | Consolidación definitiva + análisis 30+ roles |
@@ -334,10 +340,10 @@ E7 (Deploy) ──→ E8 (Crecimiento) ──→ E10 (App Nativa)
 
 | # | Tarea | Rol | Impacto | Esfuerzo | Estado |
 |---|-------|-----|---------|----------|--------|
-| 9.1 | 2FA para admins (Supabase MFA) | Cybersecurity | 🔴 | 🟡 Medio | 🔴 Pendiente |
+| 9.1 | 2FA para admins (Supabase MFA) | Cybersecurity | 🔴 | 🟡 Medio | ✅ 2026-04-30 (AdminSecurityMFA component + warning) |
 | 9.2 | Health checks post-deploy en CI | DevOps/SRE | 🔴 | 🟢 Bajo | ✅ 2026-04-29 (verify-deploy.sh) |
 | 9.3 | Separar `lib/` en `lib/` + `services/` | SW Architect | 🟡 | 🟡 Medio | ✅ 2026-04-29 (3 services creados) |
-| 9.4 | Descomponer componentes >300 líneas | Frontend | 🟡 | 🟡 Medio | 🟡 Parcial (AdminCRM ✅, Muro/DiagnosticTest pendiente) |
+| 9.4 | Descomponer componentes >300 líneas | Frontend | 🟡 | 🟡 Medio | ✅ 2026-04-30 (Muro 610→386, DiagnosticTest 576→188) |
 | 9.5 | Skeleton loading en pantallas críticas | UX Designer | 🟡 | 🟢 Bajo | ✅ 2026-04-29 (5 variantes) |
 | 9.6 | Design tokens en tailwind.config | UI Designer | 🟢 | 🟢 Bajo | ✅ 2026-04-29 (spacing, shadows, transitions) |
 | 9.7 | Storybook para componentes UI | Frontend | 🟢 | 🟡 Medio | 🔴 Pendiente |

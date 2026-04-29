@@ -47,7 +47,7 @@ export function AdminSecurityMFA() {
           enabled: verifiedFactors.length > 0,
           factors: totpFactors.map((f) => ({
             id: f.id,
-            type: f.type,
+            type: "totp" as string,
             status: f.status,
           })),
         });

@@ -496,6 +496,268 @@ export type Database = {
         }
         Relationships: []
       }
+      nps_responses: {
+        Row: {
+          id: string
+          user_id: string
+          score: number
+          comment: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          score: number
+          comment?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          score?: number
+          comment?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          id: string
+          referrer_id: string
+          referred_email: string
+          status: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          referrer_id: string
+          referred_email: string
+          status?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          referrer_id?: string
+          referred_email?: string
+          status?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      crm_clients: {
+        Row: {
+          id: string
+          name: string
+          company: string | null
+          contact_name: string | null
+          segment: string | null
+          location: string | null
+          province: string | null
+          address: string | null
+          whatsapp: string | null
+          email: string | null
+          channel: string | null
+          first_contact_date: string | null
+          status: string
+          notes: string | null
+          assigned_to: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          company?: string | null
+          contact_name?: string | null
+          segment?: string | null
+          location?: string | null
+          province?: string | null
+          address?: string | null
+          whatsapp?: string | null
+          email?: string | null
+          channel?: string | null
+          first_contact_date?: string | null
+          status?: string
+          notes?: string | null
+          assigned_to?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          company?: string | null
+          contact_name?: string | null
+          segment?: string | null
+          location?: string | null
+          province?: string | null
+          address?: string | null
+          whatsapp?: string | null
+          email?: string | null
+          channel?: string | null
+          first_contact_date?: string | null
+          status?: string
+          notes?: string | null
+          assigned_to?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      crm_products: {
+        Row: {
+          id: string
+          name: string
+          category: string | null
+          price: number | null
+          unit: string
+          unit_label: string
+          currency: string
+          description: string | null
+          active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          category?: string | null
+          price?: number | null
+          unit?: string
+          unit_label?: string
+          currency?: string
+          description?: string | null
+          active?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          category?: string | null
+          price?: number | null
+          unit?: string
+          unit_label?: string
+          currency?: string
+          description?: string | null
+          active?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      crm_interactions: {
+        Row: {
+          id: string
+          client_id: string
+          user_id: string
+          interaction_date: string
+          result: string
+          medium: string
+          quote_path: string | null
+          total_amount: number | null
+          currency: string | null
+          attachment_url: string | null
+          reference_quote_id: string | null
+          followup_scenario: string | null
+          negotiation_state: string | null
+          followup_motive: string | null
+          historic_quote_amount: number | null
+          historic_quote_date: string | null
+          loss_reason: string | null
+          estimated_loss: number | null
+          next_step: string | null
+          follow_up_date: string | null
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          client_id: string
+          user_id: string
+          interaction_date?: string
+          result: string
+          medium: string
+          quote_path?: string | null
+          total_amount?: number | null
+          currency?: string | null
+          attachment_url?: string | null
+          reference_quote_id?: string | null
+          followup_scenario?: string | null
+          negotiation_state?: string | null
+          followup_motive?: string | null
+          historic_quote_amount?: number | null
+          historic_quote_date?: string | null
+          loss_reason?: string | null
+          estimated_loss?: number | null
+          next_step?: string | null
+          follow_up_date?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          client_id?: string
+          user_id?: string
+          interaction_date?: string
+          result?: string
+          medium?: string
+          quote_path?: string | null
+          total_amount?: number | null
+          currency?: string | null
+          attachment_url?: string | null
+          reference_quote_id?: string | null
+          followup_scenario?: string | null
+          negotiation_state?: string | null
+          followup_motive?: string | null
+          historic_quote_amount?: number | null
+          historic_quote_date?: string | null
+          loss_reason?: string | null
+          estimated_loss?: number | null
+          next_step?: string | null
+          follow_up_date?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      crm_interaction_lines: {
+        Row: {
+          id: string
+          interaction_id: string
+          product_id: string
+          quantity: number
+          unit_price: number
+          line_total: number
+        }
+        Insert: {
+          id?: string
+          interaction_id: string
+          product_id: string
+          quantity: number
+          unit_price: number
+          line_total: number
+        }
+        Update: {
+          id?: string
+          interaction_id?: string
+          product_id?: string
+          quantity?: number
+          unit_price?: number
+          line_total?: number
+        }
+        Relationships: []
+      }
+      crm_seller_ranking: {
+        Row: {
+          user_id: string
+          display_name: string
+          ventas: number
+          ingresos: number
+          interactions: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       community_ranking: {
@@ -519,6 +781,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      get_crm_dashboard: {
+        Args: Record<string, never>
+        Returns: Json
       }
     }
     Enums: {

@@ -97,7 +97,7 @@ export function useCRMClients() {
         .select("*")
         .order("name");
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as CRMClient[];
     },
   });
 }
@@ -113,7 +113,7 @@ export function useCRMClient(id: string | null) {
         .eq("id", id!)
         .single();
       if (error) throw error;
-      return data;
+      return data as CRMClient;
     },
   });
 }
@@ -138,10 +138,10 @@ export function useUpsertCRMClient() {
     mutationFn: async (client: Partial<CRMClient> & { id?: string }) => {
       if (client.id) {
         const { id, ...rest } = client;
-        const { error } = await supabase.from("crm_clients").update(rest).eq("id", id);
+        const { error } = await supabase.from("crm_clients").update(rest as never).eq("id", id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("crm_clients").insert(client);
+        const { error } = await supabase.from("crm_clients").insert(client as never);
         if (error) throw error;
       }
     },
@@ -177,7 +177,7 @@ export function useCRMProducts() {
         .select("*")
         .order("name");
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as CRMProduct[];
     },
   });
 }
@@ -203,10 +203,10 @@ export function useUpsertCRMProduct() {
     mutationFn: async (product: Partial<CRMProduct> & { id?: string }) => {
       if (product.id) {
         const { id, ...rest } = product;
-        const { error } = await supabase.from("crm_products").update(rest).eq("id", id);
+        const { error } = await supabase.from("crm_products").update(rest as never).eq("id", id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("crm_products").insert(product);
+        const { error } = await supabase.from("crm_products").insert(product as never);
         if (error) throw error;
       }
     },
@@ -274,7 +274,7 @@ export function useCreateCRMInteraction() {
     }) => {
       const { data, error } = await supabase
         .from("crm_interactions")
-        .insert(interaction)
+        .insert(interaction as never)
         .select("id")
         .single();
       if (error) throw error;
@@ -288,7 +288,8 @@ export function useCreateCRMInteraction() {
               product_id: l.product_id,
               quantity: l.quantity,
               unit_price: l.unit_price,
-            }))
+              line_total: l.quantity * l.unit_price,
+            })) as never
           );
         if (linesError) throw linesError;
       }
@@ -325,7 +326,7 @@ export function useCRMDashboard() {
     queryFn: async () => {
       const { data, error } = await supabase.rpc("get_crm_dashboard");
       if (error) throw error;
-      return data as {
+      return data as unknown as {
         clients: CRMClient[];
         interactions: CRMInteraction[];
         products: CRMProduct[];

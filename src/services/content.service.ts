@@ -15,7 +15,7 @@ export interface ContentPost {
   contenido: string;
   tipo_media: string;
   url_media: string;
-  categoria_id: string;
+  category_id: string;
   estado: string;
   imagen_url: string;
   fecha_programada: string | null;
@@ -37,10 +37,10 @@ export async function fetchContentPosts(category?: string): Promise<ContentPost[
     .select("*, content_categories(nombre)")
     .eq("estado", "publicado")
     .order("created_at", { ascending: false });
-  if (category) query = query.eq("categoria_id", category);
+  if (category) query = query.eq("category_id", category);
   const { data, error } = await query;
   if (error) throw error;
-  return (data as ContentPost[]) ?? [];
+  return (data as unknown as unknown as ContentPost[]) ?? [];
 }
 
 export async function searchContentPosts(query: string): Promise<ContentPost[]> {
@@ -51,7 +51,7 @@ export async function searchContentPosts(query: string): Promise<ContentPost[]> 
     .or(`titulo.ilike.%${query}%,resumen.ilike.%${query}%,contenido.ilike.%${query}%`)
     .order("created_at", { ascending: false });
   if (error) throw error;
-  return (data as ContentPost[]) ?? [];
+  return (data as unknown as ContentPost[]) ?? [];
 }
 
 export async function fetchContentCategories(): Promise<ContentCategory[]> {
@@ -97,9 +97,9 @@ export async function fetchRecommendedContent(
       .eq("estado", "publicado")
       .order("created_at", { ascending: false })
       .limit(limit);
-    return (fallback as ContentPost[]) ?? [];
+    return (fallback as unknown as ContentPost[]) ?? [];
   }
-  return (data as ContentPost[]) ?? [];
+  return (data as unknown as ContentPost[]) ?? [];
 }
 
 // ── Media Type Helpers ─────────────────────────────────────────
@@ -119,7 +119,7 @@ export function getMediaTypeLabel(tipo: string): string {
 // ── Category Filter Helpers ────────────────────────────────────
 export function filterByCategory(posts: ContentPost[], categoryId: string | null): ContentPost[] {
   if (!categoryId) return posts;
-  return posts.filter((p) => p.categoria_id === categoryId);
+  return posts.filter((p) => p.category_id === categoryId);
 }
 
 export function filterByMediaType(posts: ContentPost[], mediaType: string | null): ContentPost[] {

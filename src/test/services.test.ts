@@ -201,19 +201,19 @@ describe("Content Service", () => {
   it("filterByCategory returns all when null", async () => {
     const { filterByCategory } = await import("@/services/content.service");
     const posts = [
-      { categoria_id: "1" },
-      { categoria_id: "2" },
-    ] as { categoria_id: string }[];
+      { category_id: "1" },
+      { category_id: "2" },
+    ] as unknown as import("@/services/content.service").ContentPost[];
     expect(filterByCategory(posts, null)).toHaveLength(2);
   });
 
   it("filterByCategory filters correctly", async () => {
     const { filterByCategory } = await import("@/services/content.service");
     const posts = [
-      { categoria_id: "1" },
-      { categoria_id: "2" },
-      { categoria_id: "1" },
-    ] as { categoria_id: string }[];
+      { category_id: "1" },
+      { category_id: "2" },
+      { category_id: "1" },
+    ] as unknown as import("@/services/content.service").ContentPost[];
     expect(filterByCategory(posts, "1")).toHaveLength(2);
     expect(filterByCategory(posts, "2")).toHaveLength(1);
   });
@@ -223,7 +223,7 @@ describe("Content Service", () => {
     const posts = [
       { tipo_media: "articulo" },
       { tipo_media: "video" },
-    ] as { tipo_media: string }[];
+    ] as unknown as import("@/services/content.service").ContentPost[];
     expect(filterByMediaType(posts, null)).toHaveLength(2);
   });
 
@@ -233,7 +233,7 @@ describe("Content Service", () => {
       { tipo_media: "articulo" },
       { tipo_media: "video" },
       { tipo_media: "articulo" },
-    ] as { tipo_media: string }[];
+    ] as unknown as import("@/services/content.service").ContentPost[];
     expect(filterByMediaType(posts, "articulo")).toHaveLength(2);
     expect(filterByMediaType(posts, "video")).toHaveLength(1);
   });

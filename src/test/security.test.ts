@@ -158,7 +158,7 @@ describe("Auth page security", () => {
   });
 
   it("admin mode should toggle correctly", () => {
-    let mode: "login" | "signup" | "admin" = "login";
+    let mode: string = "login";
 
     // Toggle to admin
     mode = mode === "admin" ? "login" : "admin";

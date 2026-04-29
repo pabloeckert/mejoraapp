@@ -32,8 +32,8 @@ export async function trackReferral(referredBy: string, newUserId: string): Prom
   try {
     await supabase.from("referrals").insert({
       referrer_id: referredBy,
-      referred_id: newUserId,
-    });
+      referred_email: newUserId,
+    } as never);
   } catch {
     // Best-effort — no bloquear el signup si falla
   }

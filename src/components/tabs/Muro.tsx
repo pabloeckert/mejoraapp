@@ -159,7 +159,7 @@ const Muro = () => {
   }, []);
 
   const { pullDistance, isRefreshing, isReady, handlers } = usePullToRefresh({
-    onRefresh: () => refetch(),
+    onRefresh: () => { refetch(); },
   });
 
   // POST via Edge Function

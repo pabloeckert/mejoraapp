@@ -124,7 +124,7 @@ export const contentRepo = {
       .select("*, content_categories(nombre)")
       .eq("estado", "publicado")
       .order("created_at", { ascending: false });
-    if (category) query = query.eq("categoria_id", category);
+    if (category) query = query.eq("category_id", category);
     const { data, error } = await query;
     throwIfError(error, "contentRepo.getPosts");
     return data ?? [];

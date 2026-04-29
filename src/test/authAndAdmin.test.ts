@@ -138,8 +138,8 @@ describe("Admin Action — Router validation", () => {
     });
 
     it("should allow removing other admins", () => {
-      const currentUserId = "admin-1";
-      const targetUserId = "admin-2";
+      const currentUserId: string = "admin-1";
+      const targetUserId: string = "admin-2";
       const isSelfRemoval = targetUserId === currentUserId;
       expect(isSelfRemoval).toBe(false);
     });

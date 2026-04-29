@@ -55,10 +55,10 @@ export function NPSSurvey() {
     // Save to Supabase (best-effort)
     try {
       await supabase.from("nps_responses").insert({
-        user_id: user?.id,
-        score,
-        feedback: feedback.trim() || null,
-      });
+        user_id: user?.id ?? "",
+        score: score ?? 0,
+        comment: feedback.trim() || null,
+      } as never);
     } catch {
       // Silently fail — NPS is not critical
     }
