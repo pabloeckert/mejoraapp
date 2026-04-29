@@ -3,7 +3,7 @@
  *
  * Define qué features son gratuitas vs premium.
  * Modo actual: ALL_FREE (todo habilitado, cero fricción).
- * Cuando se defina el modelo de negocio, cambiar PLAN_CONFIG a "free".
+ * Cuando se defina el modelo de negocio, cambiar PLAN_CONFIG a "freemium".
  *
  * Uso:
  *   import { hasFeature, PLAN_CONFIG } from "@/lib/plans";
@@ -42,8 +42,8 @@ const ALL_FREE: PlanFeatures = {
   advanced_analytics: true,
 };
 
-// FREE_TIER: features gratuitas — para activar cuando se defina el modelo
-const FREE_TIER: PlanFeatures = {
+// FREEMIUM: 1 diagnostic, no PDF, no history, basic content
+const FREEMIUM: PlanFeatures = {
   diagnostic_history: false,      // Solo 1 resultado guardado
   diagnostic_pdf: false,          // Requiere premium
   diagnostic_evolution: false,    // Requiere premium
@@ -54,8 +54,11 @@ const FREE_TIER: PlanFeatures = {
   advanced_analytics: true,       // Admin siempre tiene analytics
 };
 
+// FREE_TIER: alias legacy — same as freemium
+const FREE_TIER: PlanFeatures = { ...FREEMIUM };
+
 // ── Current Plan ───────────────────────────────────────────────
-// Cambiar a "free" cuando se defina el modelo de negocio
+// Cambiar a "freemium" cuando se defina el modelo de negocio
 export const CURRENT_PLAN_ID = "all_free";
 
 const PLANS: Record<string, PlanConfig> = {
@@ -63,6 +66,11 @@ const PLANS: Record<string, PlanConfig> = {
     id: "all_free",
     name: "All Free",
     features: ALL_FREE,
+  },
+  freemium: {
+    id: "freemium",
+    name: "Freemium",
+    features: FREEMIUM,
   },
   free: {
     id: "free",
@@ -76,6 +84,24 @@ export const PLAN_CONFIG = PLANS[CURRENT_PLAN_ID] ?? PLANS.all_free;
 // ── Feature Check ──────────────────────────────────────────────
 export function hasFeature(featureId: FeatureId): boolean {
   return PLAN_CONFIG.features[featureId] ?? false;
+}
+
+// ── Premium Features List ──────────────────────────────────────
+/** Features that require premium upgrade when in freemium mode */
+export const PREMIUM_FEATURES: FeatureId[] = [
+  "diagnostic_history",
+  "diagnostic_pdf",
+  "diagnostic_evolution",
+  "content_recommendations",
+  "premium_content",
+  "community_directory",
+  "priority_support",
+];
+
+/** Check if a feature is premium-only in the current plan */
+export function isPremiumFeature(featureId: FeatureId): boolean {
+  if (CURRENT_PLAN_ID === "all_free") return false;
+  return PREMIUM_FEATURES.includes(featureId);
 }
 
 // ── Premium Feature Labels (for upgrade prompts) ───────────────

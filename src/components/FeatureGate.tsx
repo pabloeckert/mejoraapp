@@ -2,7 +2,7 @@
  * FeatureGate — Gate condicional para features premium
  *
  * Envuelve contenido premium. Si el usuario tiene acceso, renderiza children.
- * Si no, muestra el UpgradePrompt.
+ * Si no, muestra el UpgradePrompt con tracking de eventos.
  *
  * Props:
  *   feature: FeatureId — qué feature verificar
