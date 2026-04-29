@@ -1,6 +1,11 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+/**
+ * generate-content — Edge Function para generación de contenido con IA
+ *
+ * Usa middleware compartido para CORS + Auth + Rate Limiting.
+ * IA: Gemini → Groq fallback.
+ */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { handleCors, jsonHeaders } from "../_shared/cors.ts";
+import { withMiddleware } from "../_shared/middleware.ts";
 import { logInfo, logError } from "../_shared/log.ts";
 
 const SYSTEM_PROMPT = `Sos la voz de Mejora Continua, una comunidad de negocios argentina. Tu comunicación es:
@@ -66,58 +71,41 @@ async function callAI(systemPrompt: string, userPrompt: string): Promise<string>
   throw new Error("No hay proveedores de IA configurados.");
 }
 
-serve(async (req) => {
-  const corsResp = handleCors(req);
-  if (corsResp) return corsResp;
+Deno.serve(
+  withMiddleware({ auth: true, rateLimit: 10 }, async (req, ctx) => {
+    const headers = { "Content-Type": "application/json" };
+    const user = ctx.user!;
 
-  const origin = req.headers.get("Origin");
-  const headers = jsonHeaders(origin);
-
-  try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401, headers });
-    }
-
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401, headers });
-    }
-
-    const body = await req.json().catch(() => ({}));
-    const category = typeof body.category === "string" ? body.category : "tip";
-    const guidelines = typeof body.guidelines === "string" ? body.guidelines : "";
-
-    const promptType = CATEGORY_PROMPTS[category] || CATEGORY_PROMPTS.tip;
-    const guidelinesBlock = guidelines ? `\n\nLineamientos del administrador: ${guidelines}` : "";
-
-    const aiResponse = await callAI(
-      SYSTEM_PROMPT + guidelinesBlock,
-      `Generá ${promptType}.`
-    );
-
-    let result;
     try {
-      const jsonMatch = aiResponse.match(/\{[\s\S]*?\}/);
-      result = jsonMatch ? JSON.parse(jsonMatch[0]) : { titulo: "Contenido generado", contenido: aiResponse, resumen: aiResponse.slice(0, 120) };
-    } catch {
-      result = { titulo: "Contenido generado", contenido: aiResponse, resumen: aiResponse.slice(0, 120) };
+      const body = await req.json().catch(() => ({}));
+      const category = typeof body.category === "string" ? body.category : "tip";
+      const guidelines = typeof body.guidelines === "string" ? body.guidelines : "";
+
+      const promptType = CATEGORY_PROMPTS[category] || CATEGORY_PROMPTS.tip;
+      const guidelinesBlock = guidelines ? `\n\nLineamientos del administrador: ${guidelines}` : "";
+
+      const aiResponse = await callAI(
+        SYSTEM_PROMPT + guidelinesBlock,
+        `Generá ${promptType}.`
+      );
+
+      let result;
+      try {
+        const jsonMatch = aiResponse.match(/\{[\s\S]*?\}/);
+        result = jsonMatch ? JSON.parse(jsonMatch[0]) : { titulo: "Contenido generado", contenido: aiResponse, resumen: aiResponse.slice(0, 120) };
+      } catch {
+        result = { titulo: "Contenido generado", contenido: aiResponse, resumen: aiResponse.slice(0, 120) };
+      }
+
+      logInfo("generate-content", "Content generated", { category, user_id: user.id });
+
+      return new Response(JSON.stringify(result), { headers });
+    } catch (e) {
+      logError("generate-content", "Unhandled error", { error: String(e) });
+      return new Response(
+        JSON.stringify({ error: e instanceof Error ? e.message : "Error desconocido" }),
+        { status: 500, headers }
+      );
     }
-
-    logInfo("generate-content", "Content generated", { category, user_id: user.id });
-
-    return new Response(JSON.stringify(result), { headers });
-  } catch (e) {
-    logError("generate-content", "Unhandled error", { error: String(e) });
-    return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Error desconocido" }),
-      { status: 500, headers: jsonHeaders(origin) }
-    );
-  }
-});
+  })
+);
