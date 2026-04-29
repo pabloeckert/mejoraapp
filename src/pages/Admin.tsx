@@ -10,6 +10,7 @@ import AdminUsuarios from "@/components/admin/AdminUsuarios";
 import AdminContenido from "@/components/admin/AdminContenido";
 import AdminIA from "@/components/admin/AdminIA";
 import AdminSeguridad from "@/components/admin/AdminSeguridad";
+import { AdminSecurityMFA } from "@/components/admin/AdminSecurityMFA";
 
 const AdminCRM = lazy(() => import("@/components/admin/AdminCRM"));
 
@@ -133,7 +134,10 @@ const Admin = () => {
         </div>
       </div>
 
-      <main className="max-w-4xl mx-auto px-4 py-4">
+      <main className="max-w-4xl mx-auto px-4 py-4 space-y-4">
+        {/* MFA security warning */}
+        <AdminSecurityMFA />
+
         {activeTab === "contenido" && <AdminContenido />}
         {activeTab === "ia" && <AdminIA />}
         {activeTab === "novedades" && <AdminNovedades />}
