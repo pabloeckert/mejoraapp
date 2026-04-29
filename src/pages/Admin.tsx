@@ -11,6 +11,7 @@ import AdminContenido from "@/components/admin/AdminContenido";
 import AdminIA from "@/components/admin/AdminIA";
 import AdminSeguridad from "@/components/admin/AdminSeguridad";
 import { AdminSecurityMFA } from "@/components/admin/AdminSecurityMFA";
+import { SEOHead, SEO_CONFIGS } from "@/components/SEOHead";
 
 const AdminCRM = lazy(() => import("@/components/admin/AdminCRM"));
 
@@ -94,6 +95,7 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead {...SEO_CONFIGS.admin} />
       <header className="sticky top-0 z-30 bg-card border-b px-4 py-3">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">

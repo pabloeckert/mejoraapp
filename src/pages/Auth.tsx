@@ -10,6 +10,7 @@ import LoginForm from "@/components/auth/LoginForm";
 import SignupForm from "@/components/auth/SignupForm";
 import GoogleButton from "@/components/auth/GoogleButton";
 import AdminLoginForm from "@/components/auth/AdminLoginForm";
+import { SEOHead, SEO_CONFIGS } from "@/components/SEOHead";
 import logoComunidad from "@/assets/logo-comunidad.png";
 
 type AuthMode = "login" | "signup" | "admin";
@@ -45,6 +46,7 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <SEOHead {...SEO_CONFIGS.auth} />
       <div className="w-full max-w-sm space-y-5">
         {/* Logo + title + admin dot below */}
         <div className="flex flex-col items-center gap-3">

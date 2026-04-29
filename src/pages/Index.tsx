@@ -16,6 +16,7 @@ import { trackPageView, trackTabSwitch } from "@/lib/analytics";
 import { useLastVisit } from "@/hooks/useLastVisit";
 import { getVariant, trackABTest } from "@/lib/ab-testing";
 import { checkReturnVisits, trackFirstVisitFunnel } from "@/lib/funnel";
+import { SEOHead, SEO_CONFIGS } from "@/components/SEOHead";
 
 const Index = () => {
   const { session, loading, user } = useAuth();
@@ -136,6 +137,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
+      <SEOHead {...SEO_CONFIGS.index} />
       <AppHeader />
       <main className="max-w-lg mx-auto px-4 py-4">
         {activeTab === "contenido" && <ContenidoDeValor />}

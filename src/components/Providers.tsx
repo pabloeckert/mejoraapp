@@ -5,6 +5,7 @@
  * Orden importa: outer → inner.
  */
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { HelmetProvider } from "react-helmet-async";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -26,6 +27,7 @@ const queryClient = new QueryClient({
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
+    <HelmetProvider>
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <I18nProvider>
@@ -39,5 +41,6 @@ export function Providers({ children }: { children: ReactNode }) {
         </I18nProvider>
       </ThemeProvider>
     </QueryClientProvider>
+    </HelmetProvider>
   );
 }

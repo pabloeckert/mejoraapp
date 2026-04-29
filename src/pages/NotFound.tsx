@@ -2,6 +2,7 @@ import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
 import { Home, ArrowLeft, Compass } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SEOHead, SEO_CONFIGS } from "@/components/SEOHead";
 import * as Sentry from "@sentry/react";
 
 const NotFound = () => {
@@ -13,6 +14,7 @@ const NotFound = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <SEOHead {...SEO_CONFIGS.notFound} />
       <div className="text-center max-w-sm space-y-6">
         {/* Icon */}
         <div className="mx-auto w-20 h-20 rounded-full bg-muted flex items-center justify-center">
