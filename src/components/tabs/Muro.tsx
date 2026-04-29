@@ -31,6 +31,7 @@ import { CommunityRanking } from "@/components/CommunityRanking";
 import { CommunityRules } from "@/components/CommunityRules";
 import { ReferralBanner } from "@/components/ReferralBanner";
 import { trackPublishPost, trackBadgeEarned } from "@/lib/analytics";
+import { trackFirstPostFunnel } from "@/lib/funnel";
 import { ReportDialog } from "@/components/ReportDialog";
 import { PostCard, PostSkeleton, type WallPost, MAX_LENGTH, POSTS_PER_PAGE } from "@/components/muro";
 
@@ -177,6 +178,7 @@ const Muro = () => {
         setNewPost("");
         toast({ title: "¡Publicado!", description: "Tu post ya está en el muro." });
         trackPublishPost(content.length);
+        trackFirstPostFunnel();
         refetch();
         supabase.functions.invoke("send-push-notification", {
           body: { action: "new_post", exclude_user_id: user.id },

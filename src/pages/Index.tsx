@@ -15,6 +15,7 @@ import { NPSSurvey } from "@/components/NPSSurvey";
 import { trackPageView, trackTabSwitch } from "@/lib/analytics";
 import { useLastVisit } from "@/hooks/useLastVisit";
 import { getVariant, trackABTest } from "@/lib/ab-testing";
+import { checkReturnVisits, trackFirstVisitFunnel } from "@/lib/funnel";
 
 const Index = () => {
   const { session, loading, user } = useAuth();
@@ -90,10 +91,12 @@ const Index = () => {
     return () => window.removeEventListener("navigate-tab", handler);
   }, []);
 
-  // Track page view on mount and mark initial tab visited
+  // Track page view on mount, mark initial tab visited, and check funnel
   useEffect(() => {
     trackPageView("/");
     markVisited(activeTab);
+    trackFirstVisitFunnel();
+    checkReturnVisits();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Track tab switches, save/restore scroll position, and mark visited

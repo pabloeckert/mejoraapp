@@ -3,6 +3,7 @@ import { X, Users, Target, MessageSquareHeart, Trophy, ArrowRight } from "lucide
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { trackOnboardingComplete, trackOnboardingSkip } from "@/lib/analytics";
+import { trackOnboardingCompleteFunnel } from "@/lib/funnel";
 import { trackABTest } from "@/lib/ab-testing";
 
 interface OnboardingV2Props {
@@ -50,6 +51,7 @@ const OnboardingV2 = ({ onComplete, experimentVariant }: OnboardingV2Props) => {
     } catch {}
     trackABTest("onboarding_v2", experimentVariant, "converted", { step_completed: step });
     trackOnboardingComplete();
+    trackOnboardingCompleteFunnel();
     onComplete();
   };
 

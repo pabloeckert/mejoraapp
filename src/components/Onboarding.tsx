@@ -3,6 +3,7 @@ import { X, BookOpen, ClipboardCheck, MessageSquare, Sparkles, ArrowRight } from
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { trackOnboardingComplete, trackOnboardingSkip } from "@/lib/analytics";
+import { trackOnboardingCompleteFunnel } from "@/lib/funnel";
 
 interface OnboardingProps {
   onComplete: () => void;
@@ -53,6 +54,7 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
       localStorage.setItem(STORAGE_KEY, "true");
     } catch {}
     trackOnboardingComplete();
+    trackOnboardingCompleteFunnel();
     onComplete();
   };
 
