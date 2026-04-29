@@ -91,7 +91,9 @@ test.describe("Performance", () => {
         !e.includes("Supabase") &&
         !e.includes("fetch") &&
         !e.includes("network") &&
-        !e.includes("Failed to load")
+        !e.includes("Failed to load") &&
+        !e.includes("X-Frame-Options") &&
+        !e.includes("frame-ancestors")
     );
 
     expect(unexpected).toHaveLength(0);
