@@ -51,15 +51,16 @@ src/
 │   │   ├── crm/        # CRMDashboard, CRMClientsTab, CRMInteractionsTab, CRMProductsTab + constants
 │   │   └── AdminSecurityMFA.tsx  # MFA enforcement warning
 │   ├── auth/           # LoginForm, SignupForm, GoogleButton, AdminLoginForm
-│   ├── tabs/           # Muro, Novedades, ContenidoDeValor
+│   ├── tabs/           # Muro, Novedades, ContenidoDeValor, Comunidad
 │   ├── muro/           # PostCard, CommentItem, PostSkeleton (extraídos de Muro.tsx)
+│   ├── community/      # MemberCard, CommunityProfile (directorio de miembros)
 │   ├── diagnostic/     # DiagnosticIntro, DiagnosticQuestionView, DiagnosticLoading, DiagnosticResultView
 │   ├── ui/             # 30+ componentes shadcn/ui
 │   ├── SEOHead.tsx     # Meta tags dinámicos (react-helmet-async)
 │   ├── UpgradeModal.tsx # Modal de upgrade premium
 │   └── [feature]       # DiagnosticTest, Onboarding, BadgeDisplay, FeatureGate, etc.
 ├── contexts/           # AuthContext, ThemeContext, I18nContext
-├── hooks/              # useWallInteractions, usePullToRefresh, useBadges, useRanking, useCRM, useFunnel
+├── hooks/              # useWallInteractions, usePullToRefresh, useBadges, useRanking, useCRM, useFunnel, useMembers
 ├── data/               # diagnosticData.ts, badges.ts
 ├── integrations/supabase/  # client.ts, types.ts
 ├── lib/                # utils.ts, analytics.ts, funnel.ts, sentry.ts, push.ts, pdfExport.ts, plans.ts, ab-testing.ts, validation.ts
@@ -99,8 +100,10 @@ src/
 | `crm_products` | Productos CRM | Solo admin |
 | `crm_interactions` | Interacciones comerciales | Solo admin |
 | `crm_interaction_lines` | Líneas por interacción | Solo admin |
+| `community_challenges` | Desafíos comunitarios | Authenticated lee activos |
+| `challenge_participants` | Participación en desafíos | Authenticated lee, usuario propio escribe |
 
-**Vistas:** `crm_client_summary`, `crm_seller_ranking` · **RPC:** `get_crm_dashboard()`
+**Vistas:** `crm_client_summary`, `crm_seller_ranking`, `public_profiles` · **RPC:** `get_crm_dashboard()`
 **Funciones SQL:** `is_admin(UUID)`, `has_role(UUID, app_role)`, `handle_new_user()`, `update_wall_likes_count()`, `update_wall_post_comments_count()`, triggers de badges.
 
 ### 2.3 Edge Functions
@@ -188,20 +191,21 @@ Vercel → Deployments → Promover versión anterior.
 
 | Métrica | Valor |
 |---------|-------|
-| Líneas de código (TS/TSX) | ~21,500 |
-| Archivos fuente | 165 |
+| Líneas de código (TS/TSX) | ~22,700 |
+| Archivos fuente | 170 |
 | Tests unitarios | 312 (100% passing, 15 archivos) |
 | Tests E2E | 25 (Playwright) |
 | Tests accesibilidad | 7 (axe-core) |
-| Tablas DB | 23 (19 core + 4 CRM) |
+| Tablas DB | 25 (19 core + 4 CRM + 2 comunidad) |
+| Vistas DB | 3 (crm_client_summary, crm_seller_ranking, public_profiles) |
 | Edge Functions | 7 |
 | Eventos analytics | 28+ |
 | Bundle gzipped | ~355KB |
 | Componentes UI | 30+ (shadcn/ui) |
-| Hooks custom | 12 |
+| Hooks custom | 13 |
 | Services | 3 (diagnostic, wall, content) |
 | Validation schemas | 11 (zod) |
-| Migraciones SQL | 17 |
+| Migraciones SQL | 18 |
 | i18n claves | 160+ (es/en) |
 
 ---
@@ -249,6 +253,7 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 
 | Fecha | Resumen |
 |-------|---------|
+| 2026-04-30 | **MODO COMUNIDAD — 1 commit, +1,186 líneas, nueva tab Comunidad** — Implementación completa del Modo Comunidad (área prioritaria #1). **Nueva tab "Comunidad"** en BottomNav con 4 secciones: Stats Bar (miembros, activos, engagement), Desafío Semanal con banner gradient + CTA join/leave, Miembros Destacados (top 3), Directorio de Miembros con búsqueda + filtros por industria. **Componentes nuevos:** `Comunidad.tsx` (tab principal), `MemberCard.tsx` (variantes compact/featured), `CommunityProfile.tsx` (sheet de perfil público). **Hooks nuevos:** `useMembers.ts` (useMembers, useMemberProfile, useChallenges, useChallengeParticipation). **DB Migration:** `public_profiles` view (sin datos sensibles), `community_challenges` table, `challenge_participants` table + trigger de conteo automático, RLS policies en ambas tablas, primer desafío semanal seed. **Prototipos SVG:** Tab mockup + flujo de usuario (convertidos a PNG). **Build:** OK (9.73s). **Commit:** 89066ce. |
 | 2026-04-30 | **MEJORAS PROFUNDAS — 7 commits, refactor + funnel + freemium + MFA + SEO + Edge Functions** — Análisis completo del repo + documentos MejoraApp.docx y Yo-lo-haria-asi.docx. **Refactor Muro.tsx:** 610→386 líneas, extraído PostCard (169L), CommentItem (24L), PostSkeleton (17L). **Refactor DiagnosticTest.tsx:** 576→188 líneas, extraído DiagnosticIntro (82L), DiagnosticQuestionView (104L), DiagnosticLoading (11L), DiagnosticResultView (236L). Progress bar visible. **Funnel Tracking:** Sistema NSM completo (`src/lib/funnel.ts`), 7 pasos instrumentados (signup→onboarding→first_visit→first_post→return_d1→return_d7→premium_intent), integrado en AuthContext, Onboarding, Muro, Index, FeatureGate. **Freemium:** Plan freemium activo con features diferenciados (free vs premium), `PREMIUM_FEATURES` list, `isPremium()` helper, UpgradeModal. **MFA Admin:** AdminSecurityMFA component, verificación de MFA via Supabase, banner de advertencia en Admin. **SEO:** react-helmet-async, SEOHead component, OG tags, Twitter Cards, canonical URLs, configs por página. **Edge Functions:** Las 3 legacy (generate-content, send-push-notification, send-diagnostic-email) migradas a `withMiddleware`. Todas las 7 funciones usan middleware compartido. **Tests:** 312 passing. **Build:** OK. **Docs:** CHANGELOG.md creado, DOCUMENTO-MAESTRO actualizado. |
 | 2026-04-29 | **SESIÓN AUTODEV COMPLETA — 19 commits, 103→312 tests, app en vivo** — Sesión autónoma completa sin intervención del usuario. Trabajo desde las 30+ perspectivas profesionales. **Fix crítico:** tsconfig.json Vercel build error (ENOENT). **Bug fix:** computed property en useWallInteractions (comentarios no cargaban). **Services layer:** diagnostic.service.ts, wall.service.ts, content.service.ts. **Validation:** 11 schemas zod (login, signup, profile, wall post, comment, content, CRM, NPS). **Edge function hardening:** HTML sanitization, action whitelist, input validation. **Design tokens:** spacing, shadows, transitions en tailwind.config. **Accessibility:** ARIA labels en BottomNav, AppHeader, Muro. **i18n:** English translations completas (160+ claves). **PWA:** manifest fix (start_url, shortcuts, maskable icons). **SEO:** JSON-LD structured data. **DevOps:** deploy verification script, Lighthouse CI, lint-staged, bundle size check. **Tests:** 312 passing (15 archivos). **Docs:** PR template, CODEOWNERS, env.example. **Deploy:** Push a main → app.mejoraok.com en vivo (HTTP 200). |
 | 2026-04-29 | Setup Vercel + AdminCRM refactor + Skeleton + Health Check |

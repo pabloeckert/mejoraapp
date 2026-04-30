@@ -1,54 +1,23 @@
 # SESSION-STATE.md — Estado actual de MejoraApp
-> **Última actualización:** 2026-04-30 04:15 GMT+8
-> **Sesión:** Mejoras profundas + push a producción
+> **Última actualización:** 2026-04-30 10:56 GMT+8
+> **Sesión:** Modo Comunidad — Evolución #1
 
 ---
 
-## ✅ Completado en esta sesión (8 commits)
+## ✅ Completado en esta sesión (1 commit)
 
-### Commit 1: `37357ff` — Refactor Muro
-- Muro.tsx: 610→386 líneas
-- Extraído: `src/components/muro/PostCard.tsx` (169L), `CommentItem.tsx` (24L), `PostSkeleton.tsx` (17L)
-
-### Commit 2: `bb44b20` — Refactor DiagnosticTest
-- DiagnosticTest.tsx: 576→188 líneas
-- Extraído: `src/components/diagnostic/DiagnosticIntro.tsx` (82L), `DiagnosticQuestionView.tsx` (104L), `DiagnosticLoading.tsx` (11L), `DiagnosticResultView.tsx` (236L)
-- Progress bar visible (pregunta X de 8 + barra visual)
-
-### Commit 3: `778e840` — Funnel Tracking (NSM)
-- `src/lib/funnel.ts`: 7 pasos del funnel
-  - signup → onboarding_complete → first_visit → first_post → return_d1 → return_d7 → premium_intent
-- Integrado en: AuthContext, Onboarding, Muro, Index.tsx, FeatureGate
-- `useFunnel` hook para tracking automático
-
-### Commit 4: `935a647` — Freemium Mode
-- `src/lib/plans.ts`: plan "freemium" con free/premium diferenciado
-- `PREMIUM_FEATURES` list, `isPremium()` helper
-- `src/components/UpgradeModal.tsx`: modal de upgrade con CTA
-
-### Commit 5: `f18bead` — MFA Admin
-- `src/components/admin/AdminSecurityMFA.tsx`
-- Verifica MFA via Supabase, banner de advertencia en Admin
-
-### Commit 6: `72fd860` — SEO Dinámico
-- `react-helmet-async` instalado
-- `src/components/SEOHead.tsx` con OG tags, Twitter Cards, canonical URLs
-- HelmetProvider en Providers.tsx
-- SEOHead en Index, Auth, Admin, NotFound
-
-### Commit 7: `2b6b83d` — Edge Functions Middleware
-- `generate-content` → migrado a `withMiddleware` (auth: admin)
-- `send-push-notification` → migrado a `withMiddleware` (auth: false, rateLimit: 30)
-- `send-diagnostic-email` → migrado a `withMiddleware` (auth: false, rateLimit: 10)
-- **7/7 Edge Functions usan middleware compartido**
-
-### Commit 8: `8b96bba` — Documentación
-- `CHANGELOG.md` creado
-- `Documents/DOCUMENTO-MAESTRO.md` actualizado:
-  - §2.1 estructura de archivos actualizada
-  - §5 métricas actualizadas (21,500 líneas, 165 archivos, 12 hooks)
-  - §7 nueva sesión 2026-04-30
-  - §9 E7.9 y E9.1 y E9.4 marcados como completados
+### Commit 1: `89066ce` — Modo Comunidad
+- **Nueva tab "Comunidad"** en BottomNav (5 tabs total)
+- `src/components/tabs/Comunidad.tsx`: Stats bar + Challenge banner + Featured members + Directorio
+- `src/components/community/MemberCard.tsx`: Card con variantes compact/featured
+- `src/components/community/CommunityProfile.tsx`: Sheet de perfil público
+- `src/hooks/useMembers.ts`: useMembers, useMemberProfile, useChallenges, useChallengeParticipation
+- **DB Migration:** `Documents/migrations/20260430000000_modo_comunidad.sql`
+  - `public_profiles` view (sin email/phone/user_id)
+  - `community_challenges` table
+  - `challenge_participants` table + trigger conteo
+  - RLS policies + seed primer desafío
+- **Prototipos:** `Documents/prototypes/comunidad-{tab,flow}-v1.{svg,png}`
 
 ---
 
@@ -57,46 +26,41 @@
 | Métrica | Valor |
 |---------|-------|
 | Tests | 312/312 passing |
-| Build | OK (9-10s) |
-| Líneas de código | ~21,500 |
-| Archivos TS/TSX | 165 |
+| Build | OK (9.73s) |
+| Líneas de código | ~22,700 |
+| Archivos TS/TSX | 170 |
+| Tablas DB | 25 (+2 comunidad) |
+| Vistas DB | 3 (+1 public_profiles) |
 | Edge Functions | 7 (todas con middleware) |
-| Commits totales en repo | ~30+ |
-| Producción | app.mejoraok.com (Vercel) |
+| Hooks custom | 13 (+4 comunidad) |
+| Producción | app.mejoraok.com |
 
 ---
 
-## 🔴 Pendiente — Acciones del usuario (§8 del MAESTRO)
+## 🔴 Pendiente — Acciones del usuario
 
 | # | Acción | Comando/Instrucción |
 |---|--------|---------------------|
-| 1 | Crear cuenta Resend + verificar dominio | Ir a resend.com, verificar `mejoraok.com` con 3 DNS records |
-| 2 | Ejecutar SQL onboarding_emails | Copiar `supabase/migrations/20260426000000_onboarding_emails.sql` → Supabase SQL Editor |
-| 3 | Desplegar EF send-onboarding-email | `cd supabase && supabase functions deploy send-onboarding-email` |
-| 4 | Agregar SUPABASE_SERVICE_ROLE_KEY a GitHub Secrets | Settings → Secrets → Actions → New |
-| 5 | Deploy Edge Functions a prod | `supabase functions deploy` (las 3 migradas) |
-| 6 | Verificar realtime en producción | Probar muro en vivo, confirmar que no hay colisiones |
+| 1 | **Ejecutar SQL modo comunidad** | Copiar `Documents/migrations/20260430000000_modo_comunidad.sql` → Supabase SQL Editor |
+| 2 | Crear cuenta Resend + verificar dominio | Ir a resend.com, verificar `mejoraok.com` con 3 DNS records |
+| 3 | Ejecutar SQL onboarding_emails | Copiar `supabase/migrations/20260426000000_onboarding_emails.sql` → Supabase SQL Editor |
+| 4 | Desplegar EF send-onboarding-email | `cd supabase && supabase functions deploy send-onboarding-email` |
+| 5 | Agregar SUPABASE_SERVICE_ROLE_KEY a GitHub Secrets | Settings → Secrets → Actions → New |
+| 6 | Deploy Edge Functions a prod | `supabase functions deploy` (las 3 migradas) |
 
 ---
 
 ## 🎯 Próximos pasos sugeridos
 
-### Inmediato (esta semana)
-1. Ejecutar las 6 acciones pendientes del usuario
-2. Tests E2E contra producción (`npm run test:e2e`)
-3. Verificar que el deploy de Vercel tomó los cambios
+### Inmediato
+1. **Ejecutar SQL comunidad en Supabase** (bloquea la nueva tab)
+2. Verificar deploy Vercel del commit `89066ce`
+3. Tests E2E contra producción
 
-### Corto plazo (E8 — Crecimiento)
-1. Definir NSM: "30 DAU activos con 3+ sesiones/semana"
-2. Poblar CRM con 10+ clientes reales
-3. Activar freemium real (cambiar `CURRENT_PLAN_ID` a `"freemium"`)
-4. Integrar Mercado Pago para suscripción premium
-5. Email drip D0/D1/D3/D7
-
-### Medio plazo (E9 — Escalamiento)
-1. Storybook para componentes UI
-2. Visual regression tests (Playwright snapshots)
-3. EXPLAIN ANALYZE de queries críticas
+### Siguiente evolución
+- **Evolución #2:** Modo Mentor (AI interno) — asistente IA integrado en la app
+- **Evolución #3:** Onboarding visual — walkthrough interactivo paso a paso
+- **Evolución #4:** Dashboard principal — métricas personales del usuario
 
 ---
 
@@ -105,39 +69,32 @@
 ```
 src/
 ├── components/
-│   ├── muro/                    # NUEVO
-│   │   ├── PostCard.tsx         # Tarjeta de post individual
-│   │   ├── CommentItem.tsx      # Comentario individual
-│   │   └── PostSkeleton.tsx     # Skeleton loading
-│   ├── diagnostic/              # NUEVO
-│   │   ├── DiagnosticIntro.tsx  # Pantalla de inicio
-│   │   ├── DiagnosticQuestionView.tsx  # Pregunta + progress bar
-│   │   ├── DiagnosticLoading.tsx       # Estado de carga
-│   │   └── DiagnosticResultView.tsx    # Resultado del diagnóstico
-│   ├── admin/
-│   │   └── AdminSecurityMFA.tsx # NUEVO — MFA enforcement
-│   ├── SEOHead.tsx              # NUEVO — Meta tags dinámicos
-│   └── UpgradeModal.tsx         # NUEVO — Modal de upgrade
-├── lib/
-│   ├── funnel.ts                # NUEVO — Funnel tracking NSM
-│   └── plans.ts                 # MODIFICADO — Plan freemium
-└── ...
+│   ├── community/                # NUEVO
+│   │   ├── MemberCard.tsx        # Card de miembro (compact + featured)
+│   │   ├── CommunityProfile.tsx  # Sheet de perfil público
+│   │   └── index.ts              # Barrel export
+│   ├── tabs/
+│   │   └── Comunidad.tsx         # NUEVO — Tab principal comunidad
+│   └── BottomNav.tsx             # MODIFICADO — +tab "Comunidad"
+├── hooks/
+│   └── useMembers.ts             # NUEVO — 4 hooks comunidad
+└── pages/
+    └── Index.tsx                  # MODIFICADO — +route Comunidad
 
-supabase/functions/
-├── generate-content/index.ts    # MODIFICADO — Migrado a middleware
-├── send-push-notification/index.ts  # MODIFICADO — Migrado a middleware
-└── send-diagnostic-email/index.ts   # MODIFICADO — Migrado a middleware
-
-CHANGELOG.md                     # NUEVO
-Documents/DOCUMENTO-MAESTRO.md   # MODIFICADO
+Documents/
+├── migrations/
+│   └── 20260430000000_modo_comunidad.sql  # NUEVO
+├── prototypes/
+│   ├── comunidad-tab-v1.{svg,png}         # NUEVO
+│   └── comunidad-flow-v1.{svg,png}        # NUEVO
+└── DOCUMENTO-MAESTRO.md                    # MODIFICADO
 ```
 
 ---
 
 ## ⚠️ Notas importantes
 
-1. **Token de GitHub**: El usuario proporcionó un PAT. Ya se usó para push y se limpió del remoto. **Sugerir rotación.**
-2. **TypeScript**: Hay errores pre-existentes de tipos Supabase (`never` types). No bloquean build ni tests. Se arreglan regenerando tipos con `supabase gen types typescript`.
-3. **react-helmet-async**: Se agregó como dependencia nueva. Ya instalado en package.json.
-4. **Freemium**: El plan actual sigue siendo `all_free`. Para activar freemium real, cambiar `CURRENT_PLAN_ID` a `"freemium"` en `src/lib/plans.ts`.
-5. **Edge Functions**: El código está migrado pero **no desplegado a producción**. Requiere `supabase functions deploy`.
+1. **SQL Migration**: La migración `20260430000000_modo_comunidad.sql` debe ejecutarse en Supabase SQL Editor antes de que la tab Comunidad funcione correctamente.
+2. **public_profiles view**: No expone datos sensibles (email, phone, user_id). Solo datos de comunidad.
+3. **Challenges**: El seed incluye un desafío semanal de ejemplo. Se puede modificar desde Admin.
+4. **Filtros de industria**: Los filtros actuales son placeholder (tech, consulting, finance, marketing, operations). Se adaptan al contenido real de la DB.
