@@ -1,4 +1,4 @@
-import { BookOpen, MessageSquare, Sparkles, ClipboardCheck } from "lucide-react";
+import { BookOpen, MessageSquare, Sparkles, ClipboardCheck, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BottomNavProps {
@@ -11,6 +11,7 @@ const tabs = [
   { id: "contenido", label: "Contenido", icon: BookOpen },
   { id: "diagnostico", label: "Mirror", icon: ClipboardCheck, accent: true },
   { id: "muro", label: "Muro", icon: MessageSquare },
+  { id: "comunidad", label: "Comunidad", icon: Users },
   { id: "novedades", label: "Novedades", icon: Sparkles },
 ];
 

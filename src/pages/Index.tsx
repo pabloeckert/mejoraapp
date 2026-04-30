@@ -7,6 +7,7 @@ import BottomNav from "@/components/BottomNav";
 import ContenidoDeValor from "@/components/tabs/ContenidoDeValor";
 import Muro from "@/components/tabs/Muro";
 import Novedades from "@/components/tabs/Novedades";
+import Comunidad from "@/components/tabs/Comunidad";
 import DiagnosticTest from "@/components/DiagnosticTest";
 import ProfileCompleteModal from "@/components/ProfileCompleteModal";
 import Onboarding, { shouldShowOnboarding } from "@/components/Onboarding";
@@ -143,6 +144,7 @@ const Index = () => {
         {activeTab === "contenido" && <ContenidoDeValor />}
         {activeTab === "diagnostico" && <DiagnosticTest onComplete={() => setActiveTab("contenido")} />}
         {activeTab === "muro" && <Muro />}
+        {activeTab === "comunidad" && <Comunidad />}
         {activeTab === "novedades" && <Novedades />}
       </main>
       <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badges={badges} />
