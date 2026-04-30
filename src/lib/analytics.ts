@@ -270,3 +270,25 @@ export function trackUpgradePromptShown(feature: string, plan: string) {
 export function trackUpgradeCTAClick(feature: string, plan: string) {
   track("upgrade_cta_click", { feature, plan });
 }
+
+// ─── Mentor IA ──────────────────────────────────────────────────
+
+export function trackMentorMessageSent(conversationId: string, messageLength: number) {
+  track("mentor_message_sent", { conversation_id: conversationId, message_length: messageLength });
+}
+
+export function trackMentorQuickAction(action: string) {
+  track("mentor_quick_action", { action });
+}
+
+export function trackMentorNewConversation() {
+  track("mentor_new_conversation");
+}
+
+export function trackMentorConversationSelected(conversationId: string) {
+  track("mentor_conversation_selected", { conversation_id: conversationId });
+}
+
+export function trackMentorConversationDeleted(conversationId: string) {
+  track("mentor_conversation_deleted", { conversation_id: conversationId });
+}

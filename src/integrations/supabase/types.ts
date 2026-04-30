@@ -758,6 +758,90 @@ export type Database = {
         }
         Relationships: []
       }
+      mentor_conversations: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          created_at: string
+          updated_at: string
+          is_active: boolean
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title?: string
+          created_at?: string
+          updated_at?: string
+          is_active?: boolean
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string
+          created_at?: string
+          updated_at?: string
+          is_active?: boolean
+        }
+        Relationships: []
+      }
+      mentor_messages: {
+        Row: {
+          id: string
+          conversation_id: string
+          user_id: string
+          role: string
+          content: string
+          tokens_used: number
+          model_used: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          conversation_id: string
+          user_id: string
+          role: string
+          content: string
+          tokens_used?: number
+          model_used?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          conversation_id?: string
+          user_id?: string
+          role?: string
+          content?: string
+          tokens_used?: number
+          model_used?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      mentor_config: {
+        Row: {
+          id: string
+          key: string
+          value: string | null
+          description: string | null
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          key: string
+          value?: string | null
+          description?: string | null
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          key?: string
+          value?: string | null
+          description?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       community_ranking: {
@@ -770,6 +854,17 @@ export type Database = {
           total_likes_received: number
           activity_score: number
           badge_count: number
+        }
+        Relationships: []
+      }
+      mentor_stats: {
+        Row: {
+          total_users: number
+          total_conversations: number
+          total_messages: number
+          active_users_24h: number
+          active_users_7d: number
+          avg_messages_per_conversation: number
         }
         Relationships: []
       }

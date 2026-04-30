@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="844" viewBox="0 0 390 844">
+  <defs>
+    <style>
+      .mentor-bg { fill: #f8fafc; }
+      .header-bg { fill: #1e3a5f; }
+      .header-text { fill: white; font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 700; }
+      .bubble-ai { fill: white; stroke: #e2e8f0; stroke-width: 1; rx: 16; }
+      .bubble-user { fill: #1e3a5f; rx: 16; }
+      .text-ai { fill: #1e293b; font-family: 'Inter', sans-serif; font-size: 14px; }
+      .text-user { fill: white; font-family: 'Inter', sans-serif; font-size: 14px; }
+      .text-label { fill: #64748b; font-family: 'Inter', sans-serif; font-size: 11px; }
+      .text-time { fill: #94a3b8; font-family: 'Inter', sans-serif; font-size: 11px; }
+      .input-bg { fill: white; stroke: #e2e8f0; stroke-width: 1; rx: 24; }
+      .input-text { fill: #94a3b8; font-family: 'Inter', sans-serif; font-size: 14px; }
+      .send-btn { fill: #1e3a5f; }
+      .quick-action { fill: white; stroke: #1e3a5f; stroke-width: 1; rx: 12; }
+      .quick-text { fill: #1e3a5f; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; }
+      .nav-bg { fill: white; }
+      .nav-item { fill: #94a3b8; font-family: 'Inter', sans-serif; font-size: 11px; }
+      .nav-active { fill: #1e3a5f; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700; }
+      .icon-circle { fill: #eef2ff; }
+      .mentor-avatar { fill: #7c3aed; }
+      .typing-dot { fill: #94a3b8; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="390" height="844" class="mentor-bg"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="390" height="56" class="header-bg"/>
+  <text x="195" y="35" text-anchor="middle" class="header-text">Mentor IA</text>
+  <!-- AI sparkle icon -->
+  <circle cx="340" cy="28" r="16" fill="rgba(255,255,255,0.15)"/>
+  <text x="340" y="33" text-anchor="middle" fill="white" font-size="16">✨</text>
+
+  <!-- Chat Area -->
+  <!-- AI Welcome Message -->
+  <rect x="16" y="72" width="280" height="80" class="bubble-ai"/>
+  <circle cx="36" cy="68" r="14" class="mentor-avatar"/>
+  <text x="36" y="73" text-anchor="middle" fill="white" font-size="12" font-weight="700">M</text>
+  <text x="32" y="96" class="text-ai">¡Hola! Soy tu Mentor IA de</text>
+  <text x="32" y="114" class="text-ai">Mejora Continua. ¿En qué</text>
+  <text x="32" y="132" class="text-ai">podés ayudarte hoy?</text>
+  <text x="270" y="146" class="text-time">10:30</text>
+
+  <!-- Quick Actions -->
+  <rect x="16" y="168" width="170" height="44" class="quick-action"/>
+  <text x="101" y="195" text-anchor="middle" class="quick-text">💡 Estrategia de negocio</text>
+
+  <rect x="196" y="168" width="178" height="44" class="quick-action"/>
+  <text x="285" y="195" text-anchor="middle" class="quick-text">📊 Analizar mi diagnóstico</text>
+
+  <rect x="16" y="220" width="170" height="44" class="quick-action"/>
+  <text x="101" y="247" text-anchor="middle" class="quick-text">🎯 Definir objetivos</text>
+
+  <rect x="196" y="220" width="178" height="44" class="quick-action"/>
+  <text x="285" y="247" text-anchor="middle" class="quick-text">🤝 Resolver un problema</text>
+
+  <!-- User Message -->
+  <rect x="100" y="284" width="274" height="60" class="bubble-user"/>
+  <text x="116" y="308" class="text-user">Tengo un negocio de consultoría</text>
+  <text x="116" y="326" class="text-user">y quiero escalar. ¿Por dónde</text>
+  <text x="116" y="340" class="text-user">empiezo?</text>
+  <text x="346" y="338" class="text-time" text-anchor="end">10:31</text>
+
+  <!-- AI Response -->
+  <rect x="16" y="360" width="310" height="140" class="bubble-ai"/>
+  <circle cx="36" cy="356" r="14" class="mentor-avatar"/>
+  <text x="36" y="361" text-anchor="middle" fill="white" font-size="12" font-weight="700">M</text>
+  <text x="32" y="384" class="text-ai" font-weight="600">Basado en tu perfil de Mejora</text>
+  <text x="32" y="402" class="text-ai">Continua, te recomiendo 3 pasos:</text>
+  <text x="32" y="426" class="text-ai" font-weight="600">1. Sistematizá tu proceso</text>
+  <text x="32" y="444" class="text-ai">Documentá cómo entregás valor</text>
+  <text x="32" y="466" class="text-ai" font-weight="600">2. Construí un equipo</text>
+  <text x="32" y="484" class="text-ai">Delegá para poder crecer</text>
+  <text x="32" y="496" class="text-ai" font-weight="600">3. Definí tu propuesta única</text>
+  <text x="298" y="496" class="text-time">10:32</text>
+
+  <!-- User Follow-up -->
+  <rect x="120" y="520" width="254" height="44" class="bubble-user"/>
+  <text x="136" y="544" class="text-user">¿Cómo sistematizo mi proceso</text>
+  <text x="136" y="560" class="text-user">sin perder calidad?</text>
+
+  <!-- Typing Indicator -->
+  <rect x="16" y="580" width="80" height="40" class="bubble-ai"/>
+  <circle cx="36" cy="576" r="14" class="mentor-avatar"/>
+  <text x="36" y="581" text-anchor="middle" fill="white" font-size="12" font-weight="700">M</text>
+  <circle cx="36" cy="604" r="4" class="typing-dot" opacity="0.4"/>
+  <circle cx="50" cy="604" r="4" class="typing-dot" opacity="0.7"/>
+  <circle cx="64" cy="604" r="4" class="typing-dot" opacity="1"/>
+
+  <!-- Input Area -->
+  <rect x="0" y="640" width="390" height="72" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <rect x="16" y="656" width="310" height="44" class="input-bg"/>
+  <text x="32" y="683" class="input-text">Escribí tu consulta...</text>
+  <!-- Send button -->
+  <circle cx="354" cy="678" r="20" class="send-btn"/>
+  <path d="M348 672 L362 678 L348 684 Z" fill="white"/>
+  <!-- Attachment -->
+  <circle cx="36" cy="678" r="14" fill="#f1f5f9"/>
+  <text x="36" y="683" text-anchor="middle" fill="#64748b" font-size="16">📎</text>
+
+  <!-- Bottom Navigation -->
+  <rect x="0" y="732" width="390" height="80" class="nav-bg" stroke="#e2e8f0" stroke-width="1"/>
+  <!-- Contenido -->
+  <text x="50" y="760" text-anchor="middle" font-size="20">📖</text>
+  <text x="50" y="780" text-anchor="middle" class="nav-item">Contenido</text>
+  <!-- Mirror -->
+  <text x="130" y="760" text-anchor="middle" font-size="20">📋</text>
+  <text x="130" y="780" text-anchor="middle" class="nav-item">Mirror</text>
+  <!-- Muro -->
+  <text x="210" y="760" text-anchor="middle" font-size="20">💬</text>
+  <text x="210" y="780" text-anchor="middle" class="nav-item">Muro</text>
+  <!-- Comunidad -->
+  <text x="290" y="760" text-anchor="middle" font-size="20">👥</text>
+  <text x="290" y="780" text-anchor="middle" class="nav-item">Comunidad</text>
+  <!-- Mentor (active) -->
+  <circle cx="350" cy="755" r="18" fill="#eef2ff"/>
+  <text x="350" y="760" text-anchor="middle" font-size="20">🤖</text>
+  <text x="350" y="780" text-anchor="middle" class="nav-active">Mentor</text>
+</svg>
