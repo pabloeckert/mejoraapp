@@ -10,39 +10,38 @@ Estás trabajando en el proyecto MejoraApp en /root/.openclaw/workspace/MejoraAp
 ## Contexto
 MejoraApp es una PWA (React 18 + TypeScript + Vite + Supabase + Tailwind CSS) para líderes empresariales argentinos. Producción: app.mejoraok.com. Repo: github.com/pabloeckert/MejoraApp.
 
-## Estado actual (2026-04-30)
-- **312 tests passing**, build OK
-- **21,500 líneas** en 165 archivos TS/TSX
-- **7 Edge Functions** todas con middleware compartido
-- **Últimos 8 commits**: refactor Muro/Diagnostic, funnel tracking NSM, freemium mode, MFA admin, SEO dinámico, Edge Functions middleware, docs
-- Lee `SESSION-STATE.md` en la raíz del repo para el detalle completo
+## Situación actual (2026-05-05)
+- **Migración desde Hostinger**: acceso a hPanel perdido, no se puede gestionar DNS/dominio
+- **Dominio mejoraok.com**: vence 2026-12-01, nameservers apuntan a Hostinger (dns-parking.com)
+- **Código seguro en GitHub** — repo clonado localmente
+- **Entorno local configurado**: dependencias instaladas, 312/312 tests passing
+- **PENDIENTE**: completar `.env` con credenciales Supabase reales (VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY)
+- **E7 (Deploy) 🔄**: 10/12 completas, pendiente SQL + deploy Edge Functions
+- **22,700 líneas**, 175 archivos, 25 tablas DB, 8 Edge Functions
 
-## Tareas pendientes inmediatas
+## Lo que hicimos en esta sesión
+1. Evaluamos situación de hosting: Hostinger inaccesible, dominio atado a ellos
+2. Hicimos WHOIS del dominio — confirma que vence dic 2026 y los nameservers son de Hostinger
+3. Clonamos el repo localmente
+4. Instalamos dependencias (576 paquetes)
+5. Corrimos tests — 312/312 passing
+6. Creamos `.env` desde `.env.example` (pendiente completar)
+7. Actualizamos DOCUMENTO-MAESTRO.md, SESSION-STATE.md y este archivo
 
-### Acciones del usuario (requieren intervención manual)
-1. Crear cuenta Resend + verificar dominio mejoraok.com
-2. Ejecutar SQL `supabase/migrations/20260426000000_onboarding_emails.sql` en Supabase
-3. Desplegar EF `send-onboarding-email` via `supabase functions deploy`
-4. Agregar `SUPABASE_SERVICE_ROLE_KEY` a GitHub Secrets
-5. Deploy Edge Functions migradas: `supabase functions deploy`
-6. Verificar realtime en producción
+## Tareas inmediatas para la próxima sesión
+1. **Completar `.env`** — necesito las credenciales de Supabase del usuario
+2. **`npm run dev`** — levantar la app localmente en localhost:8080
+3. **Decidir sobre dominio** — ¿recuperar Hostinger? ¿comprar dominio nuevo?
+4. **Seguir E7** — ejecutar SQL pendientes + deploy Edge Functions
+5. **Continuar con E8** (Crecimiento) cuando E7 esté cerrada
 
-### Tareas técnicas pendientes
-1. **Tests E2E contra producción** — `npm run test:e2e` con Playwright contra app.mejoraok.com
-2. **Storybook** — Documentar componentes UI (E9.7)
-3. **Visual regression** — Playwright snapshots en pantallas críticas (E9.9)
-4. **EXPLAIN ANALYZE** — Auditar queries del muro y CRM
-5. **Activar freemium** — Cambiar `CURRENT_PLAN_ID` a `"freemium"` en `src/lib/plans.ts` cuando esté listo Mercado Pago
-6. **Mercado Pago** — Integrar para suscripción premium
-7. **Email drip** — Templates D0/D1/D3/D7 de activación
-
-### Documentos de referencia
-- `Documents/DOCUMENTO-MAESTRO.md` — Fuente única de verdad del proyecto
-- `SESSION-STATE.md` — Estado detallado de la última sesión
-- `CHANGELOG.md` — Historial de cambios
-- Documentos externos analizados:
-  - `MejoraApp.docx` — Análisis multidisciplinario 30+ roles (audit completo)
-  - `Yo-lo-haria-asi.docx` — Filosofía Lovable + anti-patrones + plan 4 sprints
+## Acciones del usuario pendientes (arrastradas)
+1. Ejecutar SQL modo comunidad en Supabase
+2. Crear cuenta Resend + verificar dominio
+3. Ejecutar SQL onboarding_emails
+4. Desplegar EF send-onboarding-email
+5. Agregar SUPABASE_SERVICE_ROLE_KEY a GitHub Secrets
+6. Deploy Edge Functions a prod
 
 ## Reglas
 - Voseo argentino en toda la UI

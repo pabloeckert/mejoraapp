@@ -1,23 +1,30 @@
 # SESSION-STATE.md — Estado actual de MejoraApp
-> **Última actualización:** 2026-04-30 11:06 GMT+8
-> **Estado:** ⏸️ PAUSADO — Esperando instrucción del usuario
+> **Última actualización:** 2026-05-05 05:27 GMT+8
+> **Estado:** ⏸️ PAUSADO — Esperando credenciales Supabase para entorno local
 
 ---
 
-## ✅ Completado — Evolución #1: Modo Comunidad
+## 🔄 Situación: Migración desde Hostinger
 
-### Commit `89066ce` — feat(comunidad)
-- Nueva tab "Comunidad" en BottomNav
-- `src/components/tabs/Comunidad.tsx` — Stats + Challenge + Featured + Directorio
-- `src/components/community/MemberCard.tsx` — compact/featured variants
-- `src/components/community/CommunityProfile.tsx` — Sheet de perfil público
-- `src/hooks/useMembers.ts` — 4 hooks (useMembers, useMemberProfile, useChallenges, useChallengeParticipation)
-- `Documents/migrations/20260430000000_modo_comunidad.sql`
-- `Documents/prototypes/comunidad-{tab,flow}-v1.{svg,png}`
+### Problema
+- Acceso a hPanel de Hostinger **perdido** — no se puede gestionar DNS ni dominio
+- Dominio `mejoraok.com` registrado vía Hostinger (nameservers `dns-parking.com`)
+- Dominio vence: **2026-12-01**
+- El código está **seguro en GitHub** — nada que rescatar
 
-### Commit `da2a73c` — docs
-- DOCUMENTO-MAESTRO.md actualizado (§2, §5, §7)
-- SESSION-STATE.md actualizado
+### Decisión
+- Abandonar Hostinger como hosting
+- Trabajar localmente → push a GitHub → Vercel auto-deploy
+- Dominio: recuperar acceso a Hostinger O comprar dominio nuevo
+
+### Estado del entorno local
+- ✅ Repo clonado en `/root/.openclaw/workspace/MejoraApp`
+- ✅ Dependencias instaladas (576 paquetes)
+- ✅ Tests: 312/312 passing
+- ✅ `.env` creado (desde `.env.example`)
+- 🔴 **Falta completar `.env`** con credenciales reales de Supabase:
+  - `VITE_SUPABASE_URL`
+  - `VITE_SUPABASE_PUBLISHABLE_KEY`
 
 ---
 
@@ -25,31 +32,35 @@
 
 | Métrica | Valor |
 |---------|-------|
-| Último commit | `da2a73c` en `main` |
+| Último commit | `8a9d50b` en `main` |
 | Tests | 312/312 passing |
-| Build | OK (9.73s) |
+| Build | OK |
 | Líneas de código | ~22,700 |
-| Archivos TS/TSX | 170 |
-| Tablas DB | 25 (requiere SQL) |
-| Hooks custom | 13 |
+| Archivos TS/TSX | 175 |
+| Tablas DB | 25 |
+| Edge Functions | 8 |
 | Tabs UI | 5 (Contenido, Mirror, Muro, Comunidad, Novedades) |
 
 ---
 
-## 🔴 Acción pendiente del usuario
+## 🔴 Acciones pendientes
 
-| # | Acción | Estado |
-|---|--------|--------|
-| 1 | **Ejecutar SQL modo comunidad** en Supabase | 🔴 Pendiente |
-| 2 | Crear cuenta Resend + verificar dominio | 🔴 Pendiente |
-| 3 | Ejecutar SQL onboarding_emails | 🔴 Pendiente |
-| 4 | Desplegar EF send-onboarding-email | 🔴 Pendiente |
-| 5 | Agregar SUPABASE_SERVICE_ROLE_KEY a GitHub Secrets | 🔴 Pendiente |
-| 6 | Deploy Edge Functions a prod | 🔴 Pendiente |
+### Inmediatas (para retomar desarrollo)
+1. **Completar `.env`** con credenciales Supabase → permite `npm run dev`
+2. **Decidir sobre dominio** → recuperar Hostinger O comprar nuevo
+
+### Técnicas (arrastradas de sesiones anteriores)
+1. Ejecutar SQL modo comunidad en Supabase
+2. Crear cuenta Resend + verificar dominio
+3. Ejecutar SQL onboarding_emails
+4. Desplegar EF send-onboarding-email
+5. Agregar SUPABASE_SERVICE_ROLE_KEY a GitHub Secrets
+6. Deploy Edge Functions a prod
+7. Verificar realtime en producción
 
 ---
 
-## 🎯 Evoluciones disponibles (cuando se reanude)
+## 🎯 Evoluciones disponibles
 
 1. 🤖 **Modo Mentor (AI)** — Asistente IA integrado
 2. 🎯 **Onboarding Visual** — Walkthrough interactivo
@@ -62,4 +73,4 @@
 
 ---
 
-⏸️ **En espera.** Decí "Continuar evolución" o indicá qué área atacar.
+⏸️ **En espera.** Próximo paso: completar `.env` con credenciales Supabase.
