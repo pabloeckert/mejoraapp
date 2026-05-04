@@ -244,7 +244,7 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 | 7.5 | Consolidar docs | 🟡 | ✅ |
 | 7.6 | GitHub Pages configurado | 🟡 | ✅ |
 | 7.7 | Migración gamificación ejecutada | 🟡 | ✅ |
-| 7.8 | Migrar a Vercel | 🔴 | ✅ En vivo (HTTP 200) |
+| 7.8 | Migrar a Vercel | 🔴 | ✅ 2026-05-05 (lint removido del deploy, HTTP 200) |
 | 7.9 | Deploy Edge Functions migradas a middleware | 🔴 | ✅ 2026-05-05 (todas usan withMiddleware + workflow deploy-functions.yml) |
 | 7.10 | AdminCRM refactor (900→34 líneas) | 🟡 | ✅ 2026-04-29 |
 | 7.11 | Skeleton components (5 variantes) | 🟡 | ✅ 2026-04-29 |
@@ -254,7 +254,7 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 
 1. **Ejecutar SQL de onboarding emails** — Copiar el contenido de `supabase/migrations/20260426000000_onboarding_emails.sql` y ejecutar en Supabase Dashboard → SQL Editor
 2. **Configurar secret `SUPABASE_ACCESS_TOKEN`** en GitHub Settings → Secrets (para workflow deploy-functions.yml)
-3. **Trigger deploy de Edge Functions** — Push a `main` o ejecutar workflow `deploy-functions.yml` manualmente
+3. **Trigger deploy de Edge Functions** — Ejecutar workflow `deploy-functions.yml` manualmente desde GitHub Actions
 4. **Verificar cron onboarding** — Una vez desplegada la function, el workflow `onboarding-emails.yml` (cada 6h) la ejecutará automáticamente
 
 ---
