@@ -23,6 +23,16 @@ jobs:
     timeout-minutes: 15
 
     steps:
+      - name: Check secrets
+        run: |
+          if [ -z "${{ secrets.SUPABASE_ACCESS_TOKEN }}" ]; then
+            echo "❌ SUPABASE_ACCESS_TOKEN not configured in GitHub Secrets"
+            echo "   Go to: https://github.com/pabloeckert/MejoraApp/settings/secrets/actions"
+            echo "   Add SUPABASE_ACCESS_TOKEN from: Supabase Dashboard → Account → Access Tokens"
+            exit 1
+          fi
+          echo "✅ Secrets configured"
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -65,9 +75,9 @@ jobs:
           echo "✅ All Edge Functions deployed successfully"
 
       - name: Verify functions
+        if: success()
         env:
           SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           echo "🔍 Verifying deployed functions..."
           sleep 5
