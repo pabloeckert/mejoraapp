@@ -4,7 +4,7 @@
 > **Stack:** React 18 · TypeScript · Vite 5 · Supabase · Tailwind CSS · shadcn/ui
 > **Producción:** https://app.mejoraok.com
 > **Repo:** https://github.com/pabloeckert/MejoraApp
-> **Última actualización:** 2026-04-29
+> **Última actualización:** 2026-05-05
 
 ---
 
@@ -33,9 +33,9 @@
 
 MejoraApp es el MVP digital de **Mejora Continua**, comunidad de negocios para líderes empresariales argentinos. App funcional en producción con muro anónimo moderado por IA, contenido de valor, diagnóstico estratégico y panel admin.
 
-**Estado general:** E1–E6 ✅ completas · E7 🔄 (deploy Vercel pendiente, onboarding emails pendiente)
-**Líneas de código:** ~20,000 (175 archivos TS/TSX) · **Tests:** 312 unit (15 archivos) · 25 E2E · 7 a11y
-**Tablas DB:** 23 · **Edge Functions:** 7 · **Analytics:** 28+ eventos · **Validation schemas:** 11 (zod)
+**Estado general:** E1–E6 ✅ completas · E7 🔄 (10/12 — pendiente ejecutar SQL y deploy Edge Functions)
+**Líneas de código:** ~22,700 (175 archivos TS/TSX) · **Tests:** 312 unit (15 archivos) · 25 E2E · 7 a11y
+**Tablas DB:** 25 · **Edge Functions:** 8 · **Analytics:** 28+ eventos · **Validation schemas:** 11 (zod)
 
 ---
 
@@ -114,9 +114,11 @@ src/
 | `moderate-comment` | JWT | 10 comments/min | ✅ `withMiddleware` |
 | `verify-admin` | JWT + admin | — | ✅ `withMiddleware` |
 | `admin-action` (13 acciones) | JWT + admin | 30 req/min + audit log | ✅ `withMiddleware` |
-| `generate-content` | JWT + admin | — | Legacy |
-| `send-push-notification` | Service role | — | Legacy |
-| `send-diagnostic-email` | Service role | — | Legacy |
+| `generate-content` | JWT + admin | — | ✅ `withMiddleware` |
+| `mentor-chat` | JWT | — | ✅ `withMiddleware` |
+| `send-push-notification` | Service role | — | ✅ `withMiddleware` |
+| `send-diagnostic-email` | Service role | — | ✅ `withMiddleware` |
+| `send-onboarding-email` | Service role | 30 req/min | ✅ `withMiddleware` (2026-05-05) |
 
 **Módulos compartidos:** `_shared/cors.ts` · `_shared/log.ts` · `_shared/middleware.ts`
 **Middleware chain:** CORS → JWT Auth → Admin Check → Rate Limit → Handler
@@ -170,6 +172,7 @@ src/
 ### CI/CD Pipeline
 ```
 Push main → GitHub Actions (test + build) → Vercel auto-deploy → Health check (3 intentos) → ✅/❌
+Push main (supabase/functions/) → GitHub Actions → Supabase CLI → Deploy Edge Functions → ✅/❌
 ```
 
 ### Comandos
@@ -198,7 +201,7 @@ Vercel → Deployments → Promover versión anterior.
 | Tests accesibilidad | 7 (axe-core) |
 | Tablas DB | 25 (19 core + 4 CRM + 2 comunidad) |
 | Vistas DB | 3 (crm_client_summary, crm_seller_ranking, public_profiles) |
-| Edge Functions | 7 |
+| Edge Functions | 8 |
 | Eventos analytics | 28+ |
 | Bundle gzipped | ~355KB |
 | Componentes UI | 30+ (shadcn/ui) |
@@ -230,22 +233,29 @@ Legal (privacidad, términos, cookies, "Mis Datos") · E2E Playwright (25) · ax
 ### E6 — Escalamiento ✅ (2026-04-25)
 CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Admin whitelist · Landing · Referidos · CRM propio · NPS · Repository Layer · i18n · Bundle analysis
 
-### E7 — Deploy y Activación 🔄 (8/12 ✅)
+### E7 — Deploy y Activación 🔄 (10/12 ✅)
 
 | # | Tarea | Prioridad | Estado |
 |---|-------|-----------|--------|
 | 7.1 | Fix Realtime channel collision | 🔴 | ✅ |
 | 7.2 | Onboarding emails — SQL listo | 🔴 | ✅ (ejecutar en Supabase) |
-| 7.3 | Onboarding emails — Edge Function lista | 🔴 | ✅ (desplegar) |
-| 7.4 | Onboarding emails — cron workflow | 🔴 | 🟡 (requiere 7.2 + 7.3) |
+| 7.3 | Onboarding emails — Edge Function lista | 🔴 | ✅ 2026-05-05 (migrada a middleware) |
+| 7.4 | Onboarding emails — cron workflow | 🔴 | ✅ 2026-05-05 (workflow onboarding-emails.yml activo, requiere deploy 7.3) |
 | 7.5 | Consolidar docs | 🟡 | ✅ |
 | 7.6 | GitHub Pages configurado | 🟡 | ✅ |
 | 7.7 | Migración gamificación ejecutada | 🟡 | ✅ |
 | 7.8 | Migrar a Vercel | 🔴 | ✅ En vivo (HTTP 200) |
-| 7.9 | Deploy Edge Functions migradas a middleware | 🔴 | ✅ 2026-04-30 (código migrado, pendiente deploy) |
+| 7.9 | Deploy Edge Functions migradas a middleware | 🔴 | ✅ 2026-05-05 (todas usan withMiddleware + workflow deploy-functions.yml) |
 | 7.10 | AdminCRM refactor (900→34 líneas) | 🟡 | ✅ 2026-04-29 |
 | 7.11 | Skeleton components (5 variantes) | 🟡 | ✅ 2026-04-29 |
 | 7.12 | Deploy health check post-deploy | 🟡 | ✅ 2026-04-29 |
+
+### 🔑 Acciones manuales restantes (requieren acceso Supabase Dashboard)
+
+1. **Ejecutar SQL de onboarding emails** — Copiar el contenido de `supabase/migrations/20260426000000_onboarding_emails.sql` y ejecutar en Supabase Dashboard → SQL Editor
+2. **Configurar secret `SUPABASE_ACCESS_TOKEN`** en GitHub Settings → Secrets (para workflow deploy-functions.yml)
+3. **Trigger deploy de Edge Functions** — Push a `main` o ejecutar workflow `deploy-functions.yml` manualmente
+4. **Verificar cron onboarding** — Una vez desplegada la function, el workflow `onboarding-emails.yml` (cada 6h) la ejecutará automáticamente
 
 ---
 
@@ -253,6 +263,7 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 
 | Fecha | Resumen |
 |-------|---------|
+| 2026-05-05 | **DEPLOY PREP** — Migración `send-onboarding-email` a `withMiddleware` · Creado workflow `deploy-functions.yml` para deploy automático de Edge Functions · Actualizado DOCUMENTO-MAESTRO · Pendiente: ejecutar SQL + deploy functions + configurar secrets |
 | 2026-04-30 | **MODO COMUNIDAD — 1 commit, +1,186 líneas, nueva tab Comunidad** — Implementación completa del Modo Comunidad (área prioritaria #1). **Nueva tab "Comunidad"** en BottomNav con 4 secciones: Stats Bar (miembros, activos, engagement), Desafío Semanal con banner gradient + CTA join/leave, Miembros Destacados (top 3), Directorio de Miembros con búsqueda + filtros por industria. **Componentes nuevos:** `Comunidad.tsx` (tab principal), `MemberCard.tsx` (variantes compact/featured), `CommunityProfile.tsx` (sheet de perfil público). **Hooks nuevos:** `useMembers.ts` (useMembers, useMemberProfile, useChallenges, useChallengeParticipation). **DB Migration:** `public_profiles` view (sin datos sensibles), `community_challenges` table, `challenge_participants` table + trigger de conteo automático, RLS policies en ambas tablas, primer desafío semanal seed. **Prototipos SVG:** Tab mockup + flujo de usuario (convertidos a PNG). **Build:** OK (9.73s). **Commit:** 89066ce. |
 | 2026-04-30 | **MEJORAS PROFUNDAS — 7 commits, refactor + funnel + freemium + MFA + SEO + Edge Functions** — Análisis completo del repo + documentos MejoraApp.docx y Yo-lo-haria-asi.docx. **Refactor Muro.tsx:** 610→386 líneas, extraído PostCard (169L), CommentItem (24L), PostSkeleton (17L). **Refactor DiagnosticTest.tsx:** 576→188 líneas, extraído DiagnosticIntro (82L), DiagnosticQuestionView (104L), DiagnosticLoading (11L), DiagnosticResultView (236L). Progress bar visible. **Funnel Tracking:** Sistema NSM completo (`src/lib/funnel.ts`), 7 pasos instrumentados (signup→onboarding→first_visit→first_post→return_d1→return_d7→premium_intent), integrado en AuthContext, Onboarding, Muro, Index, FeatureGate. **Freemium:** Plan freemium activo con features diferenciados (free vs premium), `PREMIUM_FEATURES` list, `isPremium()` helper, UpgradeModal. **MFA Admin:** AdminSecurityMFA component, verificación de MFA via Supabase, banner de advertencia en Admin. **SEO:** react-helmet-async, SEOHead component, OG tags, Twitter Cards, canonical URLs, configs por página. **Edge Functions:** Las 3 legacy (generate-content, send-push-notification, send-diagnostic-email) migradas a `withMiddleware`. Todas las 7 funciones usan middleware compartido. **Tests:** 312 passing. **Build:** OK. **Docs:** CHANGELOG.md creado, DOCUMENTO-MAESTRO actualizado. |
 | 2026-04-29 | **SESIÓN AUTODEV COMPLETA — 19 commits, 103→312 tests, app en vivo** — Sesión autónoma completa sin intervención del usuario. Trabajo desde las 30+ perspectivas profesionales. **Fix crítico:** tsconfig.json Vercel build error (ENOENT). **Bug fix:** computed property en useWallInteractions (comentarios no cargaban). **Services layer:** diagnostic.service.ts, wall.service.ts, content.service.ts. **Validation:** 11 schemas zod (login, signup, profile, wall post, comment, content, CRM, NPS). **Edge function hardening:** HTML sanitization, action whitelist, input validation. **Design tokens:** spacing, shadows, transitions en tailwind.config. **Accessibility:** ARIA labels en BottomNav, AppHeader, Muro. **i18n:** English translations completas (160+ claves). **PWA:** manifest fix (start_url, shortcuts, maskable icons). **SEO:** JSON-LD structured data. **DevOps:** deploy verification script, Lighthouse CI, lint-staged, bundle size check. **Tests:** 312 passing (15 archivos). **Docs:** PR template, CODEOWNERS, env.example. **Deploy:** Push a main → app.mejoraok.com en vivo (HTTP 200). |
@@ -275,9 +286,9 @@ CORS centralizado · CSP · Rate limiting · Admin audit · Push triggers · Adm
 |---|--------|-----------|--------|
 | 1 | Crear cuenta Resend + verificar dominio `mejoraok.com` | 🔴 Alta | 🔴 Pendiente |
 | 2 | Ejecutar SQL `onboarding_emails` en Supabase SQL Editor | 🔴 Alta | 🔴 Pendiente |
-| 3 | Desplegar EF `send-onboarding-email` | 🔴 Alta | 🔴 Pendiente |
+| 3 | Desplegar Edge Functions vía workflow `deploy-functions.yml` | 🔴 Alta | 🟡 Código listo, requiere secret `SUPABASE_ACCESS_TOKEN` |
 | 4 | Verificar deploy en Vercel (app.mejoraok.com) | 🟡 Media | ✅ En vivo (HTTP 200) |
-| 5 | Agregar `SUPABASE_SERVICE_ROLE_KEY` a GitHub Secrets | 🔴 Alta | 🔴 Pendiente |
+| 5 | Agregar `SUPABASE_ACCESS_TOKEN` a GitHub Secrets | 🔴 Alta | 🔴 Pendiente (para workflow deploy-functions.yml) |
 | 6 | Deploy Edge Functions migradas a middleware | 🔴 Alta | 🔴 Pendiente |
 | 7 | Verificar fix Realtime en producción | 🟡 Media | ⏳ Confirmar |
 

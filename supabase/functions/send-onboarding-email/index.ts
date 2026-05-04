@@ -1,6 +1,5 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { getCorsHeaders, handleCors, jsonHeaders } from "../_shared/cors.ts";
+import { withMiddleware } from "../_shared/middleware.ts";
 import { logInfo, logWarn, logError } from "../_shared/log.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") || "";
@@ -157,20 +156,15 @@ async function sendEmail(to: string, subject: string, html: string): Promise<boo
 }
 
 // ── Main handler ───────────────────────────────────────────────
-serve(async (req) => {
-  const corsResp = handleCors(req);
-  if (corsResp) return corsResp;
+Deno.serve(
+  withMiddleware({ auth: false, rateLimit: 30 }, async (req, _ctx) => {
+    if (req.method !== "POST") {
+      return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405 });
+    }
 
-  const origin = req.headers.get("Origin");
-  const headers = jsonHeaders(origin);
-
-  try {
-    // Verify service_role key (this function should only be called by cron/admin)
-    const authHeader = req.headers.get("Authorization");
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-    if (!authHeader || !authHeader.includes(serviceKey ?? "")) {
-      return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401, headers });
+    if (!RESEND_API_KEY) {
+      logWarn("send-onboarding-email", "No RESEND_API_KEY configured");
+      return new Response(JSON.stringify({ error: "Email service not configured" }), { status: 503 });
     }
 
     const supabase = createClient(
@@ -183,12 +177,12 @@ serve(async (req) => {
 
     if (error) {
       logError("send-onboarding-email", "Failed to get users", { error: error.message });
-      return new Response(JSON.stringify({ error: error.message }), { status: 500, headers });
+      return new Response(JSON.stringify({ error: error.message }), { status: 500 });
     }
 
     if (!users || users.length === 0) {
       logInfo("send-onboarding-email", "No users needing emails");
-      return new Response(JSON.stringify({ sent: 0, message: "No hay usuarios pendientes" }), { headers });
+      return new Response(JSON.stringify({ sent: 0, message: "No hay usuarios pendientes" }));
     }
 
     let sentCount = 0;
@@ -224,14 +218,7 @@ serve(async (req) => {
     logInfo("send-onboarding-email", "Batch complete", { sent: sentCount, failed: failedCount, total: users.length });
 
     return new Response(
-      JSON.stringify({ sent: sentCount, failed: failedCount, total: users.length }),
-      { headers }
+      JSON.stringify({ sent: sentCount, failed: failedCount, total: users.length })
     );
-  } catch (e) {
-    logError("send-onboarding-email", "Unhandled error", { error: String(e) });
-    return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Error desconocido" }),
-      { status: 500, headers }
-    );
-  }
-});
+  })
+);
