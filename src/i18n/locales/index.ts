@@ -130,6 +130,21 @@ export const es: Record<string, string> = {
   "gamification.earned": "Desbloqueados",
   "gamification.new": "¡Badge desbloqueado!",
 
+  // Pull to refresh
+  "muro.pull": "Jalá para actualizar",
+  "muro.release": "Soltá para actualizar",
+  "muro.updating": "Actualizando…",
+
+  // Diagnóstico
+  "diag.result.title": "Tu resultado",
+
+  // Comunidad
+  "community.title": "Comunidad",
+  "community.members": "Miembros",
+  "community.profile": "Perfil",
+  "community.challenges": "Desafíos",
+  "community.rules.title": "Reglas de la comunidad",
+
   // Servicios
   "services.title": "Servicios",
   "services.whatsapp": "Consultanos por WhatsApp",
@@ -248,6 +263,22 @@ export const en: Record<string, string> = {
   "gamification.ranking": "Ranking",
   "gamification.earned": "Unlocked",
   "gamification.new": "Badge unlocked!",
+
+  // Pull to refresh
+  "muro.pull": "Pull to refresh",
+  "muro.release": "Release to refresh",
+  "muro.updating": "Updating…",
+
+  // Diagnostic
+  "diag.result.title": "Your result",
+
+  // Community
+  "community.title": "Community",
+  "community.members": "Members",
+  "community.profile": "Profile",
+  "community.challenges": "Challenges",
+  "community.rules.title": "Community rules",
+
   "services.title": "Services",
   "services.whatsapp": "Contact us via WhatsApp",
   "admin.title": "Admin panel",

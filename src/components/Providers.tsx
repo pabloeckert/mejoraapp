@@ -12,7 +12,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { I18nProvider } from "@/contexts/I18nContext";
-import { CookieConsent } from "@/components/CookieConsent";
 import type { ReactNode } from "react";
 
 const queryClient = new QueryClient({
@@ -22,25 +21,28 @@ const queryClient = new QueryClient({
       retry: 1,
       refetchOnWindowFocus: false,
     },
+    mutations: {
+      retry: 0, // Don't retry mutations (writes)
+    },
   },
 });
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <HelmetProvider>
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <I18nProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <AuthProvider>
-              {children}
-            </AuthProvider>
-          </TooltipProvider>
-        </I18nProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <I18nProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <AuthProvider>
+                {children}
+              </AuthProvider>
+            </TooltipProvider>
+          </I18nProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
     </HelmetProvider>
   );
 }

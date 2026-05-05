@@ -40,7 +40,7 @@ export async function fetchContentPosts(category?: string): Promise<ContentPost[
   if (category) query = query.eq("category_id", category);
   const { data, error } = await query;
   if (error) throw error;
-  return (data as unknown as unknown as ContentPost[]) ?? [];
+  return (data as unknown as ContentPost[]) ?? [];
 }
 
 export async function searchContentPosts(query: string): Promise<ContentPost[]> {
