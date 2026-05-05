@@ -1,30 +1,6 @@
 # SESSION-STATE.md — Estado actual de MejoraApp
-> **Última actualización:** 2026-05-05 05:27 GMT+8
-> **Estado:** ⏸️ PAUSADO — Esperando credenciales Supabase para entorno local
-
----
-
-## 🔄 Situación: Migración desde Hostinger
-
-### Problema
-- Acceso a hPanel de Hostinger **perdido** — no se puede gestionar DNS ni dominio
-- Dominio `mejoraok.com` registrado vía Hostinger (nameservers `dns-parking.com`)
-- Dominio vence: **2026-12-01**
-- El código está **seguro en GitHub** — nada que rescatar
-
-### Decisión
-- Abandonar Hostinger como hosting
-- Trabajar localmente → push a GitHub → Vercel auto-deploy
-- Dominio: recuperar acceso a Hostinger O comprar dominio nuevo
-
-### Estado del entorno local
-- ✅ Repo clonado en `/root/.openclaw/workspace/MejoraApp`
-- ✅ Dependencias instaladas (576 paquetes)
-- ✅ Tests: 312/312 passing
-- ✅ `.env` creado (desde `.env.example`)
-- 🔴 **Falta completar `.env`** con credenciales reales de Supabase:
-  - `VITE_SUPABASE_URL`
-  - `VITE_SUPABASE_PUBLISHABLE_KEY`
+> **Última actualización:** 2026-05-05 20:14 GMT+8
+> **Estado:** 🔄 ACTIVO — Deploying a Vercel + configurando Supabase
 
 ---
 
@@ -34,43 +10,76 @@
 |---------|-------|
 | Último commit | `8a9d50b` en `main` |
 | Tests | 312/312 passing |
-| Build | OK |
+| Build | OK (9.66s) |
 | Líneas de código | ~22,700 |
 | Archivos TS/TSX | 175 |
-| Tablas DB | 25 |
-| Edge Functions | 8 |
+| Tablas DB | 25 (todas creadas) |
+| Edge Functions | 8 (5 desplegadas, 4 pendientes) |
 | Tabs UI | 5 (Contenido, Mirror, Muro, Comunidad, Novedades) |
 
 ---
 
-## 🔴 Acciones pendientes
+## 🔄 Situación actual
 
-### Inmediatas (para retomar desarrollo)
-1. **Completar `.env`** con credenciales Supabase → permite `npm run dev`
-2. **Decidir sobre dominio** → recuperar Hostinger O comprar nuevo
+### Supabase ✅
+- **URL:** `https://pwiduojwgkaoxxuautkp.supabase.co`
+- **Publishable Key:** configurada en `.env`
+- **19/25 tablas** ya existían en la DB
+- **7 tablas faltantes** → SQL consolidado creado (`20260505000000_missing_tables.sql`)
+  - push_subscriptions, crm_clients, crm_products, crm_interactions, crm_interaction_lines, community_challenges, challenge_participants
+  - + mentor_conversations, vistas (public_profiles, crm_seller_ranking, crm_client_summary), función RPC get_crm_dashboard
+- **Pendiente:** ejecutar el SQL en Supabase Dashboard → SQL Editor
 
-### Técnicas (arrastradas de sesiones anteriores)
-1. Ejecutar SQL modo comunidad en Supabase
-2. Crear cuenta Resend + verificar dominio
-3. Ejecutar SQL onboarding_emails
-4. Desplegar EF send-onboarding-email
-5. Agregar SUPABASE_SERVICE_ROLE_KEY a GitHub Secrets
-6. Deploy Edge Functions a prod
-7. Verificar realtime en producción
+### Edge Functions
+- **Desplegadas (5):** moderate-post, moderate-comment, verify-admin, admin-action, generate-content
+- **Faltantes (4):** mentor-chat, send-push-notification, send-diagnostic-email, send-onboarding-email
+- **Pendiente:** deploy via GitHub Actions (necesita SUPABASE_ACCESS_TOKEN en GitHub Secrets)
 
----
+### Vercel 🔄
+- `app.mejoraok.com` devuelve 404 — necesitamos configurar deploy
+- Pendiente: token Vercel del usuario
 
-## 🎯 Evoluciones disponibles
-
-1. 🤖 **Modo Mentor (AI)** — Asistente IA integrado
-2. 🎯 **Onboarding Visual** — Walkthrough interactivo
-3. 📊 **Dashboard Personal** — Métricas de usuario
-4. 📴 **Modo Offline** — PWA con datos en caché
-5. 📈 **Métricas Avanzadas** — Analytics profundos
-6. 🧭 **Navegación Optimizada** — BottomNav mejorada
-7. 📄 **Documentación Visual** — Storybook + guías
-8. 🏠 **Landing + Marketing** — Assets para captación
+### Hosting / Dominio
+- Dominio `mejoraok.com` vence **2026-12-01**
+- Acceso a Hostinger/hPanel perdido
+- Nameservers: `dns-parking.com` (Hostinger)
 
 ---
 
-⏸️ **En espera.** Próximo paso: completar `.env` con credenciales Supabase.
+## ✅ Completado esta sesión (2026-05-05)
+
+1. Clonado repo local + instaladas dependencias (576 paquetes)
+2. `.env` configurado con credenciales Supabase reales
+3. Verificado build (9.66s) y tests (312/312 passing)
+4. Escaneada DB Supabase — identificadas 7 tablas faltantes
+5. Creada migración consolidada para tablas faltantes + vistas + RPC
+6. Eliminados SQLs redundantes de Documents/ (6 archivos)
+7. Eliminados artefactos de build del tracking (playwright-report/, test-results/)
+8. Migración onboarding_emails ya existía en la DB
+
+---
+
+## 🔴 Acciones pendientes (próxima sesión)
+
+1. **Ejecutar SQL consolidado** en Supabase Dashboard → SQL Editor
+2. **Configurar Vercel** — token + deploy
+3. **Deploy Edge Functions** — SUPABASE_ACCESS_TOKEN en GitHub Secrets + workflow
+4. **Verificar app** en producción una vez desplegada
+5. **Decidir sobre dominio** — recuperar Hostinger o comprar nuevo
+
+---
+
+## 🎯 Evoluciones disponibles (E8+)
+
+1. 🤖 Modo Mentor (AI) — Asistente IA integrado
+2. 🎯 Onboarding Visual — Walkthrough interactivo
+3. 📊 Dashboard Personal — Métricas de usuario
+4. 📴 Modo Offline — PWA con datos en caché
+5. 📈 Métricas Avanzadas — Analytics profundos
+6. 🧭 Navegación Optimizada — BottomNav mejorada
+7. 📄 Documentación Visual — Storybook + guías
+8. 🏠 Landing + Marketing — Assets para captación
+
+---
+
+🔄 **En progreso.** Próximo paso: ejecutar SQL + configurar Vercel.
