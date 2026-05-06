@@ -1,20 +1,5 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "vite",
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "installCommand": "npm ci",
-  "regions": ["gru1"],
   "headers": [
-    {
-      "source": "/assets/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
     {
       "source": "/(.*)",
       "headers": [
@@ -33,11 +18,44 @@
         {
           "key": "Permissions-Policy",
           "value": "camera=(), microphone=(), geolocation=()"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains; preload"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://us.i.posthog.com https://browser.sentry.io; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://us.i.posthog.com https://o*.ingest.sentry.io wss://*.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+        }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/sw.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
         }
       ]
     }
   ],
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ]
 }

@@ -1,9 +1,12 @@
-const CACHE_NAME = "mejoraapp-v3";
-const STATIC_ASSETS = ["/app/", "/app/index.html"];
+const CACHE_NAME = "mejoraapp-v4";
+const STATIC_ASSETS = ["/", "/index.html"];
+
+// Assets to pre-cache on install
+const PRECACHE_URLS = STATIC_ASSETS;
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS))
   );
   self.skipWaiting();
 });
@@ -17,13 +20,48 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Network-first strategy: try network, fall back to cache
+// Network-first strategy for navigation requests
+// Cache-first for static assets (CSS, JS, images)
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
   // Skip cross-origin and API requests
   if (!req.url.startsWith(self.location.origin)) return;
 
+  const url = new URL(req.url);
+
+  // Navigation requests: network-first with offline fallback
+  if (req.mode === "navigate") {
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
+          return res;
+        })
+        .catch(() => caches.match("/") || caches.match("/index.html"))
+    );
+    return;
+  }
+
+  // Static assets (hashed filenames): cache-first
+  if (url.pathname.startsWith("/assets/")) {
+    event.respondWith(
+      caches.match(req).then((cached) => {
+        if (cached) return cached;
+        return fetch(req).then((res) => {
+          if (res.status === 200) {
+            const clone = res.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
+          }
+          return res;
+        });
+      })
+    );
+    return;
+  }
+
+  // Everything else: network-first
   event.respondWith(
     fetch(req)
       .then((res) => {

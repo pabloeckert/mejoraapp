@@ -29,7 +29,7 @@ jobs:
         run: npm ci --no-audit --prefer-offline
 
       - name: Run tests
-        run: npm run test || echo "::warning::Tests had failures — check CI workflow"
+        run: npm run test
 
       - name: Build production
         run: npm run build

@@ -3,6 +3,50 @@
 Todas las mejoras notables de este proyecto están documentadas aquí.
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
 
+## [No publicado] — 2026-05-06
+
+### Añadido
+- **RouteErrorBoundary** (`src/components/RouteErrorBoundary.tsx`): Error boundary por ruta para aislar fallos
+- **PageLoadingSkeleton** (`src/components/PageLoadingSkeleton.tsx`): Skeleton UI profesional para carga de rutas lazy
+- **Rate Limiter** (`src/lib/rateLimit.ts`): Sistema de rate limiting client-side con sliding window
+- **Security Utilities** (`src/lib/security.ts`): Sanitización de HTML, URLs y textos de usuario
+- **useDebounce hook** (`src/hooks/useDebounce.ts`): Debounce de valores para búsquedas
+- **useLocalStorage hook** (`src/hooks/useLocalStorage.ts`): localStorage tipado con sync cross-tab
+- **Vercel config** (`vercel.json`): Headers de seguridad (CSP, HSTS, X-XSS-Protection), cache strategy, SPA rewrites
+- **Lighthouse CI config** (`.lighthouserc.json`): Assertions de performance y accessibility
+- **`.nvmrc`**: Node 22 para consistencia de entorno
+- **Documentación completa**:
+  - `README.md` reescrito con setup, arquitectura, stack, deploy
+  - `ARCHITECTURE.md`: Arquitectura por capas, state management, CI/CD
+  - `SECURITY.md`: Política de seguridad completa
+  - `CONTRIBUTING.md`: Guía de contribución
+  - `MEJORAS-APLICADAS.md`: Auditoría multidisciplinaria (40+ perspectivas)
+- **i18n**: Keys faltantes para comunidad, pull-to-refresh, resultado diagnóstico
+
+### Cambiado
+- **tsconfig.json**: `strict: true`, `forceConsistentCasingInFileNames`, `resolveJsonModule`, `esModuleInterop`
+- **vite.config.ts**: ESM-correct import para rollup-plugin-visualizer (antes usaba `require()`), hidden sourcemaps
+- **Supabase client** (`src/integrations/supabase/client.ts`):
+  - PKCE flow (más seguro para SPAs)
+  - Fetch timeout global de 30s
+  - Realtime rate limiting (eventsPerSecond: 10)
+  - `detectSessionInUrl: true` para OAuth
+- **Password validation** (`src/lib/validation.ts`): Mínimo 8 caracteres, 1 mayúscula, 1 número (antes solo 6 chars)
+- **App.tsx**: Route-level Error Boundaries, PageLoadingSkeleton (antes spinner genérico)
+- **main.tsx**: Root element check con fallback, SW error logging
+- **Providers.tsx**: Fix duplicate CookieConsent import, mutation retry: 0
+- **Content service** (`src/services/content.service.ts`): Fix duplicate `as unknown as unknown` type assertion
+- **Service Worker** (`public/sw.js`):
+  - Paths corregidos (antes `/app/`, ahora `/`)
+  - Estrategia diferenciada: cache-first para assets hashed, network-first para navigation
+  - Offline fallback funcional
+- **CI workflow** (`.github/workflows/ci.yml`):
+  - Type checking con `tsc --noEmit`
+  - `.nvmrc` para Node version
+  - Bundle size verification
+- **Deploy workflow** (`.github/workflows/deploy.yml`):
+  - Tests ahora BLOQUEAN el deploy (antes: `|| echo "::warning::"`)
+
 ## [No publicado] — 2026-04-30
 
 ### Añadido

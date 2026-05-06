@@ -40,8 +40,10 @@ export const signupSchema = z.object({
     .email("El email no parece válido"),
   password: z
     .string()
-    .min(6, "La contraseña debe tener al menos 6 caracteres")
-    .max(100, "Máximo 100 caracteres"),
+    .min(8, "La contraseña debe tener al menos 8 caracteres")
+    .max(100, "Máximo 100 caracteres")
+    .regex(/[A-Z]/, "Debe contener al menos una mayúscula")
+    .regex(/[0-9]/, "Debe contener al menos un número"),
 });
 
 export const resetPasswordSchema = z.object({

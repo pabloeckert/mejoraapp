@@ -25,6 +25,24 @@ export const supabase = createClient<Database>(
       storage: localStorage,
       persistSession: true,
       autoRefreshToken: true,
-    }
+      // Detect session in URL (OAuth redirect, magic link)
+      detectSessionInUrl: true,
+      // Flow type for PKCE (more secure for SPAs)
+      flowType: 'pkce',
+    },
+    // Global fetch timeout
+    global: {
+      fetch: (url, options = {}) => {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 30_000); // 30s timeout
+        return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timeout));
+      },
+    },
+    // Realtime config
+    realtime: {
+      params: {
+        eventsPerSecond: 10,
+      },
+    },
   }
 );
