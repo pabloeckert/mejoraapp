@@ -47,9 +47,15 @@ pnpm-lock.yaml
 # Lovable internal
 .lovable/
 
-# Document files — use Documents/ folder, not root
-/*.docx
+# Document files — not part of the codebase
+*.docx
+*.pdf
+*.pptx
+*.xlsx
 supabase/.temp/
+
+# Legacy directories
+1-App Comunidad de Negocios/
 
 playwright-report/
 test-results/

@@ -3,6 +3,26 @@
 Todas las mejoras notables de este proyecto están documentadas aquí.
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
 
+## [No publicado] — 2026-05-07
+
+### Eliminado
+- **`1-App Comunidad de Negocios/`**: 23 archivos de documentación legacy (.docx, .pdf, .html, .md, .txt) — 2.4MB de basura del repo
+- **`SESSION-STATE.md`**: Archivo de estado operacional, no pertenece al repo de código
+- **`CONTINUATION-PROMPT.md`**: Template de prompt, no es código
+- **`ProPlan.md`**: Template de prompt para Lovable, no es código
+
+### Añadido
+- **`useProfile` hook** (`src/hooks/useProfile.ts`): Hook con React Query para datos de perfil con caching de 5min. Elimina queries directas duplicadas a Supabase.
+
+### Cambiado
+- **`Index.tsx`**: Refactorizado para usar `useProfileComplete` hook en lugar de queries directas a Supabase. Reduce llamadas a la DB y mejora caching.
+- **`AppHeader.tsx`**: Usa `useProfile` hook en lugar de query directa a Supabase para obtener iniciales del usuario.
+- **`useMentor.ts`**: Añadida función `loadConversation(id)` para seleccionar conversaciones existentes sin window events.
+- **`Mentor.tsx`**: Eliminado patrón frágil de `window.dispatchEvent(CustomEvent)` para selección de conversaciones. Ahora usa `loadConversation` del hook directamente. Añadido `aria-live="polite"` al área de contenido.
+- **`index.html`**: Eliminado preconnect hardcodeado a URL placeholder de Supabase.
+- **`.env.example`**: Corregido valor de ejemplo que parecía un JWT real.
+- **`.gitignore`**: Añadidos patrones para prevenir re-adição de archivos .docx, .pdf, .pptx, .xlsx y directorios legacy.
+
 ## [No publicado] — 2026-05-06
 
 ### Añadido

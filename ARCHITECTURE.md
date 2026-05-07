@@ -126,8 +126,9 @@ hooks/
 ├── useLocalStorage.ts  # localStorage tipado con sync cross-tab
 ├── useFeatureAccess.ts # Verificación de features premium
 ├── useBadges.ts        # Badges del usuario con realtime
+├── useProfile.ts       # Perfil de usuario con React Query (5min cache)
 ├── usePullToRefresh.ts # Pull-to-refresh para móvil
-├── useMentor.ts        # Chat del Mentor IA
+├── useMentor.ts        # Chat del Mentor IA + historial de conversaciones
 ├── useWallInteractions.ts # Likes y comentarios
 ├── useRanking.ts       # Ranking de comunidad
 ├── useMembers.ts       # Directorio de miembros
