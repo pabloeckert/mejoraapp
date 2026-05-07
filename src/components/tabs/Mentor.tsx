@@ -17,7 +17,6 @@ import { useMentorChat } from "@/hooks/useMentor";
 import { MentorWelcome } from "@/components/mentor/MentorWelcome";
 import { MentorChat } from "@/components/mentor/MentorChat";
 import { MentorHistory } from "@/components/mentor/MentorHistory";
-import { cn } from "@/lib/utils";
 import { trackMentorQuickAction, trackMentorNewConversation } from "@/lib/analytics";
 
 const Mentor = () => {
@@ -34,6 +33,7 @@ const Mentor = () => {
     conversationId,
     sendMessage,
     startNewConversation,
+    loadConversation,
     clearError,
   } = useMentorChat();
 
@@ -89,33 +89,11 @@ const Mentor = () => {
 
   const handleSelectConversation = useCallback(
     (id: string) => {
-      // Load existing conversation
-      startNewConversation();
-      // We need to set the conversation ID — the hook will load messages
-      // For now, we'll use the chat hook's conversationId setter indirectly
-      // by triggering a re-render with the new ID
+      loadConversation(id);
       setShowWelcome(false);
-      // The useMentorChat hook accepts conversationId in options
-      // We need a way to set it — let's add it to the hook
-      // For now, we'll reload the page or use a state
-      window.dispatchEvent(
-        new CustomEvent("mentor-select-conversation", { detail: id })
-      );
     },
-    [startNewConversation]
+    [loadConversation]
   );
-
-  // Listen for conversation selection events
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const id = (e as CustomEvent).detail;
-      if (id) {
-        setShowWelcome(false);
-      }
-    };
-    window.addEventListener("mentor-select-conversation", handler);
-    return () => window.removeEventListener("mentor-select-conversation", handler);
-  }, []);
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)]">
@@ -153,7 +131,7 @@ const Mentor = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden" aria-live="polite">
         {showWelcome && messages.length === 0 ? (
           <MentorWelcome
             userName={userName}

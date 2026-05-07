@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { Navigate } from "react-router-dom";
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
@@ -16,12 +15,14 @@ import OnboardingV2 from "@/components/OnboardingV2";
 import { NPSSurvey } from "@/components/NPSSurvey";
 import { trackPageView, trackTabSwitch } from "@/lib/analytics";
 import { useLastVisit } from "@/hooks/useLastVisit";
+import { useProfileComplete } from "@/hooks/useProfile";
 import { getVariant, trackABTest } from "@/lib/ab-testing";
 import { checkReturnVisits, trackFirstVisitFunnel } from "@/lib/funnel";
 import { SEOHead, SEO_CONFIGS } from "@/components/SEOHead";
 
 const Index = () => {
   const { session, loading, user } = useAuth();
+  const { isComplete: profileComplete, isLoading: profileLoading } = useProfileComplete(user?.id);
   const [activeTab, setActiveTab] = useState(() => {
     // Default to muro for returning users who've been here before
     try {
@@ -31,56 +32,21 @@ const Index = () => {
     } catch { /* ignore */ }
     return "contenido";
   });
-  const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingVariant, setOnboardingVariant] = useState("control");
   const { badges, markVisited } = useLastVisit();
   const scrollPositions = useRef<Record<string, number>>({});
 
-  useEffect(() => {
-    if (!user) {
-      setProfileComplete(false);
-      return;
-    }
-
-    const checkProfile = async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("empresa, cargo, phone")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      const isComplete = !!(data?.empresa || data?.cargo);
-      setProfileComplete(isComplete);
-    };
-
-    checkProfile();
-  }, [user]);
-
   // Check onboarding after auth is ready — only if profile is complete and hasn't completed diagnostic
   useEffect(() => {
     if (!loading && session && profileComplete === true) {
-      // Skip onboarding if user already completed the diagnostic (they know the app)
-      const skipOnboarding = async () => {
-        if (!user) return false;
-        const { data } = await supabase
-          .from("profiles")
-          .select("has_completed_diagnostic")
-          .eq("user_id", user.id)
-          .maybeSingle();
-        return data?.has_completed_diagnostic === true;
-      };
-      skipOnboarding().then((skip) => {
-        if (!skip) {
-          const shouldShow = shouldShowOnboarding();
-          if (shouldShow) {
-            const variant = getVariant("onboarding_v2", user?.id);
-            setOnboardingVariant(variant);
-            trackABTest("onboarding_v2", variant, "assigned");
-          }
-          setShowOnboarding(shouldShow);
-        }
-      });
+      const shouldShow = shouldShowOnboarding();
+      if (shouldShow) {
+        const variant = getVariant("onboarding_v2", user?.id);
+        setOnboardingVariant(variant);
+        trackABTest("onboarding_v2", variant, "assigned");
+      }
+      setShowOnboarding(shouldShow);
     }
   }, [loading, session, profileComplete, user]);
 
@@ -128,7 +94,7 @@ const Index = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  if (profileComplete === null) {
+  if (profileLoading || profileComplete === null) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-background">
         <div className="w-8 h-8 border-3 border-mc-dark-blue border-t-transparent rounded-full animate-spin" />
@@ -141,7 +107,7 @@ const Index = () => {
     <div className="min-h-screen bg-background pb-20">
       <SEOHead {...SEO_CONFIGS.index} />
       <AppHeader />
-      <main className="max-w-lg mx-auto px-4 py-4">
+      <main className="max-w-lg mx-auto px-4 py-4" role="main">
         {activeTab === "contenido" && <ContenidoDeValor />}
         {activeTab === "diagnostico" && <DiagnosticTest onComplete={() => setActiveTab("contenido")} />}
         {activeTab === "muro" && <Muro />}
@@ -155,7 +121,7 @@ const Index = () => {
       {!profileComplete && user && (
         <ProfileCompleteModal
           userId={user.id}
-          onComplete={() => setProfileComplete(true)}
+          onComplete={() => {/* React Query will auto-refetch */}}
         />
       )}
 

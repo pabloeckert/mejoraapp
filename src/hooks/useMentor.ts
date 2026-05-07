@@ -40,6 +40,7 @@ interface UseMentorChatReturn {
   conversationId: string | null;
   sendMessage: (content: string) => Promise<void>;
   startNewConversation: () => void;
+  loadConversation: (id: string) => void;
   clearError: () => void;
 }
 
@@ -174,6 +175,11 @@ export function useMentorChat(options?: UseMentorChatOptions): UseMentorChatRetu
     setError(null);
   }, []);
 
+  const loadConversation = useCallback((id: string) => {
+    setConversationId(id);
+    setError(null);
+  }, []);
+
   const clearError = useCallback(() => setError(null), []);
 
   return {
@@ -184,6 +190,7 @@ export function useMentorChat(options?: UseMentorChatOptions): UseMentorChatRetu
     conversationId,
     sendMessage,
     startNewConversation,
+    loadConversation,
     clearError,
   };
 }

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { LogOut, User, Moon, Sun, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import { supabase } from "@/integrations/supabase/client";
+import { useProfile } from "@/hooks/useProfile";
 import { Button } from "@/components/ui/button";
 import NotificationToggle from "@/components/NotificationToggle";
 import UserProfile from "@/components/UserProfile";
@@ -12,6 +12,7 @@ import logoComunidad from "@/assets/logo-comunidad.png";
 const AppHeader = () => {
   const { signOut, user } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { data: profile } = useProfile(user?.id);
   const [showAdminReturn, setShowAdminReturn] = useState(false);
   const [initials, setInitials] = useState<string>("");
   const [showProfile, setShowProfile] = useState(false);
@@ -22,29 +23,19 @@ const AppHeader = () => {
   }, []);
 
   useEffect(() => {
-    if (!user) return;
-    const fetchProfile = async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("nombre, apellido, display_name")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      if (data) {
-        const nombre = data.nombre || "";
-        const apellido = data.apellido || "";
-        const display = data.display_name || "";
-        if (nombre || apellido) {
-          setInitials(`${(nombre[0] || "").toUpperCase()}${(apellido[0] || "").toUpperCase()}`);
-        } else if (display) {
-          const parts = display.trim().split(/\s+/);
-          setInitials(parts.length >= 2 ? `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase() : display.slice(0, 2).toUpperCase());
-        } else if (user.email) {
-          setInitials(user.email[0].toUpperCase());
-        }
-      }
-    };
-    fetchProfile();
-  }, [user]);
+    if (!profile || !user) return;
+    const nombre = profile.nombre || "";
+    const apellido = profile.apellido || "";
+    const display = profile.display_name || "";
+    if (nombre || apellido) {
+      setInitials(`${(nombre[0] || "").toUpperCase()}${(apellido[0] || "").toUpperCase()}`);
+    } else if (display) {
+      const parts = display.trim().split(/\s+/);
+      setInitials(parts.length >= 2 ? `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase() : display.slice(0, 2).toUpperCase());
+    } else if (user.email) {
+      setInitials(user.email[0].toUpperCase());
+    }
+  }, [profile, user]);
 
   return (
     <header className="sticky top-0 z-50 bg-card/95 backdrop-blur border-b border-border">
