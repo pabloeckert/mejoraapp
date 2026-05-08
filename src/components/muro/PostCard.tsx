@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type { WallComment } from "@/hooks/useWallInteractions";
 import type { WallPost } from "./types";
+import { POST_TYPE_CONFIG } from "./types";
 import { CommentItem } from "./CommentItem";
 import { timeAgo, formatFullDate, COMMENT_MAX_LENGTH } from "./utils";
 
@@ -59,6 +60,13 @@ export const PostCard = memo(
   }: PostCardProps) => (
     <Card className="hover:shadow-sm transition-shadow">
       <CardContent className="p-3">
+        {post.post_type && post.post_type !== "consulta" && (
+          <div className="mb-2">
+            <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${POST_TYPE_CONFIG[post.post_type].bgColor} ${POST_TYPE_CONFIG[post.post_type].color}`}>
+              {POST_TYPE_CONFIG[post.post_type].emoji} {POST_TYPE_CONFIG[post.post_type].label}
+            </span>
+          </div>
+        )}
         <p className="text-sm text-foreground whitespace-pre-line leading-relaxed">{post.content}</p>
 
         <div className="flex items-center justify-between mt-2.5">

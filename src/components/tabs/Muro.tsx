@@ -28,14 +28,14 @@ import { CommunityRanking } from "@/components/CommunityRanking";
 import { CommunityRules } from "@/components/CommunityRules";
 import { trackPublishPost } from "@/lib/analytics";
 import { ReportDialog } from "@/components/ReportDialog";
-import { PostCard, PostSkeleton, type WallPost, MAX_LENGTH, POSTS_PER_PAGE } from "@/components/muro";
+import { PostCard, PostSkeleton, type WallPost, type PostType, POST_TYPE_CONFIG, MAX_LENGTH, POSTS_PER_PAGE } from "@/components/muro";
 
 const fetchWallPosts = async ({ pageParam }: { pageParam: number }) => {
   const from = pageParam * POSTS_PER_PAGE;
   const to = from + POSTS_PER_PAGE - 1;
   const { data, error } = await supabase
     .from("wall_posts")
-    .select("id, content, likes_count, comments_count, created_at, user_id, status")
+    .select("id, content, likes_count, comments_count, created_at, user_id, status, post_type")
     .eq("status", "approved")
     .order("created_at", { ascending: false })
     .range(from, to);
@@ -65,6 +65,8 @@ const Muro = () => {
   } = useWallInteractions(user?.id);
 
   const [newPost, setNewPost] = useState("");
+  const [postType, setPostType] = useState<PostType>("consulta");
+  const [filterType, setFilterType] = useState<PostType | "all">("all");
   const [posting, setPosting] = useState(false);
   const [reportTarget, setReportTarget] = useState<{ id: string; content: string } | null>(null);
 
@@ -132,6 +134,7 @@ const Muro = () => {
   }, [queryClient, expandedPosts, user, toast, setCommentsMap]);
 
   const allPosts = data?.pages.flat() ?? [];
+  const filteredPosts = filterType === "all" ? allPosts : allPosts.filter((p) => p.post_type === filterType);
   useEffect(() => { postsDataRef.current = allPosts; }, [allPosts]);
 
   const handleReport = useCallback((postId: string, content: string) => {
@@ -149,7 +152,7 @@ const Muro = () => {
 
     setPosting(true);
     try {
-      const { data, error } = await supabase.functions.invoke("moderate-post", { body: { content } });
+      const { data, error } = await supabase.functions.invoke("moderate-post", { body: { content, post_type: postType } });
       if (error) throw error;
 
       if (data?.rejected) {
@@ -170,7 +173,7 @@ const Muro = () => {
     } finally {
       setPosting(false);
     }
-  }, [newPost, posting, user, toast, refetch]);
+  }, [newPost, posting, user, toast, refetch, postType]);
 
   // Infinite scroll sentinel
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -229,6 +232,27 @@ const Muro = () => {
       {/* New post form */}
       <Card>
         <CardContent className="p-3 space-y-2">
+          {/* Post type selector */}
+          <div className="flex gap-1.5">
+            {(Object.keys(POST_TYPE_CONFIG) as PostType[]).map((type) => {
+              const config = POST_TYPE_CONFIG[type];
+              const isSelected = postType === type;
+              return (
+                <button
+                  key={type}
+                  onClick={() => setPostType(type)}
+                  className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-full transition-all ${
+                    isSelected
+                      ? `${config.bgColor} ${config.color} ring-1 ring-current/20`
+                      : "text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  {config.emoji} {config.label}
+                </button>
+              );
+            })}
+          </div>
+
           <Textarea
             placeholder="¿Qué te está pasando con tu negocio? Acá es anónimo..."
             value={newPost}
@@ -275,6 +299,39 @@ const Muro = () => {
       {/* Ranking */}
       <CommunityRanking currentUserId={user?.id} limit={10} />
 
+      {/* Filter by type */}
+      {allPosts.length > 0 && (
+        <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
+          <button
+            onClick={() => setFilterType("all")}
+            className={`text-xs font-medium px-2.5 py-1.5 rounded-full transition-all whitespace-nowrap ${
+              filterType === "all"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-muted"
+            }`}
+          >
+            Todos
+          </button>
+          {(Object.keys(POST_TYPE_CONFIG) as PostType[]).map((type) => {
+            const config = POST_TYPE_CONFIG[type];
+            const count = allPosts.filter((p) => p.post_type === type).length;
+            return (
+              <button
+                key={type}
+                onClick={() => setFilterType(type)}
+                className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-full transition-all whitespace-nowrap ${
+                  filterType === type
+                    ? `${config.bgColor} ${config.color} ring-1 ring-current/20`
+                    : "text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                {config.emoji} {config.label} {count > 0 && `(${count})`}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Posts list */}
       {isLoading ? (
         <div className="space-y-2">
@@ -282,13 +339,17 @@ const Muro = () => {
             <PostSkeleton key={i} />
           ))}
         </div>
-      ) : allPosts.length === 0 ? (
+      ) : filteredPosts.length === 0 ? (
         <Card className="border-dashed border-2">
           <CardContent className="flex flex-col items-center justify-center py-10 text-center">
             <MessageSquare className="w-12 h-12 text-muted-foreground/40 mb-4" />
-            <h3 className="font-semibold text-foreground mb-2">El muro está vacío</h3>
+            <h3 className="font-semibold text-foreground mb-2">
+              {filterType !== "all" ? `Sin ${POST_TYPE_CONFIG[filterType].label.toLowerCase()}s` : "El muro está vacío"}
+            </h3>
             <p className="text-sm text-muted-foreground max-w-[280px] mb-4">
-              Sé el primero en compartir. Todo es anónimo.
+              {filterType !== "all"
+                ? `No hay publicaciones de tipo "${POST_TYPE_CONFIG[filterType].label}" todavía.`
+                : "Sé el primero en compartir. Todo es anónimo."}
             </p>
             <p className="text-xs text-muted-foreground">
               ¿Tenés dudas? Probá el{" "}
@@ -307,7 +368,7 @@ const Muro = () => {
         </Card>
       ) : (
         <div className="space-y-2">
-          {allPosts.map((post) => (
+          {filteredPosts.map((post) => (
             <PostCard
               key={post.id}
               post={post}

@@ -10,6 +10,7 @@ import Comunidad from "@/components/tabs/Comunidad";
 import Mentor from "@/components/tabs/Mentor";
 import DiagnosticTest from "@/components/DiagnosticTest";
 import { MirrorPage } from "@/components/mirror/MirrorPage";
+import Emergencia from "@/components/tabs/Emergencia";
 import ProfileCompleteModal from "@/components/ProfileCompleteModal";
 import { HomeDashboard } from "@/components/home/HomeDashboard";
 import { trackPageView, trackTabSwitch } from "@/lib/analytics";
@@ -99,6 +100,7 @@ const Index = () => {
         {activeTab === "contenido" && <ContenidoDeValor />}
         {activeTab === "diagnostico" && <DiagnosticTest onComplete={() => setActiveTab("home")} />}
         {activeTab === "mirror" && <MirrorPage />}
+        {activeTab === "emergencia" && <Emergencia />}
         {activeTab === "muro" && <Muro />}
         {activeTab === "comunidad" && <Comunidad />}
         {activeTab === "mentor" && <Mentor />}

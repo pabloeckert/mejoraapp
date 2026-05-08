@@ -437,6 +437,7 @@ export type Database = {
           created_at: string
           id: string
           likes_count: number
+          post_type: Database["public"]["Enums"]["post_type"]
           status: string
           user_id: string
         }
@@ -446,6 +447,7 @@ export type Database = {
           created_at?: string
           id?: string
           likes_count?: number
+          post_type?: Database["public"]["Enums"]["post_type"]
           status?: string
           user_id: string
         }
@@ -455,6 +457,7 @@ export type Database = {
           created_at?: string
           id?: string
           likes_count?: number
+          post_type?: Database["public"]["Enums"]["post_type"]
           status?: string
           user_id?: string
         }
@@ -1011,6 +1014,7 @@ export type Database = {
     Enums: {
       access_level: "N0" | "N1" | "N2" | "ADMIN"
       app_role: "admin" | "moderator" | "user"
+      post_type: "consulta" | "caso" | "convocatoria"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1140,6 +1144,7 @@ export const Constants = {
     Enums: {
       access_level: ["N0", "N1", "N2", "ADMIN"],
       app_role: ["admin", "moderator", "user"],
+      post_type: ["consulta", "caso", "convocatoria"],
     },
   },
 } as const
