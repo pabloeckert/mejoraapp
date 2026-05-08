@@ -1,5 +1,5 @@
 # CTO SESSION — Estado Actual
-## Última actualización: 8 de mayo 2026, 08:04 GMT+8
+## Última actualización: 9 de mayo 2026, 04:32 GMT+8
 
 ---
 
@@ -146,8 +146,8 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
 - [x] Fix pre-existente: comilla faltante en vite.config.ts
 - [x] Tests actualizados (273 passing, 2 pre-existentes failing)
 - [x] Build verificado ✓
-- [ ] Aplicar migración en Supabase (pendiente: acceso al Dashboard)
-- [ ] Actualizar tipos de Supabase en el código
+- [x] Aplicar migración en Supabase ✅ (9/5/2026)
+- [x] Actualizar tipos de Supabase en el código ✅ (9/5/2026)
 - [ ] Definir sistema de tests/gamification con Pablo
 
 ### Fase 2: Sistema de membresías (Semana 2)
