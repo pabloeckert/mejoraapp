@@ -1,5 +1,5 @@
 # CTO SESSION — Estado Actual
-## Última actualización: 9 de mayo 2026, 07:10 GMT+8
+## Última actualización: 9 de mayo 2026, 07:33 GMT+8
 
 ---
 
@@ -22,8 +22,10 @@
   - Proyecto: `mejoraapp` (Vite, Node 22)
   - Git conectado a `pabloeckert/MejoraApp` (main)
   - Environment Variables: ✅ Cargadas (VITE_SUPABASE_URL, VITE_SUPABASE_PROJECT_ID, VITE_SUPABASE_PUBLISHABLE_KEY)
-  - Dominio custom `app.mejoraok.com`: ❌ Pendiente de configurar
-  - Último deploy: Mar 19 (Canceled) — Necesita redeploy
+  - **Dominio custom `app.mejoraok.com`:** ❌ Pendiente de configurar
+  - Último deploy: 9/5/2026 07:24 — **BUILD FALLÓ** (alias `@` no resolvía en Vercel)
+  - Fix: commit `691c376` — `__dirname` cambiado a `fileURLToPath(import.meta.url)` (ESM puro)
+  - **Pendiente: Pablo hacer Redeploy en Vercel para probar el fix**
 - **Stack:** React 18 + TypeScript + Vite 5 + Supabase + Tailwind CSS + shadcn/ui
 - **Supabase URL:** https://pwiduojwgkaoxxuautkp.supabase.co
 - **Branch principal:** main
@@ -223,7 +225,8 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
   - [x] Proyecto creado en Vercel ✅
   - [x] Git conectado a GitHub ✅
   - [x] Environment Variables cargadas ✅ (9/5/2026)
-  - [ ] Redeploy con nuevas variables — pendiente
+  - [x] Fix build Vercel: `__dirname` → `fileURLToPath(import.meta.url)` ✅ (9/5/2026 07:33)
+  - [ ] Redeploy con fix — **Pablo: hacer redeploy ahora**
   - [ ] Dominio custom `app.mejoraok.com` — pendiente
   - [ ] Verificar que la app funcione en producción
 - [ ] Definir alternativa de pago (Tiendup u otro)
@@ -329,7 +332,7 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
 ## PRÓXIMOS PASOS — Orden exacto
 
 ### Inmediato (Pablo + CTO):
-1. **Pablo: Redeploy en Vercel** — Deployments → 3 puntitos del primero → Redeploy
+1. **Pablo: Redeploy en Vercel** — Deployments → 3 puntitos del último → Redeploy (el fix del build ya está en main)
 2. **Pablo: Verificar** que `mejoraapp-bice.vercel.app` funcione (debería mostrar la app con tab "Perfil")
 3. **Pablo: Configurar dominio** `app.mejoraok.com` en Vercel → Settings → Domains → Add
 4. **Pablo: Configurar secrets en GitHub Actions** — Settings → Secrets → Actions:
@@ -355,8 +358,18 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
 11. Testear flujo completo: registro → upgrade → pago → webhook → nivel actualizado
 12. Push final con fixes si hace falta
 
+## SESIÓN 9/5/2026 — Log
+
+**07:21** — Pablo dice "continuemos". CTO lee documentación, clona repo.
+**07:22** — Estado: Fase 4 completa. Pendiente: deploy Vercel + config Tiendup.
+**07:23** — Pablo va a Vercel. Intenta redeploy → **BUILD FALLA** (alias `@` no resuelve).
+**07:24** — CTO diagnostica: `__dirname` con `path` no funciona en entorno Vercel ESM.
+**07:33** — Fix: `fileURLToPath(import.meta.url)`. Commit `691c376`, pushed a main.
+**07:33** — Documentación actualizada. **Pablo necesita hacer Redeploy en Vercel.**
+
 ## NOTA DE SEGURIDAD
 - Token GitHub fue compartido en el chat el 8/5/2026 — **ya fue rotado**
+- Token GitHub fue compartido en el chat el 9/5/2026 (ghp_P8g...Cdym) — **ROTARLO después de esta sesión**
 - Credenciales FTP y Supabase están en los archivos del workspace (Subida.txt, .env.example)
 - **IMPORTANTE:** Nunca commitear tokens, keys o passwords al repo
 
