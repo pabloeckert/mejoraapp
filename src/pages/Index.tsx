@@ -13,6 +13,7 @@ import { MirrorPage } from "@/components/mirror/MirrorPage";
 import Emergencia from "@/components/tabs/Emergencia";
 import Eventos from "@/components/tabs/Eventos";
 import CirculoDorado from "@/components/tabs/CirculoDorado";
+import { MiPerfil } from "@/components/tabs/MiPerfil";
 import ProfileCompleteModal from "@/components/ProfileCompleteModal";
 import { HomeDashboard } from "@/components/home/HomeDashboard";
 import { trackPageView, trackTabSwitch } from "@/lib/analytics";
@@ -109,6 +110,7 @@ const Index = () => {
         {activeTab === "comunidad" && <Comunidad />}
         {activeTab === "mentor" && <Mentor />}
         {activeTab === "novedades" && <Novedades />}
+        {activeTab === "perfil" && <MiPerfil />}
       </main>
       <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badges={badges} />
 

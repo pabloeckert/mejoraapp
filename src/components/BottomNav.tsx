@@ -1,4 +1,4 @@
-import { Home, BookOpen, MessageSquare, Sparkles, ClipboardCheck, Users, Bot } from "lucide-react";
+import { Home, BookOpen, MessageSquare, Users, Bot, UserCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BottomNavProps {
@@ -9,10 +9,10 @@ interface BottomNavProps {
 
 const tabs = [
   { id: "home", label: "Inicio", icon: Home },
-  { id: "contenido", label: "Contenido", icon: BookOpen },
   { id: "muro", label: "Muro", icon: MessageSquare },
   { id: "comunidad", label: "Comunidad", icon: Users },
   { id: "mentor", label: "Mentor", icon: Bot },
+  { id: "perfil", label: "Perfil", icon: UserCircle },
 ];
 
 const BottomNav = ({ activeTab, onTabChange, badges }: BottomNavProps) => {
