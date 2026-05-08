@@ -266,7 +266,10 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
   - [ ] Pablo: Configurar webhook en panel Tiendup
   - [ ] Pablo: Agregar secrets en Supabase (TIENDUP_API_KEY, TIENDUP_WEBHOOK_SECRET)
   - [ ] Pablo: Agregar env vars en Vercel (VITE_TIENDUP_PRODUCT_N1, VITE_TIENDUP_PRODUCT_N2)
-- [ ] Tests E2E
+- [x] Tests E2E ✅ (9/5/2026)
+  - e2e/mi-perfil.spec.ts — perfil (redirect, UI, mobile)
+  - e2e/admin-cobranza.spec.ts — admin cobranza (redirect, seguridad, API)
+  - e2e/bottom-nav.spec.ts — navegación (redirect, splash, PWA)
 - [ ] Deploy a producción (Vercel)
 
 ## ARCHIVOS DE REFERENCIA
