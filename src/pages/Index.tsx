@@ -12,6 +12,7 @@ import DiagnosticTest from "@/components/DiagnosticTest";
 import { MirrorPage } from "@/components/mirror/MirrorPage";
 import Emergencia from "@/components/tabs/Emergencia";
 import Eventos from "@/components/tabs/Eventos";
+import CirculoDorado from "@/components/tabs/CirculoDorado";
 import ProfileCompleteModal from "@/components/ProfileCompleteModal";
 import { HomeDashboard } from "@/components/home/HomeDashboard";
 import { trackPageView, trackTabSwitch } from "@/lib/analytics";
@@ -103,6 +104,7 @@ const Index = () => {
         {activeTab === "mirror" && <MirrorPage />}
         {activeTab === "emergencia" && <Emergencia />}
         {activeTab === "eventos" && <Eventos />}
+        {activeTab === "circulo" && <CirculoDorado />}
         {activeTab === "muro" && <Muro />}
         {activeTab === "comunidad" && <Comunidad />}
         {activeTab === "mentor" && <Mentor />}

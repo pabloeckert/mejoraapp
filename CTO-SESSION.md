@@ -239,7 +239,7 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
 - [x] P04: Muro con tipos de publicación + filtro por tipo ✅ (9/5/2026)
 - [x] P05: Calendario de eventos ✅ (9/5/2026)
 - [ ] P06: Contenido de valor (ajustar existente)
-- [ ] P07: Círculo Dorado
+- [x] P07: Círculo Dorado ✅ (9/5/2026)
 - [x] P08: Botón de Emergencia ✅ (9/5/2026)
 
 ### Fase 4: Admin y pulido (Semana 4)
