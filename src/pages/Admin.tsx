@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Shield, Newspaper, MessageSquare, Users, ArrowLeft, BookOpen, Sparkles, LogOut, Lock } from "lucide-react";
+import { Shield, Newspaper, MessageSquare, Users, ArrowLeft, BookOpen, Sparkles, LogOut, Lock, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,10 +10,11 @@ import AdminUsuarios from "@/components/admin/AdminUsuarios";
 import AdminContenido from "@/components/admin/AdminContenido";
 import AdminIA from "@/components/admin/AdminIA";
 import AdminSeguridad from "@/components/admin/AdminSeguridad";
+import AdminCobranza from "@/components/admin/AdminCobranza";
 import { AdminSecurityMFA } from "@/components/admin/AdminSecurityMFA";
 import { SEOHead, SEO_CONFIGS } from "@/components/SEOHead";
 
-type AdminTab = "contenido" | "ia" | "novedades" | "muro" | "usuarios" | "seguridad";
+type AdminTab = "contenido" | "ia" | "novedades" | "muro" | "usuarios" | "cobranza" | "seguridad";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -87,6 +88,7 @@ const Admin = () => {
     { key: "novedades", label: "Novedades", icon: Newspaper },
     { key: "muro", label: "Muro", icon: MessageSquare },
     { key: "usuarios", label: "Usuarios", icon: Users },
+    { key: "cobranza", label: "Cobranza", icon: CreditCard },
     { key: "seguridad", label: "Seguridad", icon: Lock },
   ];
 
@@ -114,8 +116,8 @@ const Admin = () => {
         </div>
       </header>
 
-      <div className="sticky top-[53px] z-20 bg-card border-b">
-        <div className="max-w-4xl mx-auto flex">
+      <div className="sticky top-[53px] z-20 bg-card border-b overflow-x-auto">
+        <div className="flex min-w-max">
           {tabs.map(({ key, label, icon: Icon }) => (
             <button
               key={key}
@@ -142,6 +144,7 @@ const Admin = () => {
         {activeTab === "novedades" && <AdminNovedades />}
         {activeTab === "muro" && <AdminMuro />}
         {activeTab === "usuarios" && <AdminUsuarios />}
+        {activeTab === "cobranza" && <AdminCobranza />}
         {activeTab === "seguridad" && <AdminSeguridad />}
       </main>
     </div>
