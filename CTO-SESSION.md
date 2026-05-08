@@ -243,7 +243,13 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
 - [x] P08: Botón de Emergencia ✅ (9/5/2026)
 
 ### Fase 4: Admin y pulido (Semana 4)
-- [ ] P09: Mi Perfil con gestión de membresía
+- [x] P09: Mi Perfil con gestión de membresía ✅ (9/5/2026)
+  - Avatar + badge de nivel (N0/N1/N2/ADMIN)
+  - Datos editables: nombre, empresa, cargo, nickname, whatsapp, birthday, bio, web, linkedin
+  - Resultados de Business Mirror Gamer
+  - Historial de pagos
+  - CTA de upgrade para N0
+  - Gestión de datos (Ley 25.326)
 - [ ] P10: Panel admin con cobranza
 - [ ] Integración Tiendup (ver TIENDUP.md para plan detallado)
   - [ ] Pablo: Crear Plan N1/N2 en Tiendup
