@@ -1,5 +1,5 @@
 # CTO SESSION — Estado Actual
-## Última actualización: 9 de mayo 2026, 05:13 GMT+8
+## Última actualización: 9 de mayo 2026, 06:12 GMT+8
 
 ---
 
@@ -227,13 +227,13 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
 - [x] Actualizar tipos de Supabase en el código ✅ (9/5/2026)
 - [x] Definir sistema de tests/gamification con Pablo ✅ (9/5/2026)
 
-### Fase 2: Sistema de membresías (Semana 2) — EN PROGRESO
+### Fase 2: Sistema de membresías (Semana 2) — ✅ COMPLETADA
 - [x] Lógica de acceso por nivel en toda la app (useAccessLevel + AccessGate) ✅
 - [x] P01: Splash screen ✅
 - [x] P03: Home dashboard por nivel ✅
 - [x] BottomNav actualizada (Inicio | Contenido | Muro | Comunidad | Mentor) ✅
 - [x] P02: Business Mirror Gamer ✅ (9/5/2026)
-- [ ] Upgrade prompts + links de pago (integrar Tiendup u otro)
+- [ ] Upgrade prompts + links de pago → mover a Fase 4 (Tiendup)
 
 ### Fase 3: Features core (Semana 3) — ✅ COMPLETADA
 - [x] P04: Muro con tipos de publicación + filtro por tipo ✅ (9/5/2026)
@@ -245,9 +245,14 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
 ### Fase 4: Admin y pulido (Semana 4)
 - [ ] P09: Mi Perfil con gestión de membresía
 - [ ] P10: Panel admin con cobranza
-- [ ] Integración pagos
+- [ ] Integración Tiendup (ver TIENDUP.md para plan detallado)
+  - [ ] Pablo: Crear Plan N1/N2 en Tiendup
+  - [ ] CTO: Edge Function tiendup-webhook
+  - [ ] CTO: Edge Function tiendup-checkout
+  - [ ] CTO: tiendup.service.ts + integración UpgradePrompt
+  - [ ] Pablo: Configurar webhook en panel Tiendup
 - [ ] Tests E2E
-- [ ] Deploy a producción
+- [ ] Deploy a producción (Vercel)
 
 ## ARCHIVOS DE REFERENCIA
 
@@ -258,6 +263,7 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
 - `INTEGRAL_MejoraApp_2026-04-20.docx` — Informe integral
 - `MejoraApp-Design-System.docx` — Design system
 - `MejoraApp-Plan-Maestro.docx` — Plan maestro multidisciplinario
+- `TIENDUP.md` — Plan de integración con Tiendup (pagos)
 
 ## DB ACTUAL (28 objetos en Supabase)
 
@@ -275,11 +281,13 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
 - community_challenges, challenge_participants
 - user_badges, nps_responses, referrals
 
-**Tablas que se CREAN:**
-- events
-- event_registrations
-- payments
-- emergencies
+**Tablas que se CREAN (ya creadas):**
+- events ✅
+- event_registrations ✅
+- payments ✅
+- emergencies ✅
+- business_mirror_tests ✅
+- business_mirror_results ✅
 
 **Campo que se AGREGA a profiles:**
 - access_level (enum: N0, N1, N2, ADMIN)
