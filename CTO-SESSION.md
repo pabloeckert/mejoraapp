@@ -93,11 +93,25 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
 
 1. **Deploy:** Migrar de Hostinger+FTP → Vercel (mantener app.mejoraok.com)
 2. **Muro:** Anónimo N0, nickname N1/N2
-3. **Tests/Diagnóstico:** Sistema de gamificación progresiva (múltiples tests, no uno fijo)
+3. **Tests/Diagnóstico:** Business Mirror Gamer — ver sección dedicada más abajo
 4. **Tiendup:** NO existe — hay que buscar alternativa de pago o configurar Tiendup
 5. **Mentor IA:** Se queda en el scope
 6. **CRM:** Se elimina completamente
 7. **Founders:** Acceso real, no sandbox
+
+## BUSINESS MIRROR GAMER (Decisión 9/5/2026)
+
+> "Son juegos pero que a la vez te hacen pensar"
+
+- **Nombre:** Business Mirror Gamer
+- **Naturaleza:** Beneficio exclusivo de membresía paga (N1/N2). NO define acceso.
+- **Concepto:** Tests interactivos tipo juego que evalúan distintos aspectos del empresario
+- **Temas (ejemplos):** comunicación asertiva, nivel de ira, cómo estás frente a tu negocio, manejo de crisis, plasticidad
+- **Formato:** Juegos que invitan a pensar, para usar en tiempos libres o cuando Pablo quiera evaluar
+- **Lanzamiento:** 5 tests iniciales
+- **Crecimiento:** +1 test por semana + notificación push a miembros
+- **Resultados:** Informativos, no bloqueantes (no afectan acceso)
+- **DB:** Necesita tabla `business_mirror_tests` + `business_mirror_results`
 
 ## P8 — OPCIONES DE PRIORIDAD (Top 3 features)
 
@@ -139,7 +153,7 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
 - [ ] Verificar acceso Supabase juntos
 - [ ] Definir alternativa de pago (Tiendup u otro)
 
-### Fase 1: Limpieza y cimientos (Semana 1) — EN PROGRESO
+### Fase 1: Limpieza y cimientos (Semana 1) — ✅ COMPLETADA
 - [x] Migración SQL preparada (supabase/migrations/20260508_fase1_cimientos.sql)
 - [x] .env configurado con Supabase real
 - [x] Eliminar features no pedidas del código — 35 archivos, 3140 líneas eliminadas
@@ -148,12 +162,12 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
 - [x] Build verificado ✓
 - [x] Aplicar migración en Supabase ✅ (9/5/2026)
 - [x] Actualizar tipos de Supabase en el código ✅ (9/5/2026)
-- [ ] Definir sistema de tests/gamification con Pablo
+- [x] Definir sistema de tests/gamification con Pablo ✅ (9/5/2026)
 
-### Fase 2: Sistema de membresías (Semana 2)
+### Fase 2: Sistema de membresías (Semana 2) — EN PROGRESO
 - [ ] Lógica de acceso por nivel en toda la app
 - [ ] P01: Splash screen
-- [ ] P02: Registro con primer test
+- [ ] P02: Registro con primer test (Business Mirror Gamer)
 - [ ] P03: Home dashboard por nivel
 - [ ] Upgrade prompts + links de pago
 
