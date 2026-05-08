@@ -18,6 +18,7 @@
 
 - **GitHub:** https://github.com/pabloeckert/MejoraApp
 - **Producción:** https://app.mejoraok.com → **MIGRAR A VERCEL** (mantener subdominio)
+- **Preview (GH Pages):** https://pabloeckert.github.io/MejoraApp/ — Deploy alternativo para borradores
 - **Vercel:** https://vercel.com/pablo-ecks-projects/mejoraapp
   - Proyecto: `mejoraapp` (Vite, Node 22)
   - Git conectado a `pabloeckert/MejoraApp` (main)
@@ -99,7 +100,7 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
 
 ## DECISIONES CLAVE DERIVADAS
 
-1. **Deploy:** Migrar de Hostinger+FTP → Vercel (mantener app.mejoraok.com)
+1. **Deploy:** Migrar de Hostinger+FTP → Vercel (mantener app.mejoraok.com) + GitHub Pages como preview alternativo
 2. **Muro:** Anónimo N0, nickname N1/N2
 3. **Tests/Diagnóstico:** Business Mirror Gamer — ver sección dedicada más abajo
 4. **Tiendup:** API disponible — `pablo-usos.public-api.tiendup.com` (API key obtenida 9/5/2026). Integrar como gateway de pagos.
@@ -229,6 +230,13 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
   - [ ] Redeploy con fix — **Pablo: hacer redeploy ahora**
   - [ ] Dominio custom `app.mejoraok.com` — pendiente
   - [ ] Verificar que la app funcione en producción
+- [x] GitHub Pages como deploy alternativo (preview/borradores) ✅ (9/5/2026)
+  - [x] Workflow `deploy-ghpages.yml` creado
+  - [x] 404.html SPA workaround
+  - [x] index.html restore script
+  - [x] vite.config.ts base path dinámico (`VITE_GITHUB_PAGES`)
+  - [ ] **Pablo: Activar GH Pages** — Repo → Settings → Pages → Source: "GitHub Actions"
+  - [ ] URL: https://pabloeckert.github.io/MejoraApp/
 - [ ] Definir alternativa de pago (Tiendup u otro)
 
 ### Fase 1: Limpieza y cimientos (Semana 1) — ✅ COMPLETADA
@@ -335,7 +343,8 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
 1. **Pablo: Redeploy en Vercel** — Deployments → 3 puntitos del último → Redeploy (el fix del build ya está en main)
 2. **Pablo: Verificar** que `mejoraapp-bice.vercel.app` funcione (debería mostrar la app con tab "Perfil")
 3. **Pablo: Configurar dominio** `app.mejoraok.com` en Vercel → Settings → Domains → Add
-4. **Pablo: Configurar secrets en GitHub Actions** — Settings → Secrets → Actions:
+4. **Pablo: Activar GitHub Pages** — Repo → Settings → Pages → Source: "GitHub Actions" (deploy alternativo/preview)
+5. **Pablo: Configurar secrets en GitHub Actions** — Settings → Secrets → Actions:
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_PUBLISHABLE_KEY`
    - `VITE_SUPABASE_PROJECT_ID`
@@ -365,7 +374,9 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
 **07:23** — Pablo va a Vercel. Intenta redeploy → **BUILD FALLA** (alias `@` no resuelve).
 **07:24** — CTO diagnostica: `__dirname` con `path` no funciona en entorno Vercel ESM.
 **07:33** — Fix: `fileURLToPath(import.meta.url)`. Commit `691c376`, pushed a main.
-**07:33** — Documentación actualizada. **Pablo necesita hacer Redeploy en Vercel.**
+**07:35** — Pablo pide GitHub Pages como segunda alternativa de deploy (borrador/preview).
+**07:35** — CTO crea workflow `deploy-ghpages.yml` + 404.html SPA workaround + script restore en index.html.
+**07:35** — Documentación actualizada. **Pablo: Redeploy en Vercel + activar GH Pages en repo settings.**
 
 ## NOTA DE SEGURIDAD
 - Token GitHub fue compartido en el chat el 8/5/2026 — **ya fue rotado**
@@ -376,4 +387,4 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
 ---
 
 *Documento generado por el CTO (IA) — 9 de mayo 2026*
-*Fase 4 completa. Pendiente: deploy Vercel + config Tiendup de Pablo.*
+*Fase 4 completa. Pendiente: deploy Vercel (con fix) + activar GitHub Pages + config Tiendup de Pablo.*

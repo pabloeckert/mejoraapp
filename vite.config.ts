@@ -8,7 +8,7 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
 // https://vitejs.dev/config/
 export default defineConfig({
   // GitHub Pages: /MejoraApp/ | Vercel/Production: /
-  base: "/",
+  base: process.env.VITE_GITHUB_PAGES === "true" ? "/MejoraApp/" : "/",
   server: {
     host: "::",
     port: 8080,
