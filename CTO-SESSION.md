@@ -1,9 +1,9 @@
 # CTO SESSION — Estado Actual
-## Última actualización: 9 de mayo 2026, 06:12 GMT+8
+## Última actualización: 9 de mayo 2026, 07:10 GMT+8
 
 ---
 
-## 🔑 PALABRA CLAVE: `retomar-cto`
+## 🔑 PALABRA CLAVE: `continuemos`
 > Si te pasan esta palabra al inicio de una sesión, leé este documento y continuá exactamente donde quedamos.
 
 ---
@@ -18,6 +18,12 @@
 
 - **GitHub:** https://github.com/pabloeckert/MejoraApp
 - **Producción:** https://app.mejoraok.com → **MIGRAR A VERCEL** (mantener subdominio)
+- **Vercel:** https://vercel.com/pablo-ecks-projects/mejoraapp
+  - Proyecto: `mejoraapp` (Vite, Node 22)
+  - Git conectado a `pabloeckert/MejoraApp` (main)
+  - Environment Variables: ✅ Cargadas (VITE_SUPABASE_URL, VITE_SUPABASE_PROJECT_ID, VITE_SUPABASE_PUBLISHABLE_KEY)
+  - Dominio custom `app.mejoraok.com`: ❌ Pendiente de configurar
+  - Último deploy: Mar 19 (Canceled) — Necesita redeploy
 - **Stack:** React 18 + TypeScript + Vite 5 + Supabase + Tailwind CSS + shadcn/ui
 - **Supabase URL:** https://pwiduojwgkaoxxuautkp.supabase.co
 - **Branch principal:** main
@@ -213,7 +219,13 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
 - [x] Verificar acceso Supabase juntos ✅
 - [x] Aplicar migración Fase 1 en Supabase ✅ (9/5/2026)
 - [x] Push a GitHub con token temporal ✅ (9/5/2026)
-- [ ] Configurar Vercel + migrar dominio app.mejoraok.com
+- [x] Configurar Vercel + migrar dominio app.mejoraok.com — ⚠️ EN PROGRESO
+  - [x] Proyecto creado en Vercel ✅
+  - [x] Git conectado a GitHub ✅
+  - [x] Environment Variables cargadas ✅ (9/5/2026)
+  - [ ] Redeploy con nuevas variables — pendiente
+  - [ ] Dominio custom `app.mejoraok.com` — pendiente
+  - [ ] Verificar que la app funcione en producción
 - [ ] Definir alternativa de pago (Tiendup u otro)
 
 ### Fase 1: Limpieza y cimientos (Semana 1) — ✅ COMPLETADA
@@ -270,7 +282,7 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
   - e2e/mi-perfil.spec.ts — perfil (redirect, UI, mobile)
   - e2e/admin-cobranza.spec.ts — admin cobranza (redirect, seguridad, API)
   - e2e/bottom-nav.spec.ts — navegación (redirect, splash, PWA)
-- [ ] Deploy a producción (Vercel)
+- [ ] Deploy a producción (Vercel) — ⚠️ EN PROGRESO (variables cargadas, pendiente redeploy + dominio)
 
 ## ARCHIVOS DE REFERENCIA
 
@@ -314,6 +326,35 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
 - birthday (date)
 - membership_expires_at (datetime)
 
+## PRÓXIMOS PASOS — Orden exacto
+
+### Inmediato (Pablo + CTO):
+1. **Pablo: Redeploy en Vercel** — Deployments → 3 puntitos del primero → Redeploy
+2. **Pablo: Verificar** que `mejoraapp-bice.vercel.app` funcione (debería mostrar la app con tab "Perfil")
+3. **Pablo: Configurar dominio** `app.mejoraok.com` en Vercel → Settings → Domains → Add
+4. **Pablo: Configurar secrets en GitHub Actions** — Settings → Secrets → Actions:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_PUBLISHABLE_KEY`
+   - `VITE_SUPABASE_PROJECT_ID`
+
+### Tiendup (Pablo):
+5. **Pablo: Crear Plan N1 y N2** en panel de Tiendup
+6. **Pablo: Copiar product_ids** y compartirlos
+7. **Pablo: Configurar webhook** en Tiendup:
+   - URL: `https://pwiduojwgkaoxxuautkp.supabase.co/functions/v1/tiendup-webhook`
+   - Eventos: sale.completed, subscription.activated, subscription.cancelled, subscription.expired
+8. **Pablo: Agregar secrets en Supabase** (Settings → Edge Functions → Secrets):
+   - `TIENDUP_API_KEY`
+   - `TIENDUP_WEBHOOK_SECRET`
+9. **Pablo: Agregar env vars en Vercel**:
+   - `VITE_TIENDUP_PRODUCT_N1` (product_id del plan N1)
+   - `VITE_TIENDUP_PRODUCT_N2` (product_id del plan N2)
+
+### CTO (cuando Pablo complete lo anterior):
+10. Verificar deploy exitoso en producción
+11. Testear flujo completo: registro → upgrade → pago → webhook → nivel actualizado
+12. Push final con fixes si hace falta
+
 ## NOTA DE SEGURIDAD
 - Token GitHub fue compartido en el chat el 8/5/2026 — **ya fue rotado**
 - Credenciales FTP y Supabase están en los archivos del workspace (Subida.txt, .env.example)
@@ -321,5 +362,5 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
 
 ---
 
-*Documento generado por el CTO (IA) — 8 de mayo 2026*
-*Próximo paso: responder las 12 preguntas de la entrevista para definir el scope final*
+*Documento generado por el CTO (IA) — 9 de mayo 2026*
+*Fase 4 completa. Pendiente: deploy Vercel + config Tiendup de Pablo.*
