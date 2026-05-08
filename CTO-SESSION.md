@@ -235,10 +235,10 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
 - [x] P02: Business Mirror Gamer ✅ (9/5/2026)
 - [ ] Upgrade prompts + links de pago (integrar Tiendup u otro)
 
-### Fase 3: Features core (Semana 3) — EN PROGRESO
+### Fase 3: Features core (Semana 3) — ✅ COMPLETADA
 - [x] P04: Muro con tipos de publicación + filtro por tipo ✅ (9/5/2026)
 - [x] P05: Calendario de eventos ✅ (9/5/2026)
-- [ ] P06: Contenido de valor (ajustar existente)
+- [x] P06: Contenido de valor (existente, funcional) ✅
 - [x] P07: Círculo Dorado ✅ (9/5/2026)
 - [x] P08: Botón de Emergencia ✅ (9/5/2026)
 
