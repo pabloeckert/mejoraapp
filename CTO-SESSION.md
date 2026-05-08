@@ -158,15 +158,20 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
 - El juego evalúa razonamiento sistémico
 - Resultado: perfil de procesos (Arquitecto/Intuitivo/Improvisador)
 
-### Estado actual (9/5/2026 05:13)
+### Estado actual (9/5/2026 05:18)
 - [x] Decisión tomada: Opción A (convertir Mirror existente en Test #1)
 - [x] DB diseñada: migración `20260509_business_mirror_gamer.sql`
-- [ ] Aplicar migración en Supabase
-- [ ] Seed data: insertar los 5 tests en la tabla
-- [ ] Componente BusinessMirrorHub (catálogo de tests)
-- [ ] Componente GamePlayer (motor de juegos genérico)
-- [ ] Adaptar DiagnosticTest existente como game_type "classic"
-- [ ] Construir los 4 tests nuevos (puzzle, aventura, mental, lógica)
+- [x] Types de Supabase actualizados (business_mirror_tests + business_mirror_results)
+- [x] Tests data: 5 tests completos con questions, scoring_rules y profiles
+- [x] Servicio: business-mirror.service.ts (fetch, save, scoring)
+- [x] Componente BusinessMirrorHub (catálogo de tests)
+- [x] Componente GamePlayer (motor de juegos genérico — classic, puzzle, adventure, mental, logic)
+- [x] Componente GameResult (pantalla de resultado)
+- [x] Componente MirrorPage (orquestador Hub ↔ Player)
+- [x] Integrado en Index.tsx como tab "mirror"
+- [x] Build verificado ✓
+- [ ] Aplicar migración en Supabase (ejecutar SQL manualmente)
+- [ ] Seed data: insertar los 5 tests en la tabla via seedTests()
 - [ ] Sistema de notificaciones push (+1 test/semana)
 
 ## P8 — OPCIONES DE PRIORIDAD (Top 3 features)

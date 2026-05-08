@@ -47,7 +47,7 @@ describe("signupSchema", () => {
       nombre: "Juan",
       apellido: "Pérez",
       email: "juan@example.com",
-      password: "password123",
+      password: "Password123",
     });
     expect(result.success).toBe(true);
   });
@@ -77,7 +77,7 @@ describe("signupSchema", () => {
       nombre: "José María",
       apellido: "García López",
       email: "jose@example.com",
-      password: "password123",
+      password: "Password123",
     });
     expect(result.success).toBe(true);
   });
