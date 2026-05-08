@@ -187,14 +187,6 @@ export function trackAdminAction(action: string, target?: string) {
 
 // ─── Onboarding / Profile ────────────────────────────────────────────────────
 
-export function trackOnboardingComplete() {
-  track("onboarding_complete");
-}
-
-export function trackOnboardingSkip(step: number) {
-  track("onboarding_skip", { step });
-}
-
 export function trackProfileComplete(hasWhatsApp: boolean) {
   track("profile_complete", { has_whatsapp: hasWhatsApp });
 }

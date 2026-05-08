@@ -3,7 +3,6 @@ import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { setSentryUser } from "@/lib/sentry";
 import { identifyUser, resetUser, trackLogout } from "@/lib/analytics";
-import { trackSignupFunnel } from "@/lib/funnel";
 
 interface AuthContextType {
   session: Session | null;
@@ -36,14 +35,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             email: session.user.email,
             created_at: session.user.created_at,
           });
-          // Track signup funnel on initial sign-up
-          if (event === "SIGNED_IN" && session.user.created_at) {
-            const createdAt = new Date(session.user.created_at).getTime();
-            const isRecent = Date.now() - createdAt < 60_000; // Within 1 minute = new signup
-            if (isRecent) {
-              trackSignupFunnel(session.user.app_metadata?.provider === "google" ? "google" : "email");
-            }
-          }
         } else {
           resetUser();
         }

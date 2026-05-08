@@ -10,14 +10,9 @@ import Comunidad from "@/components/tabs/Comunidad";
 import Mentor from "@/components/tabs/Mentor";
 import DiagnosticTest from "@/components/DiagnosticTest";
 import ProfileCompleteModal from "@/components/ProfileCompleteModal";
-import Onboarding, { shouldShowOnboarding } from "@/components/Onboarding";
-import OnboardingV2 from "@/components/OnboardingV2";
-import { NPSSurvey } from "@/components/NPSSurvey";
 import { trackPageView, trackTabSwitch } from "@/lib/analytics";
 import { useLastVisit } from "@/hooks/useLastVisit";
 import { useProfileComplete } from "@/hooks/useProfile";
-import { getVariant, trackABTest } from "@/lib/ab-testing";
-import { checkReturnVisits, trackFirstVisitFunnel } from "@/lib/funnel";
 import { SEOHead, SEO_CONFIGS } from "@/components/SEOHead";
 
 const Index = () => {
@@ -32,23 +27,8 @@ const Index = () => {
     } catch { /* ignore */ }
     return "contenido";
   });
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [onboardingVariant, setOnboardingVariant] = useState("control");
   const { badges, markVisited } = useLastVisit();
   const scrollPositions = useRef<Record<string, number>>({});
-
-  // Check onboarding after auth is ready — only if profile is complete and hasn't completed diagnostic
-  useEffect(() => {
-    if (!loading && session && profileComplete === true) {
-      const shouldShow = shouldShowOnboarding();
-      if (shouldShow) {
-        const variant = getVariant("onboarding_v2", user?.id);
-        setOnboardingVariant(variant);
-        trackABTest("onboarding_v2", variant, "assigned");
-      }
-      setShowOnboarding(shouldShow);
-    }
-  }, [loading, session, profileComplete, user]);
 
   // Listen for cross-tab navigation events (e.g., muro empty → diagnóstico)
   useEffect(() => {
@@ -60,12 +40,10 @@ const Index = () => {
     return () => window.removeEventListener("navigate-tab", handler);
   }, []);
 
-  // Track page view on mount, mark initial tab visited, and check funnel
+  // Track page view on mount and mark initial tab visited
   useEffect(() => {
     trackPageView("/");
     markVisited(activeTab);
-    trackFirstVisitFunnel();
-    checkReturnVisits();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Track tab switches, save/restore scroll position, and mark visited
@@ -124,21 +102,6 @@ const Index = () => {
           onComplete={() => {/* React Query will auto-refetch */}}
         />
       )}
-
-      {/* Onboarding overlay — A/B tested */}
-      {showOnboarding && (
-        onboardingVariant === "variant_b" ? (
-          <OnboardingV2
-            onComplete={() => setShowOnboarding(false)}
-            experimentVariant={onboardingVariant}
-          />
-        ) : (
-          <Onboarding onComplete={() => setShowOnboarding(false)} />
-        )
-      )}
-
-      {/* NPS survey — shows after 7 days of use */}
-      <NPSSurvey />
     </div>
   );
 };

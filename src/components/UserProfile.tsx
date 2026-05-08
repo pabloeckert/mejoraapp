@@ -26,8 +26,6 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useBadges } from "@/hooks/useBadges";
-import { BadgeDisplay } from "@/components/BadgeDisplay";
 import { DataManagement } from "@/components/DataManagement";
 import { cn } from "@/lib/utils";
 
@@ -56,7 +54,6 @@ const getInitials = (nombre?: string | null, apellido?: string | null) => {
 export const UserProfile = ({ open, onOpenChange }: UserProfileProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { earnedBadges, totalEarned, totalAvailable, loading: badgesLoading } = useBadges(user?.id);
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -254,38 +251,6 @@ export const UserProfile = ({ open, onOpenChange }: UserProfileProps) => {
                 </Button>
               </>
             )}
-
-            {/* Badges */}
-            <div className="pt-2 border-t border-border">
-              {badgesLoading ? (
-                <div className="flex justify-center py-4">
-                  <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                </div>
-              ) : (
-                <BadgeDisplay
-                  earnedBadges={earnedBadges}
-                  variant="progress"
-                />
-              )}
-            </div>
-
-            {/* Stats summary */}
-            <div className="grid grid-cols-3 gap-3 pt-2 border-t border-border">
-              <div className="text-center">
-                <div className="text-lg font-bold text-foreground">{totalEarned}</div>
-                <div className="text-caption text-muted-foreground">Badges</div>
-              </div>
-              <div className="text-center">
-                <div className="text-lg font-bold text-foreground">{totalAvailable}</div>
-                <div className="text-caption text-muted-foreground">Disponibles</div>
-              </div>
-              <div className="text-center">
-                <div className="text-lg font-bold text-foreground">
-                  {totalEarned > 0 ? Math.round((totalEarned / totalAvailable) * 100) : 0}%
-                </div>
-                <div className="text-caption text-muted-foreground">Completado</div>
-              </div>
-            </div>
 
             {/* Mis Datos — Ley 25.326 */}
             <div className="pt-4 border-t border-border">

@@ -239,7 +239,6 @@ describe("Analytics Event Coverage", () => {
       "trackRetakeDiagnostic",
       "trackViewContent", "trackSearchContent", "trackFilterCategory",
       "trackAdminAction",
-      "trackOnboardingComplete", "trackOnboardingSkip",
       "trackProfileComplete", "trackProfileSkip",
       "trackTabSwitch", "trackCrossNavigation",
       "trackBadgeEarned", "trackRankingViewed",

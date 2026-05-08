@@ -19,7 +19,7 @@
 - **GitHub:** https://github.com/pabloeckert/MejoraApp
 - **Producción:** https://app.mejoraok.com → **MIGRAR A VERCEL** (mantener subdominio)
 - **Stack:** React 18 + TypeScript + Vite 5 + Supabase + Tailwind CSS + shadcn/ui
-- **Supabase URL:** https://7uqmgyuhqfurvirmcqnj.supabase.co
+- **Supabase URL:** https://pwiduojwgkaoxxuautkp.supabase.co
 - **Branch principal:** main
 
 ## DECISIÓN TOMADA: OPCIÓN B — REBUILD SELECTIVO
@@ -139,11 +139,12 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
 - [ ] Verificar acceso Supabase juntos
 - [ ] Definir alternativa de pago (Tiendup u otro)
 
-### Fase 1: Limpieza y cimientos (Semana 1)
-- [ ] Eliminar features no pedidas del código (CRM, badges, referrals, NPS, funnel, A/B testing)
-- [ ] Agregar access_level a profiles (N0, N1, N2, ADMIN)
-- [ ] Crear tablas: events, event_registrations, payments, emergencies
-- [ ] Actualizar tipos de Supabase
+### Fase 1: Limpieza y cimientos (Semana 1) — EN PROGRESO
+- [x] Migración SQL preparada (supabase/migrations/20260508_fase1_cimientos.sql)
+- [x] .env configurado con Supabase real
+- [ ] Eliminar features no pedidas del código (CRM, badges, referrals, NPS, funnel, A/B testing) — sub-agente ejecutando
+- [ ] Aplicar migración en Supabase (pendiente: acceso al Dashboard)
+- [ ] Actualizar tipos de Supabase en el código
 - [ ] Definir sistema de tests/gamification con Pablo
 
 ### Fase 2: Sistema de membresías (Semana 2)

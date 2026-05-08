@@ -135,21 +135,6 @@ describe("Feature Components", () => {
     expect(DiagnosticTest.default).toBeDefined();
   });
 
-  it("Onboarding exports correctly", async () => {
-    const Onboarding = await import("@/components/Onboarding");
-    expect(Onboarding.default).toBeDefined();
-  });
-
-  it("OnboardingV2 exports correctly", async () => {
-    const OnboardingV2 = await import("@/components/OnboardingV2");
-    expect(OnboardingV2.default).toBeDefined();
-  });
-
-  it("BadgeDisplay exports correctly", async () => {
-    const BadgeDisplay = await import("@/components/BadgeDisplay");
-    expect(BadgeDisplay.BadgeDisplay).toBeDefined();
-  });
-
   it("CommunityRanking exports correctly", async () => {
     const CommunityRanking = await import("@/components/CommunityRanking");
     expect(CommunityRanking.CommunityRanking).toBeDefined();
@@ -163,11 +148,6 @@ describe("Feature Components", () => {
 
 // ── Admin Components ────────────────────────────────────────────
 describe("Admin Components", () => {
-  it("AdminCRM exports correctly", async () => {
-    const AdminCRM = await import("@/components/admin/AdminCRM");
-    expect(AdminCRM.default).toBeDefined();
-  });
-
   it("AdminUsuarios exports correctly", async () => {
     const AdminUsuarios = await import("@/components/admin/AdminUsuarios");
     expect(AdminUsuarios.default).toBeDefined();
@@ -260,11 +240,6 @@ describe("Hooks Exports", () => {
     expect(useToast).toBeDefined();
   });
 
-  it("useBadges exports correctly", async () => {
-    const { useBadges } = await import("@/hooks/useBadges");
-    expect(useBadges).toBeDefined();
-  });
-
   it("useWallInteractions exports correctly", async () => {
     const { useWallInteractions } = await import("@/hooks/useWallInteractions");
     expect(useWallInteractions).toBeDefined();
@@ -278,13 +253,6 @@ describe("Hooks Exports", () => {
   it("useRanking exports correctly", async () => {
     const { useRanking } = await import("@/hooks/useRanking");
     expect(useRanking).toBeDefined();
-  });
-
-  it("useCRM hooks export correctly", async () => {
-    const crm = await import("@/hooks/useCRM");
-    expect(crm.useCRMClients).toBeDefined();
-    expect(crm.useCRMProducts).toBeDefined();
-    expect(crm.useCRMInteractions).toBeDefined();
   });
 
   it("useContentRecommendations exports correctly", async () => {

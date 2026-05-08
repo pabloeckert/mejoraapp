@@ -15,7 +15,6 @@ import {
   RefreshCw,
   Send,
   ArrowDown,
-  Award,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,15 +22,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { useBadges } from "@/hooks/useBadges";
 import { useWallInteractions, type WallComment } from "@/hooks/useWallInteractions";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
-import { BadgeDisplay } from "@/components/BadgeDisplay";
 import { CommunityRanking } from "@/components/CommunityRanking";
 import { CommunityRules } from "@/components/CommunityRules";
-import { ReferralBanner } from "@/components/ReferralBanner";
-import { trackPublishPost, trackBadgeEarned } from "@/lib/analytics";
-import { trackFirstPostFunnel } from "@/lib/funnel";
+import { trackPublishPost } from "@/lib/analytics";
 import { ReportDialog } from "@/components/ReportDialog";
 import { PostCard, PostSkeleton, type WallPost, MAX_LENGTH, POSTS_PER_PAGE } from "@/components/muro";
 
@@ -52,8 +47,6 @@ const Muro = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { earnedBadges, totalEarned } = useBadges(user?.id);
-  const prevBadgeCount = useRef(totalEarned);
 
   const {
     likedPosts,
@@ -70,19 +63,6 @@ const Muro = () => {
     updateCommentText,
     setCommentsMap,
   } = useWallInteractions(user?.id);
-
-  // Toast when new badge is earned
-  useEffect(() => {
-    if (totalEarned > prevBadgeCount.current && earnedBadges.length > 0) {
-      const newest = earnedBadges[earnedBadges.length - 1];
-      toast({
-        title: `🎉 ¡Badge desbloqueado!`,
-        description: `${newest.emoji} ${newest.name}: ${newest.description}`,
-      });
-      trackBadgeEarned(newest.slug);
-    }
-    prevBadgeCount.current = totalEarned;
-  }, [totalEarned, earnedBadges, toast]);
 
   const [newPost, setNewPost] = useState("");
   const [posting, setPosting] = useState(false);
@@ -178,7 +158,6 @@ const Muro = () => {
         setNewPost("");
         toast({ title: "¡Publicado!", description: "Tu post ya está en el muro." });
         trackPublishPost(content.length);
-        trackFirstPostFunnel();
         refetch();
         supabase.functions.invoke("send-push-notification", {
           body: { action: "new_post", exclude_user_id: user.id },
@@ -293,19 +272,8 @@ const Muro = () => {
       {/* Community rules */}
       <CommunityRules />
 
-      {/* Badges */}
-      {earnedBadges.length > 0 && (
-        <div className="flex items-center gap-2">
-          <Award className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-          <BadgeDisplay earnedBadges={earnedBadges} variant="compact" maxShow={3} />
-        </div>
-      )}
-
       {/* Ranking */}
       <CommunityRanking currentUserId={user?.id} limit={10} />
-
-      {/* Referral */}
-      <ReferralBanner />
 
       {/* Posts list */}
       {isLoading ? (

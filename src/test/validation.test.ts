@@ -13,9 +13,6 @@ import {
   wallPostSchema,
   wallCommentSchema,
   contentPostSchema,
-  crmClientSchema,
-  crmProductSchema,
-  npsSchema,
   formatZodError,
   validateOrThrow,
 } from "@/lib/validation";
@@ -240,91 +237,6 @@ describe("contentPostSchema", () => {
       });
       expect(result.success).toBe(true);
     }
-  });
-});
-
-// ── CRM Client Schema ───────────────────────────────────────────
-describe("crmClientSchema", () => {
-  it("accepts valid client", () => {
-    const result = crmClientSchema.safeParse({
-      name: "Empresa ABC",
-      company: "ABC SRL",
-      email: "contacto@abc.com",
-      whatsapp: "+5491112345678",
-    });
-    expect(result.success).toBe(true);
-  });
-
-  it("accepts minimal client (only name)", () => {
-    const result = crmClientSchema.safeParse({ name: "ABC" });
-    expect(result.success).toBe(true);
-  });
-
-  it("rejects empty name", () => {
-    const result = crmClientSchema.safeParse({ name: "" });
-    expect(result.success).toBe(false);
-  });
-
-  it("rejects invalid email", () => {
-    const result = crmClientSchema.safeParse({ name: "ABC", email: "invalid" });
-    expect(result.success).toBe(false);
-  });
-});
-
-// ── CRM Product Schema ──────────────────────────────────────────
-describe("crmProductSchema", () => {
-  it("accepts valid product", () => {
-    const result = crmProductSchema.safeParse({
-      name: "Consultoría",
-      price: 50000,
-      currency: "ARS",
-    });
-    expect(result.success).toBe(true);
-  });
-
-  it("rejects negative price", () => {
-    const result = crmProductSchema.safeParse({
-      name: "Test",
-      price: -100,
-      currency: "ARS",
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it("rejects invalid currency", () => {
-    const result = crmProductSchema.safeParse({
-      name: "Test",
-      currency: "BRL",
-    });
-    expect(result.success).toBe(false);
-  });
-});
-
-// ── NPS Schema ──────────────────────────────────────────────────
-describe("npsSchema", () => {
-  it("accepts valid NPS score", () => {
-    const result = npsSchema.safeParse({ score: 8 });
-    expect(result.success).toBe(true);
-  });
-
-  it("accepts score 0", () => {
-    const result = npsSchema.safeParse({ score: 0 });
-    expect(result.success).toBe(true);
-  });
-
-  it("accepts score 10", () => {
-    const result = npsSchema.safeParse({ score: 10 });
-    expect(result.success).toBe(true);
-  });
-
-  it("rejects score over 10", () => {
-    const result = npsSchema.safeParse({ score: 11 });
-    expect(result.success).toBe(false);
-  });
-
-  it("rejects negative score", () => {
-    const result = npsSchema.safeParse({ score: -1 });
-    expect(result.success).toBe(false);
   });
 });
 

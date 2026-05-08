@@ -207,21 +207,6 @@ describe("Analytics Edge Cases", () => {
   });
 });
 
-// ── A/B Testing Edge Cases ──────────────────────────────────────
-describe("A/B Testing Edge Cases", () => {
-  it("getVariant handles special characters in experiment ID", async () => {
-    const { getVariant } = await import("@/lib/ab-testing");
-    // Should return control for unknown experiments
-    expect(getVariant("test-experiment_v2")).toBe("control");
-  });
-
-  it("getVariant with empty userId uses random", async () => {
-    const { getVariant } = await import("@/lib/ab-testing");
-    const variant = getVariant("onboarding_v2", "");
-    expect(["control", "variant_b"]).toContain(variant);
-  });
-});
-
 // ── Repository Error Context ────────────────────────────────────
 describe("Repository Error Context", () => {
   it("error messages include repository context", () => {

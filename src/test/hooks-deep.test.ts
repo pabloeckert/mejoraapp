@@ -101,40 +101,6 @@ describe("useAdminAction", () => {
   });
 });
 
-// ── useCRM Deep Tests ───────────────────────────────────────────
-describe("useCRM Deep", () => {
-  it("exports all CRM hooks", async () => {
-    const crm = await import("@/hooks/useCRM");
-    const expectedHooks = [
-      "useCRMClients",
-      "useCRMClient",
-      "useCRMClientsMinimal",
-      "useUpsertCRMClient",
-      "useDeleteCRMClient",
-      "useCRMProducts",
-      "useCRMActiveProducts",
-      "useUpsertCRMProduct",
-      "useCRMInteractions",
-      "useCRMClientInteractions",
-      "useCreateCRMInteraction",
-      "useDeleteCRMInteraction",
-      "useCRMDashboard",
-      "useCRMSellerRanking",
-    ];
-
-    for (const hook of expectedHooks) {
-      expect(crm).toHaveProperty(hook);
-      expect(typeof (crm as any)[hook]).toBe("function");
-    }
-  });
-
-  it("CRM types are available via types/crm", async () => {
-    const crmTypes = await import("@/types/crm");
-    expect(crmTypes).toBeDefined();
-    // Types exist at compile time; runtime just needs the module to load
-  });
-});
-
 // ── Context Deep Tests ──────────────────────────────────────────
 describe("Context Deep Tests", () => {
   it("AuthContext exports useAuth and AuthProvider", async () => {
@@ -173,15 +139,6 @@ describe("Library Deep Tests", () => {
     expect(plans).toHaveProperty("FEATURE_LABELS");
   });
 
-  it("ab-testing exports all testing functions", async () => {
-    const ab = await import("@/lib/ab-testing");
-    expect(ab).toHaveProperty("getVariant");
-    expect(ab).toHaveProperty("trackABTest");
-    expect(ab).toHaveProperty("resetExperiment");
-    expect(ab).toHaveProperty("getAllAssignments");
-    expect(ab).toHaveProperty("EXPERIMENTS");
-  });
-
   it("analytics exports all tracking functions", async () => {
     const analytics = await import("@/lib/analytics");
     const functions = [
@@ -190,7 +147,7 @@ describe("Library Deep Tests", () => {
       "trackCommentPost", "trackDeletePost", "trackStartDiagnostic",
       "trackCompleteDiagnostic", "trackShareDiagnosticWA", "trackRetakeDiagnostic",
       "trackViewContent", "trackSearchContent", "trackFilterCategory",
-      "trackAdminAction", "trackOnboardingComplete", "trackOnboardingSkip",
+      "trackAdminAction",
       "trackProfileComplete", "trackProfileSkip", "trackTabSwitch",
       "trackCrossNavigation", "trackBadgeEarned", "trackRankingViewed",
       "trackProfileViewed", "trackProfileEdited", "trackServiceClick",
@@ -232,14 +189,6 @@ describe("Data Module Deep Tests", () => {
     expect(data).toHaveProperty("WA_NUMBER");
     expect(data).toHaveProperty("shuffle");
     expect(data).toHaveProperty("detectarPerfil");
-  });
-
-  it("badges exports all required functions and data", async () => {
-    const badges = await import("@/data/badges");
-    expect(badges).toHaveProperty("BADGES");
-    expect(badges).toHaveProperty("getBadgeBySlug");
-    expect(Array.isArray(badges.BADGES)).toBe(true);
-    expect(badges.BADGES.length).toBeGreaterThan(0);
   });
 });
 

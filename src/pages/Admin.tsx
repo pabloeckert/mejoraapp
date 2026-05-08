@@ -1,6 +1,6 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Shield, Newspaper, MessageSquare, Users, ArrowLeft, BookOpen, Sparkles, LogOut, Lock, Briefcase } from "lucide-react";
+import { Shield, Newspaper, MessageSquare, Users, ArrowLeft, BookOpen, Sparkles, LogOut, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,9 +13,7 @@ import AdminSeguridad from "@/components/admin/AdminSeguridad";
 import { AdminSecurityMFA } from "@/components/admin/AdminSecurityMFA";
 import { SEOHead, SEO_CONFIGS } from "@/components/SEOHead";
 
-const AdminCRM = lazy(() => import("@/components/admin/AdminCRM"));
-
-type AdminTab = "contenido" | "ia" | "novedades" | "muro" | "usuarios" | "seguridad" | "crm";
+type AdminTab = "contenido" | "ia" | "novedades" | "muro" | "usuarios" | "seguridad";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -90,7 +88,6 @@ const Admin = () => {
     { key: "muro", label: "Muro", icon: MessageSquare },
     { key: "usuarios", label: "Usuarios", icon: Users },
     { key: "seguridad", label: "Seguridad", icon: Lock },
-    { key: "crm", label: "CRM", icon: Briefcase },
   ];
 
   return (
@@ -146,11 +143,6 @@ const Admin = () => {
         {activeTab === "muro" && <AdminMuro />}
         {activeTab === "usuarios" && <AdminUsuarios />}
         {activeTab === "seguridad" && <AdminSeguridad />}
-        {activeTab === "crm" && (
-          <Suspense fallback={<div className="text-center py-8 text-muted-foreground">Cargando CRM...</div>}>
-            <AdminCRM />
-          </Suspense>
-        )}
       </main>
     </div>
   );

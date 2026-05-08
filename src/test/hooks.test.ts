@@ -1,7 +1,7 @@
 /**
  * Hooks Tests
  *
- * Tests for custom hooks: useBadges, useFeatureAccess, usePullToRefresh, useRanking.
+ * Tests for custom hooks: useFeatureAccess, usePullToRefresh, useRanking.
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -67,63 +67,6 @@ describe("useFeatureAccess", () => {
   });
 });
 
-// ── A/B Testing Tests ───────────────────────────────────────────
-describe("A/B Testing", () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
-
-  it("getVariant returns control for unknown experiment", async () => {
-    const { getVariant } = await import("@/lib/ab-testing");
-    expect(getVariant("unknown_experiment")).toBe("control");
-  });
-
-  it("getVariant returns valid variant for known experiment", async () => {
-    const { getVariant } = await import("@/lib/ab-testing");
-    const variant = getVariant("onboarding_v2");
-    expect(["control", "variant_b"]).toContain(variant);
-  });
-
-  it("getVariant persists assignment in localStorage", async () => {
-    const { getVariant } = await import("@/lib/ab-testing");
-    const first = getVariant("onboarding_v2");
-    const second = getVariant("onboarding_v2");
-    expect(first).toBe(second);
-  });
-
-  it("resetExperiment clears assignment", async () => {
-    const { getVariant, resetExperiment } = await import("@/lib/ab-testing");
-    getVariant("onboarding_v2");
-    resetExperiment("onboarding_v2");
-    // After reset, should get a new assignment (might be same or different)
-    const variant = getVariant("onboarding_v2");
-    expect(["control", "variant_b"]).toContain(variant);
-  });
-
-  it("getAllAssignments returns all active experiments", async () => {
-    const { getAllAssignments } = await import("@/lib/ab-testing");
-    const assignments = getAllAssignments();
-    expect(assignments).toHaveProperty("onboarding_v2");
-    expect(["control", "variant_b"]).toContain(assignments.onboarding_v2);
-  });
-
-  it("EXPERIMENTS has correct structure", async () => {
-    const { EXPERIMENTS } = await import("@/lib/ab-testing");
-    expect(EXPERIMENTS).toHaveProperty("onboarding_v2");
-    expect(EXPERIMENTS.onboarding_v2.variants).toEqual(["control", "variant_b"]);
-    expect(EXPERIMENTS.onboarding_v2.weights).toEqual([50, 50]);
-  });
-
-  it("getVariant with userId produces deterministic result", async () => {
-    const { getVariant, resetExperiment } = await import("@/lib/ab-testing");
-    resetExperiment("onboarding_v2");
-    const v1 = getVariant("onboarding_v2", "user-123");
-    resetExperiment("onboarding_v2");
-    const v2 = getVariant("onboarding_v2", "user-123");
-    expect(v1).toBe(v2); // Same user always gets same variant
-  });
-});
-
 // ── Analytics Tests ─────────────────────────────────────────────
 describe("Analytics", () => {
   it("initAnalytics does not throw", async () => {
@@ -145,7 +88,6 @@ describe("Analytics", () => {
     expect(() => analytics.trackViewContent("c-1", "estrategia", "articulo")).not.toThrow();
     expect(() => analytics.trackSearchContent("test", 5)).not.toThrow();
     expect(() => analytics.trackAdminAction("create-post")).not.toThrow();
-    expect(() => analytics.trackOnboardingComplete()).not.toThrow();
     expect(() => analytics.trackBadgeEarned("first-post")).not.toThrow();
     expect(() => analytics.trackServiceClick("consultoria")).not.toThrow();
   });
