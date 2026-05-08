@@ -94,7 +94,7 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
 1. **Deploy:** Migrar de Hostinger+FTP → Vercel (mantener app.mejoraok.com)
 2. **Muro:** Anónimo N0, nickname N1/N2
 3. **Tests/Diagnóstico:** Business Mirror Gamer — ver sección dedicada más abajo
-4. **Tiendup:** NO existe — hay que buscar alternativa de pago o configurar Tiendup
+4. **Tiendup:** API disponible — `pablo-usos.public-api.tiendup.com` (API key obtenida 9/5/2026). Integrar como gateway de pagos.
 5. **Mentor IA:** Se queda en el scope
 6. **CRM:** Se elimina completamente
 7. **Founders:** Acceso real, no sandbox
@@ -237,7 +237,7 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
 
 ### Fase 3: Features core (Semana 3) — EN PROGRESO
 - [x] P04: Muro con tipos de publicación + filtro por tipo ✅ (9/5/2026)
-- [ ] P05: Calendario de eventos
+- [x] P05: Calendario de eventos ✅ (9/5/2026)
 - [ ] P06: Contenido de valor (ajustar existente)
 - [ ] P07: Círculo Dorado
 - [x] P08: Botón de Emergencia ✅ (9/5/2026)
