@@ -258,12 +258,14 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
   - Registro manual de pagos con selector de usuario
   - Mobile: cards expandibles | Desktop: tabla
   - Tabs admin scrollables en mobile (7 tabs)
-- [ ] Integración Tiendup (ver TIENDUP.md para plan detallado)
+- [x] Integración Tiendup (ver TIENDUP.md para plan detallado) — código completo, pendiente config de Pablo
   - [ ] Pablo: Crear Plan N1/N2 en Tiendup
-  - [ ] CTO: Edge Function tiendup-webhook
-  - [ ] CTO: Edge Function tiendup-checkout
-  - [ ] CTO: tiendup.service.ts + integración UpgradePrompt
+  - [x] CTO: Edge Function tiendup-webhook ✅ (9/5/2026)
+  - [x] CTO: Edge Function tiendup-checkout ✅ (9/5/2026)
+  - [x] CTO: tiendup.service.ts + integración UpgradePrompt ✅ (9/5/2026)
   - [ ] Pablo: Configurar webhook en panel Tiendup
+  - [ ] Pablo: Agregar secrets en Supabase (TIENDUP_API_KEY, TIENDUP_WEBHOOK_SECRET)
+  - [ ] Pablo: Agregar env vars en Vercel (VITE_TIENDUP_PRODUCT_N1, VITE_TIENDUP_PRODUCT_N2)
 - [ ] Tests E2E
 - [ ] Deploy a producción (Vercel)
 
