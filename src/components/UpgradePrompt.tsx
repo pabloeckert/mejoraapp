@@ -2,11 +2,14 @@
  * UpgradePrompt — Prompt para subir de nivel de membresía
  *
  * Muestra CTA para upgrade con info del nivel requerido.
+ * Intenta abrir checkout de Tiendup; fallback a WhatsApp.
  */
 
-import { Lock, Crown, Star, ArrowRight } from "lucide-react";
+import { useState } from "react";
+import { Lock, Crown, Star, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { openCheckout } from "@/services/tiendup.service";
 import type { AccessLevel } from "@/hooks/useAccessLevel";
 
 interface UpgradePromptProps {
@@ -15,20 +18,35 @@ interface UpgradePromptProps {
   message?: string;
 }
 
-const LEVEL_INFO: Record<AccessLevel, { label: string; icon: typeof Lock; color: string }> = {
+const LEVEL_INFO: Record<AccessLevel, { label: string; icon: typeof Lock; color: string; productEnvKey?: string }> = {
   N0: { label: "Gratis", icon: Lock, color: "text-muted-foreground" },
-  N1: { label: "Básico", icon: Star, color: "text-blue-500" },
-  N2: { label: "Premium", icon: Crown, color: "text-amber-500" },
+  N1: { label: "Básico", icon: Star, color: "text-blue-500", productEnvKey: "VITE_TIENDUP_PRODUCT_N1" },
+  N2: { label: "Premium", icon: Crown, color: "text-amber-500", productEnvKey: "VITE_TIENDUP_PRODUCT_N2" },
   ADMIN: { label: "Admin", icon: Crown, color: "text-red-500" },
 };
 
 export function UpgradePrompt({ currentLevel, requiredLevel, message }: UpgradePromptProps) {
   const info = LEVEL_INFO[requiredLevel];
   const Icon = info.icon;
+  const [loading, setLoading] = useState(false);
 
-  const handleUpgrade = () => {
-    // TODO: Integrar con Tiendup u otro gateway de pago
-    // Por ahora, abrir WhatsApp de Pablo
+  const handleUpgrade = async () => {
+    // Try Tiendup checkout first
+    const productId = info.productEnvKey ? import.meta.env[info.productEnvKey] : undefined;
+
+    if (productId) {
+      setLoading(true);
+      try {
+        await openCheckout(productId);
+        return;
+      } catch (err) {
+        console.warn("[UpgradePrompt] Tiendup checkout failed, falling back to WhatsApp:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // Fallback: WhatsApp
     const text = encodeURIComponent(
       `Hola! Quiero upgrade a ${info.label} (${requiredLevel}). Mi nivel actual es ${currentLevel}.`
     );
@@ -51,9 +69,15 @@ export function UpgradePrompt({ currentLevel, requiredLevel, message }: UpgradeP
           </p>
         </div>
 
-        <Button onClick={handleUpgrade} className="gap-2">
-          Upgrade a {info.label}
-          <ArrowRight className="w-4 h-4" />
+        <Button onClick={handleUpgrade} className="gap-2" disabled={loading}>
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <>
+              Upgrade a {info.label}
+              <ArrowRight className="w-4 h-4" />
+            </>
+          )}
         </Button>
 
         <p className="text-xs text-muted-foreground">
