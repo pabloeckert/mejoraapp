@@ -1,5 +1,5 @@
 # CTO SESSION — Estado Actual
-## Última actualización: 8 de mayo 2026, 07:36 GMT+8
+## Última actualización: 8 de mayo 2026, 08:04 GMT+8
 
 ---
 
@@ -17,7 +17,7 @@
 ## REPOSITORIO
 
 - **GitHub:** https://github.com/pabloeckert/MejoraApp
-- **Producción:** https://app.mejoraok.com (Hostinger, FTP a public_html)
+- **Producción:** https://app.mejoraok.com → **MIGRAR A VERCEL** (mantener subdominio)
 - **Stack:** React 18 + TypeScript + Vite 5 + Supabase + Tailwind CSS + shadcn/ui
 - **Supabase URL:** https://7uqmgyuhqfurvirmcqnj.supabase.co
 - **Branch principal:** main
@@ -38,7 +38,6 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
 
 ### SE ELIMINA (features no pedidas en los specs):
 - CRM completo (crm_clients, crm_products, crm_interactions, crm_interaction_lines)
-- Mentor IA (mentor_conversations, mentor_messages, mentor_config, mentor_stats)
 - A/B testing (ab-testing.ts)
 - Funnel de activación (funnel.ts)
 - NPS Surveys (nps_responses, NPSSurvey.tsx)
@@ -49,11 +48,14 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
 - Analytics avanzado (PostHog) — se puede mantener como opcional
 - Sentry error tracking — se puede mantener como opcional
 
+### SE MANTIENE (además de la base):
+- Mentor IA (confirmado por Pablo)
+
 ### SE CONSTRUYE DESDE CERO (features de los specs):
 1. **Sistema de membresías N0/N1/N2 + ADMIN** — campo access_level en profiles
 2. **Control de acceso por nivel** — blur N0, bloqueos, upgrade prompts
 3. **Splash screen (P01)** — branding Mejora Continua
-4. **Registro con 3 tests obligatorios (P02)** — Test A/B/C a elegir
+4. **Registro con tests de gamification (P02)** — Múltiples tests progresivos para conocerse como empresarios
 5. **Home dashboard por nivel (P03)** — cards dinámicas según membresía
 6. **Muro con tipos de publicación (P04)** — Consulta/Caso/Convocatoria, nickname
 7. **Calendario de eventos (P05)** — inscripción por nivel, QR, aforo
@@ -65,56 +67,97 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
 13. **Tabla payments** — control de cobranza, historial, baja automática
 14. **Tabla events + event_registrations** — eventos con QR y aforo
 
-## PREGUNTAS PENDIENTES (Entrevista CTO — 12 preguntas)
-
-Estas preguntas NO fueron respondidas todavía. Se necesitan para continuar:
+## PREGUNTAS — ✅ RESPONDIDAS (8/5/2026 08:04)
 
 ### BLOQUE 1 — El negocio real
-- **P1:** ¿Los 10 founders ya usan algo del repo, o partimos de cero?
-- **P2:** ¿La app lidera el ecosistema MC o es complemento?
-- **P3:** ¿El modelo 70/30 cambió ahora que la IA construye?
+- **P1:** Partimos de cero. Los founders NO usan nada del repo actual.
+- **P2:** Es complemento. La app es parte de la Comunidad de Negocios de Mejora Continua.
+- **P3:** Solo somos los dos (Pablo + CTO IA). El modelo 70/30 ya no aplica.
 
 ### BLOQUE 2 — Qué se queda, qué se va
-- **P4:** ¿Mentor IA se queda o se va?
-- **P5:** ¿El CRM se usa para el negocio o fue del dev?
-- **P6:** ¿Muro anónimo o con nickname?
-- **P7:** ¿Diagnóstico actual (15 preguntas) o los 3 tests de los specs?
+- **P4:** Mentor IA **SE QUEDA**.
+- **P5:** CRM era del dev → **SE ELIMINA**.
+- **P6:** Muro anónimo para niveles no pagos (N0). Niveles pagos pueden usar nickname.
+- **P7:** Modelo de gamificación con múltiples tests generados progresivamente. NO es el diagnóstico actual de 15 preguntas. La idea: empresarios se conocen en distintos aspectos y Pablo obtiene perfil de socios.
 
 ### BLOQUE 3 — Lo que falta
-- **P8:** Prioridad personal — si solo pudieras tener 3 features de las que faltan, ¿cuáles?
-- **P9:** ¿Tiendup ya está configurado?
-- **P10:** ¿Founders entran pagando o el sandbox es gratis 6 meses?
+- **P8:** Pendiente — CTO presenta opciones (ver abajo).
+- **P9:** Tiendup **NO** está configurado.
+- **P10:** **NO hay sandbox de 6 meses.** Founders entran al sistema real.
 
 ### BLOQUE 4 — La tech
-- **P11:** ¿Tenés acceso al proyecto de Supabase?
-- **P12:** ¿Mantener Hostinger+FTP o migrar a Vercel?
+- **P11:** Pablo tiene acceso a Supabase. Lo pueden ver juntos.
+- **P12:** **Vercel** — se puede mantener el subdominio app.mejoraok.com.
 
-## PLAN DE ACCIÓN PROPUESTO (4 semanas)
+## DECISIONES CLAVE DERIVADAS
 
-### Semana 1: Limpieza y cimientos
-- [ ] Eliminar features no pedidas del código
-- [ ] Agregar access_level a profiles
+1. **Deploy:** Migrar de Hostinger+FTP → Vercel (mantener app.mejoraok.com)
+2. **Muro:** Anónimo N0, nickname N1/N2
+3. **Tests/Diagnóstico:** Sistema de gamificación progresiva (múltiples tests, no uno fijo)
+4. **Tiendup:** NO existe — hay que buscar alternativa de pago o configurar Tiendup
+5. **Mentor IA:** Se queda en el scope
+6. **CRM:** Se elimina completamente
+7. **Founders:** Acceso real, no sandbox
+
+## P8 — OPCIONES DE PRIORIDAD (Top 3 features)
+
+> Pablo: "Me gustaría que me digas cuáles son mis opciones"
+
+### Opción A — Revenue First (monetización rápida)
+1. **Sistema de membresías N0/N1/N2** — Lo que abre el negocio
+2. **Integración de pagos** — Para que paguen (Tiendup o alternativa)
+3. **Control de acceso por nivel** — Blur N0, bloqueos, upgrade prompts
+
+### Opción B — Engagement First (retención y activación)
+1. **Home dashboard por nivel** — Primera impresión, lo que ven al entrar
+2. **Muro con tipos de publicación** — Donde se genera la comunidad
+3. **Sistema de tests/gamification** — Lo que hace única a la app
+
+### Opción C — Completa (equilibrada)
+1. **Sistema de membresías** — Base de todo
+2. **Muro con tipos de publicación** — Corazón de la comunidad
+3. **Mi Perfil + gestión** — Donde el usuario ve su progreso
+
+### Opción D — Mi recomendación como CTO
+1. **Sistema de membresías + control de acceso** — Es el cimiento. Sin esto, nada funciona.
+2. **Home dashboard por nivel** — Es lo primero que ven. Define la experiencia.
+3. **Muro con tipos de publicación** — Es donde vive la comunidad. Sin muro, no hay app.
+
+**¿Cuál elegís?**
+
+## PLAN DE ACCIÓN (Revisado — 8/5/2026)
+
+### Fase 0: Setup (esta semana)
+- [ ] Configurar Vercel + migrar dominio app.mejoraok.com
+- [ ] Configurar .env con credenciales Supabase reales
+- [ ] Verificar acceso Supabase juntos
+- [ ] Definir alternativa de pago (Tiendup u otro)
+
+### Fase 1: Limpieza y cimientos (Semana 1)
+- [ ] Eliminar features no pedidas del código (CRM, badges, referrals, NPS, funnel, A/B testing)
+- [ ] Agregar access_level a profiles (N0, N1, N2, ADMIN)
 - [ ] Crear tablas: events, event_registrations, payments, emergencies
 - [ ] Actualizar tipos de Supabase
+- [ ] Definir sistema de tests/gamification con Pablo
 
-### Semana 2: Sistema de membresías
+### Fase 2: Sistema de membresías (Semana 2)
 - [ ] Lógica de acceso por nivel en toda la app
 - [ ] P01: Splash screen
-- [ ] P02: Registro con 3 tests
+- [ ] P02: Registro con primer test
 - [ ] P03: Home dashboard por nivel
-- [ ] Upgrade prompts + links Tiendup
+- [ ] Upgrade prompts + links de pago
 
-### Semana 3: Features core
+### Fase 3: Features core (Semana 3)
 - [ ] P04: Muro con tipos de publicación + blur N0
 - [ ] P05: Calendario de eventos
 - [ ] P06: Contenido de valor (ajustar existente)
 - [ ] P07: Círculo Dorado
 - [ ] P08: Botón de Emergencia
 
-### Semana 4: Admin y pulido
+### Fase 4: Admin y pulido (Semana 4)
 - [ ] P09: Mi Perfil con gestión de membresía
 - [ ] P10: Panel admin con cobranza
-- [ ] Integración Tiendup
+- [ ] Integración pagos
 - [ ] Tests E2E
 - [ ] Deploy a producción
 
