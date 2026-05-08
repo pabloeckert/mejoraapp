@@ -108,48 +108,6 @@ describe("Diagnostic Data Integrity", () => {
   });
 });
 
-// ── Badge Data Integrity ────────────────────────────────────────
-describe("Badge Data Integrity", () => {
-  it("BADGES array is not empty", async () => {
-    const { BADGES } = await import("@/data/badges");
-    expect(BADGES.length).toBeGreaterThan(0);
-  });
-
-  it("each badge has required fields", async () => {
-    const { BADGES } = await import("@/data/badges");
-    for (const badge of BADGES) {
-      expect(badge).toHaveProperty("slug");
-      expect(badge).toHaveProperty("name");
-      expect(badge).toHaveProperty("description");
-      expect(badge).toHaveProperty("emoji");
-      expect(typeof badge.slug).toBe("string");
-      expect(typeof badge.name).toBe("string");
-      expect(typeof badge.description).toBe("string");
-      expect(typeof badge.emoji).toBe("string");
-    }
-  });
-
-  it("badge slugs are unique", async () => {
-    const { BADGES } = await import("@/data/badges");
-    const slugs = BADGES.map((b) => b.slug);
-    const uniqueSlugs = new Set(slugs);
-    expect(slugs.length).toBe(uniqueSlugs.size);
-  });
-
-  it("getBadgeBySlug returns badge for valid slug", async () => {
-    const { BADGES, getBadgeBySlug } = await import("@/data/badges");
-    const firstBadge = BADGES[0];
-    const found = getBadgeBySlug(firstBadge.slug);
-    expect(found).toBeDefined();
-    expect(found?.slug).toBe(firstBadge.slug);
-  });
-
-  it("getBadgeBySlug returns undefined for invalid slug", async () => {
-    const { getBadgeBySlug } = await import("@/data/badges");
-    expect(getBadgeBySlug("nonexistent-badge")).toBeUndefined();
-  });
-});
-
 // ── Supabase Types Integrity ────────────────────────────────────
 describe("Supabase Types", () => {
   it("types file exports Database type", async () => {

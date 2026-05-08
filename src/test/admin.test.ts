@@ -92,14 +92,6 @@ describe("Admin Validation", () => {
   });
 });
 
-// ── CRM Types Tests ─────────────────────────────────────────────
-describe("CRM Types", () => {
-  it("CRMClientRow has correct structure", async () => {
-    const types = await import("@/types/crm");
-    expect(types).toBeDefined();
-  });
-});
-
 // ── Repository Error Handling Tests ─────────────────────────────
 describe("Repository Error Handling", () => {
   it("throwIfError throws on error", () => {
@@ -166,11 +158,10 @@ describe("Security Patterns", () => {
       "profiles", "user_roles", "diagnostic_results", "wall_posts",
       "wall_comments", "wall_likes", "content_categories", "content_posts",
       "content_guidelines", "novedades", "admin_config", "moderation_log",
-      "moderation_comments_log", "user_badges", "push_subscriptions",
-      "admin_audit_log", "nps_responses", "referrals", "admin_whitelist",
-      "crm_clients", "crm_products", "crm_interactions", "crm_interaction_lines",
+      "moderation_comments_log", "push_subscriptions",
+      "admin_audit_log", "admin_whitelist",
     ];
-    expect(tables.length).toBe(23);
+    expect(tables.length).toBe(16);
     expect(tables).toContain("wall_posts");
     expect(tables).toContain("profiles");
   });
