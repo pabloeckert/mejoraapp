@@ -618,6 +618,116 @@ export type Database = {
         }
         Relationships: []
       }
+      business_mirror_tests: {
+        Row: {
+          id: string
+          slug: string
+          title: string
+          subtitle: string | null
+          description: string | null
+          category: string
+          icon: string | null
+          color: string | null
+          bg_color: string | null
+          min_access_level: Database["public"]["Enums"]["access_level"]
+          game_type: string
+          time_estimate_min: number | null
+          questions: unknown
+          scoring_rules: unknown | null
+          profiles: unknown | null
+          is_active: boolean | null
+          sort_order: number | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          slug: string
+          title: string
+          subtitle?: string | null
+          description?: string | null
+          category: string
+          icon?: string | null
+          color?: string | null
+          bg_color?: string | null
+          min_access_level?: Database["public"]["Enums"]["access_level"]
+          game_type?: string
+          time_estimate_min?: number | null
+          questions: unknown
+          scoring_rules?: unknown | null
+          profiles?: unknown | null
+          is_active?: boolean | null
+          sort_order?: number | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          slug?: string
+          title?: string
+          subtitle?: string | null
+          description?: string | null
+          category?: string
+          icon?: string | null
+          color?: string | null
+          bg_color?: string | null
+          min_access_level?: Database["public"]["Enums"]["access_level"]
+          game_type?: string
+          time_estimate_min?: number | null
+          questions?: unknown
+          scoring_rules?: unknown | null
+          profiles?: unknown | null
+          is_active?: boolean | null
+          sort_order?: number | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      business_mirror_results: {
+        Row: {
+          id: string
+          user_id: string
+          test_id: string
+          answers: unknown
+          score: number | null
+          profile: string | null
+          profile_data: unknown | null
+          time_spent_seconds: number | null
+          completed_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          test_id: string
+          answers: unknown
+          score?: number | null
+          profile?: string | null
+          profile_data?: unknown | null
+          time_spent_seconds?: number | null
+          completed_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          test_id?: string
+          answers?: unknown
+          score?: number | null
+          profile?: string | null
+          profile_data?: unknown | null
+          time_spent_seconds?: number | null
+          completed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_mirror_results_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "business_mirror_tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       push_subscriptions: {
         Row: {
           id: string

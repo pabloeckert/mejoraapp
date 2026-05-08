@@ -9,6 +9,7 @@ import Novedades from "@/components/tabs/Novedades";
 import Comunidad from "@/components/tabs/Comunidad";
 import Mentor from "@/components/tabs/Mentor";
 import DiagnosticTest from "@/components/DiagnosticTest";
+import { MirrorPage } from "@/components/mirror/MirrorPage";
 import ProfileCompleteModal from "@/components/ProfileCompleteModal";
 import { HomeDashboard } from "@/components/home/HomeDashboard";
 import { trackPageView, trackTabSwitch } from "@/lib/analytics";
@@ -97,6 +98,7 @@ const Index = () => {
         {activeTab === "home" && <HomeDashboard onNavigate={handleTabChange} />}
         {activeTab === "contenido" && <ContenidoDeValor />}
         {activeTab === "diagnostico" && <DiagnosticTest onComplete={() => setActiveTab("home")} />}
+        {activeTab === "mirror" && <MirrorPage />}
         {activeTab === "muro" && <Muro />}
         {activeTab === "comunidad" && <Comunidad />}
         {activeTab === "mentor" && <Mentor />}
