@@ -250,7 +250,14 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
   - Historial de pagos
   - CTA de upgrade para N0
   - Gestión de datos (Ley 25.326)
-- [ ] P10: Panel admin con cobranza
+- [x] P10: Panel admin con cobranza ✅ (9/5/2026)
+  - Stats: ingresos totales, mes actual, pagados, pendientes
+  - Tabla de pagos con datos de usuario (nombre, empresa, email)
+  - Filtro por estado (todos, pagados, pendientes, fallidos)
+  - Búsqueda por usuario, email, empresa, ID externo
+  - Registro manual de pagos con selector de usuario
+  - Mobile: cards expandibles | Desktop: tabla
+  - Tabs admin scrollables en mobile (7 tabs)
 - [ ] Integración Tiendup (ver TIENDUP.md para plan detallado)
   - [ ] Pablo: Crear Plan N1/N2 en Tiendup
   - [ ] CTO: Edge Function tiendup-webhook
