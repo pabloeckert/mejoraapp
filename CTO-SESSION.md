@@ -165,11 +165,11 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
 - [x] Definir sistema de tests/gamification con Pablo ✅ (9/5/2026)
 
 ### Fase 2: Sistema de membresías (Semana 2) — EN PROGRESO
-- [ ] Lógica de acceso por nivel en toda la app
-- [ ] P01: Splash screen
+- [x] Lógica de acceso por nivel en toda la app (useAccessLevel + AccessGate)
+- [x] P01: Splash screen ✅
+- [x] P03: Home dashboard por nivel ✅
 - [ ] P02: Registro con primer test (Business Mirror Gamer)
-- [ ] P03: Home dashboard por nivel
-- [ ] Upgrade prompts + links de pago
+- [ ] Upgrade prompts + links de pago (integrar Tiendup u otro)
 
 ### Fase 3: Features core (Semana 3)
 - [ ] P04: Muro con tipos de publicación + blur N0
