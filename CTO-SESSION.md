@@ -81,7 +81,7 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
 - **P7:** Modelo de gamificación con múltiples tests generados progresivamente. NO es el diagnóstico actual de 15 preguntas. La idea: empresarios se conocen en distintos aspectos y Pablo obtiene perfil de socios.
 
 ### BLOQUE 3 — Lo que falta
-- **P8:** Pendiente — CTO presenta opciones (ver abajo).
+- **P8:** Opción D (Recomendación CTO): 1) Membresías+acceso, 2) Home dashboard, 3) Muro con tipos. Círculo Dorado se mantiene en Fase 3.
 - **P9:** Tiendup **NO** está configurado.
 - **P10:** **NO hay sandbox de 6 meses.** Founders entran al sistema real.
 
@@ -123,7 +123,13 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
 2. **Home dashboard por nivel** — Es lo primero que ven. Define la experiencia.
 3. **Muro con tipos de publicación** — Es donde vive la comunidad. Sin muro, no hay app.
 
-**¿Cuál elegís?**
+**Pablo eligió: OPCIÓN D — Recomendación CTO** ✅
+
+1. Sistema de membresías + control de acceso
+2. Home dashboard por nivel
+3. Muro con tipos de publicación
+
+> El Círculo Dorado (P07) se mantiene en Fase 3 del plan.
 
 ## PLAN DE ACCIÓN (Revisado — 8/5/2026)
 
