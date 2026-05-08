@@ -8,7 +8,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-interface ProfileData {
+export interface ProfileData {
   empresa: string | null;
   cargo: string | null;
   phone: string | null;
@@ -16,12 +16,21 @@ interface ProfileData {
   apellido: string | null;
   display_name: string | null;
   has_completed_diagnostic: boolean;
+  access_level: string | null;
+  nickname: string | null;
+  whatsapp: string | null;
+  birthday: string | null;
+  membership_expires_at: string | null;
+  avatar_url: string | null;
+  bio: string | null;
+  linkedin: string | null;
+  website: string | null;
 }
 
 async function fetchProfile(userId: string): Promise<ProfileData> {
   const { data, error } = await supabase
     .from("profiles")
-    .select("empresa, cargo, phone, nombre, apellido, display_name, has_completed_diagnostic")
+    .select("empresa, cargo, phone, nombre, apellido, display_name, has_completed_diagnostic, access_level, nickname, whatsapp, birthday, membership_expires_at, avatar_url, bio, linkedin, website")
     .eq("user_id", userId)
     .maybeSingle();
 

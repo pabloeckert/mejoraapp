@@ -12,6 +12,7 @@ const Auth = lazy(() => import("./pages/Auth"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Admin = lazy(() => import("./pages/Admin"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const Splash = lazy(() => import("./pages/Splash"));
 
 const App = () => (
   <ErrorBoundary>
@@ -24,6 +25,14 @@ const App = () => (
               element={
                 <RouteErrorBoundary routeName="index">
                   <Index />
+                </RouteErrorBoundary>
+              }
+            />
+            <Route
+              path="/splash"
+              element={
+                <RouteErrorBoundary routeName="splash">
+                  <Splash />
                 </RouteErrorBoundary>
               }
             />
