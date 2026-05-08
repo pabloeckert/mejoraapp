@@ -170,8 +170,8 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
 - [x] Componente MirrorPage (orquestador Hub ↔ Player)
 - [x] Integrado en Index.tsx como tab "mirror"
 - [x] Build verificado ✓
-- [ ] Aplicar migración en Supabase (ejecutar SQL manualmente)
-- [ ] Seed data: insertar los 5 tests en la tabla via seedTests()
+- [x] Aplicar migración en Supabase ✅ (9/5/2026 05:53)
+- [x] Seed data: insertar los 5 tests ✅ (9/5/2026 05:53)
 - [ ] Sistema de notificaciones push (+1 test/semana)
 
 ## P8 — OPCIONES DE PRIORIDAD (Top 3 features)
@@ -232,7 +232,7 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
 - [x] P01: Splash screen ✅
 - [x] P03: Home dashboard por nivel ✅
 - [x] BottomNav actualizada (Inicio | Contenido | Muro | Comunidad | Mentor) ✅
-- [ ] P02: Business Mirror Gamer — EN PROGRESO (ver sección dedicada)
+- [x] P02: Business Mirror Gamer ✅ (9/5/2026)
 - [ ] Upgrade prompts + links de pago (integrar Tiendup u otro)
 
 ### Fase 3: Features core (Semana 3)
