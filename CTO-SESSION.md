@@ -142,7 +142,10 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
 ### Fase 1: Limpieza y cimientos (Semana 1) — EN PROGRESO
 - [x] Migración SQL preparada (supabase/migrations/20260508_fase1_cimientos.sql)
 - [x] .env configurado con Supabase real
-- [ ] Eliminar features no pedidas del código (CRM, badges, referrals, NPS, funnel, A/B testing) — sub-agente ejecutando
+- [x] Eliminar features no pedidas del código — 35 archivos, 3140 líneas eliminadas
+- [x] Fix pre-existente: comilla faltante en vite.config.ts
+- [x] Tests actualizados (273 passing, 2 pre-existentes failing)
+- [x] Build verificado ✓
 - [ ] Aplicar migración en Supabase (pendiente: acceso al Dashboard)
 - [ ] Actualizar tipos de Supabase en el código
 - [ ] Definir sistema de tests/gamification con Pablo
