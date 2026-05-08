@@ -263,8 +263,10 @@ export type Database = {
       profiles: {
         Row: {
           apellido: string | null
+          access_level: Database["public"]["Enums"]["access_level"]
           avatar_url: string | null
           bio: string | null
+          birthday: string | null
           cargo: string | null
           created_at: string
           display_name: string | null
@@ -275,16 +277,21 @@ export type Database = {
           last_badge_earned: string | null
           last_badge_earned_at: string | null
           linkedin: string | null
+          membership_expires_at: string | null
+          nickname: string | null
           nombre: string | null
           phone: string | null
           updated_at: string
           user_id: string
           website: string | null
+          whatsapp: string | null
         }
         Insert: {
           apellido?: string | null
+          access_level?: Database["public"]["Enums"]["access_level"]
           avatar_url?: string | null
           bio?: string | null
+          birthday?: string | null
           cargo?: string | null
           created_at?: string
           display_name?: string | null
@@ -295,16 +302,21 @@ export type Database = {
           last_badge_earned?: string | null
           last_badge_earned_at?: string | null
           linkedin?: string | null
+          membership_expires_at?: string | null
+          nickname?: string | null
           nombre?: string | null
           phone?: string | null
           updated_at?: string
           user_id: string
           website?: string | null
+          whatsapp?: string | null
         }
         Update: {
           apellido?: string | null
+          access_level?: Database["public"]["Enums"]["access_level"]
           avatar_url?: string | null
           bio?: string | null
+          birthday?: string | null
           cargo?: string | null
           created_at?: string
           display_name?: string | null
@@ -315,11 +327,14 @@ export type Database = {
           last_badge_earned?: string | null
           last_badge_earned_at?: string | null
           linkedin?: string | null
+          membership_expires_at?: string | null
+          nickname?: string | null
           nombre?: string | null
           phone?: string | null
           updated_at?: string
           user_id?: string
           website?: string | null
+          whatsapp?: string | null
         }
         Relationships: []
       }
@@ -445,6 +460,164 @@ export type Database = {
         }
         Relationships: []
       }
+      events: {
+        Row: {
+          id: string
+          title: string
+          description: string | null
+          event_date: string
+          location: string | null
+          max_attendees: number | null
+          min_access_level: Database["public"]["Enums"]["access_level"]
+          image_url: string | null
+          qr_code: string | null
+          status: string
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          description?: string | null
+          event_date: string
+          location?: string | null
+          max_attendees?: number | null
+          min_access_level?: Database["public"]["Enums"]["access_level"]
+          image_url?: string | null
+          qr_code?: string | null
+          status?: string
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string | null
+          event_date?: string
+          location?: string | null
+          max_attendees?: number | null
+          min_access_level?: Database["public"]["Enums"]["access_level"]
+          image_url?: string | null
+          qr_code?: string | null
+          status?: string
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      event_registrations: {
+        Row: {
+          id: string
+          event_id: string
+          user_id: string
+          status: string
+          registered_at: string
+          attended_at: string | null
+        }
+        Insert: {
+          id?: string
+          event_id: string
+          user_id: string
+          status?: string
+          registered_at?: string
+          attended_at?: string | null
+        }
+        Update: {
+          id?: string
+          event_id?: string
+          user_id?: string
+          status?: string
+          registered_at?: string
+          attended_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_registrations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          id: string
+          user_id: string
+          amount: number
+          currency: string
+          payment_method: string | null
+          external_id: string | null
+          status: string
+          access_level_granted: Database["public"]["Enums"]["access_level"] | null
+          period_start: string | null
+          period_end: string | null
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          amount: number
+          currency?: string
+          payment_method?: string | null
+          external_id?: string | null
+          status?: string
+          access_level_granted?: Database["public"]["Enums"]["access_level"] | null
+          period_start?: string | null
+          period_end?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          amount?: number
+          currency?: string
+          payment_method?: string | null
+          external_id?: string | null
+          status?: string
+          access_level_granted?: Database["public"]["Enums"]["access_level"] | null
+          period_start?: string | null
+          period_end?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      emergencies: {
+        Row: {
+          id: string
+          user_id: string
+          message: string | null
+          whatsapp_sent: boolean | null
+          sent_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          message?: string | null
+          whatsapp_sent?: boolean | null
+          sent_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          message?: string | null
+          whatsapp_sent?: boolean | null
+          sent_at?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       push_subscriptions: {
         Row: {
           id: string
@@ -472,75 +645,6 @@ export type Database = {
           keys_auth?: string
           created_at?: string
           updated_at?: string
-        }
-        Relationships: []
-      }
-      user_badges: {
-        Row: {
-          id: string
-          user_id: string
-          badge_slug: string
-          earned_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          badge_slug: string
-          earned_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          badge_slug?: string
-          earned_at?: string
-        }
-        Relationships: []
-      }
-      nps_responses: {
-        Row: {
-          id: string
-          user_id: string
-          score: number
-          comment: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          score: number
-          comment?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          score?: number
-          comment?: string | null
-          created_at?: string
-        }
-        Relationships: []
-      }
-      referrals: {
-        Row: {
-          id: string
-          referrer_id: string
-          referred_email: string
-          status: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          referrer_id: string
-          referred_email: string
-          status?: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          referrer_id?: string
-          referred_email?: string
-          status?: string
-          created_at?: string
         }
         Relationships: []
       }
@@ -758,90 +862,6 @@ export type Database = {
         }
         Relationships: []
       }
-      mentor_conversations: {
-        Row: {
-          id: string
-          user_id: string
-          title: string
-          created_at: string
-          updated_at: string
-          is_active: boolean
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          title?: string
-          created_at?: string
-          updated_at?: string
-          is_active?: boolean
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          title?: string
-          created_at?: string
-          updated_at?: string
-          is_active?: boolean
-        }
-        Relationships: []
-      }
-      mentor_messages: {
-        Row: {
-          id: string
-          conversation_id: string
-          user_id: string
-          role: string
-          content: string
-          tokens_used: number
-          model_used: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          conversation_id: string
-          user_id: string
-          role: string
-          content: string
-          tokens_used?: number
-          model_used?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          conversation_id?: string
-          user_id?: string
-          role?: string
-          content?: string
-          tokens_used?: number
-          model_used?: string | null
-          created_at?: string
-        }
-        Relationships: []
-      }
-      mentor_config: {
-        Row: {
-          id: string
-          key: string
-          value: string | null
-          description: string | null
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          key: string
-          value?: string | null
-          description?: string | null
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          key?: string
-          value?: string | null
-          description?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       community_ranking: {
@@ -877,12 +897,9 @@ export type Database = {
         }
         Returns: boolean
       }
-      get_crm_dashboard: {
-        Args: Record<string, never>
-        Returns: Json
-      }
     }
     Enums: {
+      access_level: "N0" | "N1" | "N2" | "ADMIN"
       app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
@@ -1011,6 +1028,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      access_level: ["N0", "N1", "N2", "ADMIN"],
       app_role: ["admin", "moderator", "user"],
     },
   },
