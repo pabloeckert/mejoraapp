@@ -1,5 +1,5 @@
 # CTO SESSION — Estado Actual
-## Última actualización: 9 de mayo 2026, 04:32 GMT+8
+## Última actualización: 9 de mayo 2026, 05:13 GMT+8
 
 ---
 
@@ -111,7 +111,63 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
 - **Lanzamiento:** 5 tests iniciales
 - **Crecimiento:** +1 test por semana + notificación push a miembros
 - **Resultados:** Informativos, no bloqueantes (no afectan acceso)
-- **DB:** Necesita tabla `business_mirror_tests` + `business_mirror_results`
+- **DB:** Tablas `business_mirror_tests` + `business_mirror_results` (migración lista: `20260509_business_mirror_gamer.sql`)
+- **Decisión clave:** El Mirror Estratégico existente (8 preguntas, 8 perfiles) se convierte en el Test #1
+
+### Los 5 tests iniciales
+
+| # | Nombre | Tipo juego | Qué mide (en el fondo) | Perfiles |
+|---|--------|-----------|------------------------|----------|
+| 1 | **Mirror Estratégico** | Classic (preguntas) | Estado general del negocio + rol del dueño | 8 perfiles (SATURADO, INVISIBLE, etc.) |
+| 2 | **Misión Rescate** | Puzzle | Manejo de crisis + priorización bajo presión | Estratega / Bombero / Paralizado |
+| 3 | **El Camino** | Aventura (branching narrative) | Negociación + toma de decisiones | Diplomático / Agresivo / Evitador |
+| 4 | **Mind Lab** | Mental (ráfaga) | Comunicación + patrones de respuesta | Conector / Técnico / Caótico |
+| 5 | **Logic Gate** | Lógica (escenarios) | Procesos + pensamiento sistémico | Arquitecto / Intuitivo / Improvisador |
+
+### Mecánicas de juego
+
+**Test 1 — Mirror Estratégico (ya existe)**
+- 8 preguntas con 4 opciones cada una (A/B/C/D)
+- Cada opción tiene score (1-5)
+- Perfil se calcula por ejes: operativo, comercial, estratégico, emocional
+- Resultado: perfil + tagline + síntomas + CTA
+
+**Test 2 — Misión Rescate (Puzzle)**
+- Escenario: "Tu negocio está en crisis. Tenés 10 minutos."
+- 5 situaciones de emergencia que requieren priorizar
+- Cada situación tiene 3 acciones posibles (solo una es óptima)
+- El juego puntua: velocidad + precisión de priorización
+- Resultado: perfil de crisis (Estratega/Bombero/Paralizado)
+
+**Test 3 — El Camino (Aventura)**
+- Narrativa ramificada: "Llegás a una encrucijada en tu negocio"
+- 5 decisiones con 2-3 caminos cada una
+- Cada camino lleva a un final diferente
+- El juego mapea tus decisiones a un estilo de negociación
+- Resultado: perfil negociador (Diplomático/Agresivo/Evitador)
+
+**Test 4 — Mind Lab (Mental)**
+- 10 preguntas rápidas (< 15 seg c/u)
+- Mezcla: situaciones laborales, respuestas emocionales, patrones
+- El juego mide consistencia + velocidad + patrones
+- Resultado: perfil comunicador (Conector/Técnico/Caótico)
+
+**Test 5 — Logic Gate (Lógica)**
+- 5 escenarios de negocio con múltiples variables
+- Elegís la mejor estrategia entre 3 opciones
+- El juego evalúa razonamiento sistémico
+- Resultado: perfil de procesos (Arquitecto/Intuitivo/Improvisador)
+
+### Estado actual (9/5/2026 05:13)
+- [x] Decisión tomada: Opción A (convertir Mirror existente en Test #1)
+- [x] DB diseñada: migración `20260509_business_mirror_gamer.sql`
+- [ ] Aplicar migración en Supabase
+- [ ] Seed data: insertar los 5 tests en la tabla
+- [ ] Componente BusinessMirrorHub (catálogo de tests)
+- [ ] Componente GamePlayer (motor de juegos genérico)
+- [ ] Adaptar DiagnosticTest existente como game_type "classic"
+- [ ] Construir los 4 tests nuevos (puzzle, aventura, mental, lógica)
+- [ ] Sistema de notificaciones push (+1 test/semana)
 
 ## P8 — OPCIONES DE PRIORIDAD (Top 3 features)
 
@@ -148,9 +204,11 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
 ## PLAN DE ACCIÓN (Revisado — 8/5/2026)
 
 ### Fase 0: Setup (esta semana)
+- [x] .env configurado con credenciales Supabase reales (9/5/2026)
+- [x] Verificar acceso Supabase juntos ✅
+- [x] Aplicar migración Fase 1 en Supabase ✅ (9/5/2026)
+- [x] Push a GitHub con token temporal ✅ (9/5/2026)
 - [ ] Configurar Vercel + migrar dominio app.mejoraok.com
-- [ ] Configurar .env con credenciales Supabase reales
-- [ ] Verificar acceso Supabase juntos
 - [ ] Definir alternativa de pago (Tiendup u otro)
 
 ### Fase 1: Limpieza y cimientos (Semana 1) — ✅ COMPLETADA
@@ -165,10 +223,11 @@ Se decidió hacer un **rebuild selectivo** (no refactorizar sobre lo existente):
 - [x] Definir sistema de tests/gamification con Pablo ✅ (9/5/2026)
 
 ### Fase 2: Sistema de membresías (Semana 2) — EN PROGRESO
-- [x] Lógica de acceso por nivel en toda la app (useAccessLevel + AccessGate)
+- [x] Lógica de acceso por nivel en toda la app (useAccessLevel + AccessGate) ✅
 - [x] P01: Splash screen ✅
 - [x] P03: Home dashboard por nivel ✅
-- [ ] P02: Registro con primer test (Business Mirror Gamer)
+- [x] BottomNav actualizada (Inicio | Contenido | Muro | Comunidad | Mentor) ✅
+- [ ] P02: Business Mirror Gamer — EN PROGRESO (ver sección dedicada)
 - [ ] Upgrade prompts + links de pago (integrar Tiendup u otro)
 
 ### Fase 3: Features core (Semana 3)
