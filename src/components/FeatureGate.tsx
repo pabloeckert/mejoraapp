@@ -13,22 +13,24 @@
 
 import { type ReactNode } from "react";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
+import { useAccessLevel, type AccessLevel } from "@/hooks/useAccessLevel";
 import { UpgradePrompt } from "@/components/UpgradePrompt";
 
 interface FeatureGateProps {
   feature: Parameters<typeof useFeatureAccess>[0];
   children: ReactNode;
   fallback?: ReactNode;
-  variant?: "inline" | "banner";
+  requiredLevel?: AccessLevel;
 }
 
 export function FeatureGate({
   feature,
   children,
   fallback,
-  variant = "inline",
+  requiredLevel = "N1",
 }: FeatureGateProps) {
-  const { hasAccess, featureTitle, featureDescription } = useFeatureAccess(feature);
+  const { hasAccess } = useFeatureAccess(feature);
+  const { level } = useAccessLevel();
 
   if (hasAccess) {
     return <>{children}</>;
@@ -40,10 +42,8 @@ export function FeatureGate({
 
   return (
     <UpgradePrompt
-      title={featureTitle}
-      description={featureDescription}
-      featureId={feature}
-      variant={variant}
+      currentLevel={level}
+      requiredLevel={requiredLevel}
     />
   );
 }

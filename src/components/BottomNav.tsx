@@ -7,11 +7,11 @@ interface BottomNavProps {
   badges?: Record<string, boolean>;
 }
 
-const tabs = [
+const tabs: { id: string; label: string; icon: typeof Home; accent?: boolean }[] = [
   { id: "home", label: "Inicio", icon: Home },
   { id: "muro", label: "Muro", icon: MessageSquare },
   { id: "comunidad", label: "Comunidad", icon: Users },
-  { id: "mentor", label: "Mentor", icon: Bot },
+  { id: "mentor", label: "Mentor", icon: Bot, accent: true },
   { id: "perfil", label: "Perfil", icon: UserCircle },
 ];
 

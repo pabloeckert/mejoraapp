@@ -130,14 +130,6 @@ export const es: Record<string, string> = {
   "gamification.earned": "Desbloqueados",
   "gamification.new": "¡Badge desbloqueado!",
 
-  // Pull to refresh
-  "muro.pull": "Jalá para actualizar",
-  "muro.release": "Soltá para actualizar",
-  "muro.updating": "Actualizando…",
-
-  // Diagnóstico
-  "diag.result.title": "Tu resultado",
-
   // Comunidad
   "community.title": "Comunidad",
   "community.members": "Miembros",
