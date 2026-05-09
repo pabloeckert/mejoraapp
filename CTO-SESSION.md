@@ -1,5 +1,5 @@
 # CTO SESSION — Estado Actual
-## Última actualización: 9 de mayo 2026, 07:33 GMT+8
+## Última actualización: 10 de mayo 2026, 06:27 GMT+8
 
 ---
 
@@ -24,9 +24,10 @@
   - Git conectado a `pabloeckert/MejoraApp` (main)
   - Environment Variables: ✅ Cargadas (VITE_SUPABASE_URL, VITE_SUPABASE_PROJECT_ID, VITE_SUPABASE_PUBLISHABLE_KEY)
   - **Dominio custom `app.mejoraok.com`:** ❌ Pendiente de configurar
-  - Último deploy: 9/5/2026 07:24 — **BUILD FALLÓ** (alias `@` no resolvía en Vercel)
-  - Fix: commit `691c376` — `__dirname` cambiado a `fileURLToPath(import.meta.url)` (ESM puro)
-  - **Pendiente: Pablo hacer Redeploy en Vercel para probar el fix**
+  - Último deploy: 10/5/2026 — **PENDIENTE REDEPLOY MANUAL** (ver sección abajo)
+  - Fix build Vercel: commit `40bc2cf` — alias `@` cambiado a regex `/^@\//` + `resolve.extensions`
+  - Fix bugs: commit `d42d7b1` — BottomNav accent, FeatureGate API, i18n duplicados
+  - **Pendiente: Pablo hacer Redeploy en Vercel para probar los fixes**
 - **Stack:** React 18 + TypeScript + Vite 5 + Supabase + Tailwind CSS + shadcn/ui
 - **Supabase URL:** https://pwiduojwgkaoxxuautkp.supabase.co
 - **Branch principal:** main
@@ -339,33 +340,50 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
 
 ## PRÓXIMOS PASOS — Orden exacto
 
-### Inmediato (Pablo + CTO):
-1. **Pablo: Redeploy en Vercel** — Deployments → 3 puntitos del último → Redeploy (el fix del build ya está en main)
-2. **Pablo: Verificar** que `mejoraapp-bice.vercel.app` funcione (debería mostrar la app con tab "Perfil")
+### Inmediato (Pablo):
+1. **Pablo: Redeploy en Vercel** — Deployments → último → ⋯ → Redeploy (commits `40bc2cf` + `d42d7b1` están en main)
+2. **Pablo: Verificar** que `mejoraapp-bice.vercel.app` funcione
 3. **Pablo: Configurar dominio** `app.mejoraok.com` en Vercel → Settings → Domains → Add
-4. **Pablo: Activar GitHub Pages** — Repo → Settings → Pages → Source: "GitHub Actions" (deploy alternativo/preview)
+4. **Pablo: Activar GitHub Pages** — Repo → Settings → Pages → Source: "GitHub Actions"
 5. **Pablo: Configurar secrets en GitHub Actions** — Settings → Secrets → Actions:
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_PUBLISHABLE_KEY`
    - `VITE_SUPABASE_PROJECT_ID`
 
 ### Tiendup (Pablo):
-5. **Pablo: Crear Plan N1 y N2** en panel de Tiendup
-6. **Pablo: Copiar product_ids** y compartirlos
-7. **Pablo: Configurar webhook** en Tiendup:
+6. **Pablo: Crear Plan N1 y N2** en panel de Tiendup
+7. **Pablo: Copiar product_ids** y compartirlos
+8. **Pablo: Configurar webhook** en Tiendup:
    - URL: `https://pwiduojwgkaoxxuautkp.supabase.co/functions/v1/tiendup-webhook`
    - Eventos: sale.completed, subscription.activated, subscription.cancelled, subscription.expired
-8. **Pablo: Agregar secrets en Supabase** (Settings → Edge Functions → Secrets):
+9. **Pablo: Agregar secrets en Supabase** (Settings → Edge Functions → Secrets):
    - `TIENDUP_API_KEY`
    - `TIENDUP_WEBHOOK_SECRET`
-9. **Pablo: Agregar env vars en Vercel**:
+10. **Pablo: Agregar env vars en Vercel**:
    - `VITE_TIENDUP_PRODUCT_N1` (product_id del plan N1)
    - `VITE_TIENDUP_PRODUCT_N2` (product_id del plan N2)
 
 ### CTO (cuando Pablo complete lo anterior):
-10. Verificar deploy exitoso en producción
-11. Testear flujo completo: registro → upgrade → pago → webhook → nivel actualizado
-12. Push final con fixes si hace falta
+11. Verificar deploy exitoso en producción
+12. Testear flujo completo: registro → upgrade → pago → webhook → nivel actualizado
+13. Push final con fixes si hace falta
+14. Sincronizar tipos de Supabase (types.ts tiene tablas nuevas pero operaciones resuelven a `never`)
+
+## SESIÓN 10/5/2026 — Log
+
+**06:04** — Pablo dice "continuemos". CTO clona repo, lee CTO-SESSION.md.
+**06:07** — Estado verificado: Fase 4 completa. Build ✅, 275 tests ✅.
+**06:08** — Pablo pasa log de build Vercel fallido: `vite:load-fallback` no resuelve `client.ts`.
+**06:11** — CTO diagnostica: alias `@` en formato objeto causa resolución incorrecta en Vercel.
+**06:14** — Fix: alias cambiado a regex `/^@\//` + `resolve.extensions` explícitos. Commit `40bc2cf`.
+**06:18** — Pablo pasa token GitHub. Push a main.
+**06:19** — CTO encuentra y arregla 3 bugs adicionales:
+  - `BottomNav.tsx`: prop `accent` se usaba pero no existía en el array `tabs`
+  - `FeatureGate.tsx`: API incompatible con `UpgradePrompt` (props incorrectas)
+  - `i18n/locales/index.ts`: 4 keys duplicadas
+  - Commit `d42d7b1`, pushed.
+**06:24** — Vercel sigue en 404. Pablo necesita redeploy manual.
+**06:27** — Pablo pide documentar todo para retomar en próxima sesión.
 
 ## SESIÓN 9/5/2026 — Log
 
@@ -380,11 +398,12 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
 
 ## NOTA DE SEGURIDAD
 - Token GitHub fue compartido en el chat el 8/5/2026 — **ya fue rotado**
-- Token GitHub fue compartido en el chat el 9/5/2026 (ghp_P8g...Cdym) — **ROTARLO después de esta sesión**
+- Token GitHub fue compartido en el chat el 9/5/2026 (ghp_P8g...Cdym) — **ya fue rotado**
+- Token GitHub fue compartido en el chat el 10/5/2026 (ghp_P8g...Cdym) — **ROTARLO después de esta sesión**
 - Credenciales FTP y Supabase están en los archivos del workspace (Subida.txt, .env.example)
 - **IMPORTANTE:** Nunca commitear tokens, keys o passwords al repo
 
 ---
 
-*Documento generado por el CTO (IA) — 9 de mayo 2026*
-*Fase 4 completa. Pendiente: deploy Vercel (con fix) + activar GitHub Pages + config Tiendup de Pablo.*
+*Documento generado por el CTO (IA) — 10 de mayo 2026*
+*Fase 4 completa. Pendiente: redeploy Vercel (Pablo) + dominio + GitHub Pages + config Tiendup.*
