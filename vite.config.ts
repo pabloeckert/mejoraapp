@@ -1,14 +1,9 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-import fs from "fs";
+import { fileURLToPath } from "url";
 
-// Debug: log the resolved alias path during build
-const srcPath = path.resolve(import.meta.dirname, "src");
-console.log("[Vite Config] import.meta.dirname:", import.meta.dirname);
-console.log("[Vite Config] srcPath:", srcPath);
-console.log("[Vite Config] srcPath exists:", fs.existsSync(srcPath));
-console.log("[Vite Config] client.ts exists:", fs.existsSync(path.join(srcPath, "integrations/supabase/client.ts")));
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -39,7 +34,7 @@ export default defineConfig({
   ],
   resolve: {
     alias: [
-      { find: "@/", replacement: path.resolve(import.meta.dirname, "src") + "/" },
+      { find: "@", replacement: path.resolve(__dirname, "src") },
     ],
     extensions: [".mjs", ".js", ".mts", ".ts", ".jsx", ".tsx", ".json"],
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "@tanstack/react-query", "@tanstack/query-core"],
