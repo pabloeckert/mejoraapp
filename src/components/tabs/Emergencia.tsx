@@ -47,6 +47,7 @@ export default function Emergencia() {
   // Fetch emergency history
   useEffect(() => {
     if (!user) return;
+    let cancelled = false;
     setLoadingHistory(true);
     supabase
       .from("emergencies")
@@ -55,6 +56,7 @@ export default function Emergencia() {
       .order("created_at", { ascending: false })
       .limit(10)
       .then(({ data }) => {
+        if (cancelled) return;
         if (data) {
           setHistory(data as EmergencyRecord[]);
           // Count uses this week
@@ -66,7 +68,9 @@ export default function Emergencia() {
           setWeeklyUsed(thisWeek.length);
         }
       })
-      .finally(() => setLoadingHistory(false));
+      .catch(() => {})
+      .then(() => { if (!cancelled) setLoadingHistory(false); });
+    return () => { cancelled = true; };
   }, [user, sending]);
 
   const isN2 = level === "N2" || level === "ADMIN";

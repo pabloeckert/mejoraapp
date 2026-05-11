@@ -21,6 +21,8 @@ interface FeatureGateProps {
   children: ReactNode;
   fallback?: ReactNode;
   requiredLevel?: AccessLevel;
+  /** Visual variant hint (cosmetic — no effect in all_free mode) */
+  variant?: "inline" | "banner";
 }
 
 export function FeatureGate({

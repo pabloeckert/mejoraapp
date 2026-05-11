@@ -50,10 +50,12 @@ export function BusinessMirrorHub({ onSelectTest }: BusinessMirrorHubProps) {
 
   useEffect(() => {
     if (!user) return;
+    let cancelled = false;
     fetchMirrorResults(user.id, 20)
-      .then(setResults)
+      .then((data) => { if (!cancelled) setResults(data); })
       .catch(() => {})
-      .finally(() => setLoading(false));
+      .then(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, [user]);
 
   const completedSlugs = new Set(
