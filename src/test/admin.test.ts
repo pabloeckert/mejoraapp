@@ -129,7 +129,7 @@ describe("Feature Flags", () => {
     ];
 
     for (const feature of features) {
-      expect(hasFeature(feature as any)).toBe(true);
+      expect(hasFeature(feature as any)).toBe(true); // eslint-disable-line @typescript-eslint/no-explicit-any
     }
   });
 });
@@ -242,7 +242,7 @@ describe("Analytics Event Coverage", () => {
 
     for (const fn of trackingFunctions) {
       expect(analytics).toHaveProperty(fn);
-      expect(typeof (analytics as any)[fn]).toBe("function");
+      expect(typeof (analytics as Record<string, unknown>)[fn]).toBe("function");
     }
   });
 });

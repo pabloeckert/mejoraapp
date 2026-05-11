@@ -5,7 +5,7 @@
  * Se muestra una vez, luego se marca como visto y navega a /auth.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import logoHorizontal from "@/assets/logo-horizontal.png";
 
@@ -15,6 +15,14 @@ export default function Splash() {
   const navigate = useNavigate();
   const [visible, setVisible] = useState(false);
   const [exiting, setExiting] = useState(false);
+
+  const handleContinue = useCallback(() => {
+    setExiting(true);
+    sessionStorage.setItem(SPLASH_SEEN_KEY, "true");
+    setTimeout(() => {
+      navigate("/auth", { replace: true });
+    }, 500);
+  }, [navigate]);
 
   useEffect(() => {
     // Si ya vio el splash, ir directo a auth
@@ -32,15 +40,7 @@ export default function Splash() {
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, []);
-
-  const handleContinue = () => {
-    setExiting(true);
-    sessionStorage.setItem(SPLASH_SEEN_KEY, "true");
-    setTimeout(() => {
-      navigate("/auth", { replace: true });
-    }, 500);
-  };
+  }, [navigate, handleContinue]);
 
   return (
     <div

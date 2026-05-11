@@ -192,7 +192,7 @@ describe("Feature Flag Edge Cases", () => {
   it("hasFeature returns false for unknown feature", async () => {
     const { hasFeature } = await import("@/lib/plans");
     // Unknown features should return false
-    expect(hasFeature("unknown_feature" as any)).toBe(false);
+    expect(hasFeature("unknown_feature" as any)).toBe(false); // eslint-disable-line @typescript-eslint/no-explicit-any
   });
 });
 

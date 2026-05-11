@@ -103,7 +103,7 @@ describe("Sentry", () => {
   it("setSentryUser does not throw", async () => {
     const { setSentryUser } = await import("@/lib/sentry");
     expect(() => setSentryUser(null)).not.toThrow();
-    expect(() => setSentryUser({ id: "test", email: "test@test.com" } as any)).not.toThrow();
+    expect(() => setSentryUser({ id: "test", email: "test@test.com" } as any)).not.toThrow(); // eslint-disable-line @typescript-eslint/no-explicit-any
   });
 });
 
@@ -113,6 +113,7 @@ describe("Utils", () => {
     const { cn } = await import("@/lib/utils");
     expect(cn("foo", "bar")).toBe("foo bar");
     expect(cn("foo", undefined, "bar")).toBe("foo bar");
-    expect(cn("foo", false && "bar", "baz")).toBe("foo baz");
+    const isActive = false;
+    expect(cn("foo", isActive ? "bar" : undefined, "baz")).toBe("foo baz");
   });
 });

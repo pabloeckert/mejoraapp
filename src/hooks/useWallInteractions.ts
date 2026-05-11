@@ -90,7 +90,7 @@ export function useWallInteractions(userId: string | undefined) {
 
       setLikedPosts((prev) => {
         const next = new Set(prev);
-        isLiked ? next.delete(postId) : next.add(postId);
+        if (isLiked) { next.delete(postId); } else { next.add(postId); }
         return next;
       });
 
