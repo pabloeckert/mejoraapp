@@ -1,9 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
-import { fileURLToPath, URL } from "url";
 import path from "path";
-
-const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -34,7 +31,7 @@ export default defineConfig({
   ],
   resolve: {
     alias: [
-      { find: /^@\//, replacement: path.resolve(__dirname, "./src") + "/" },
+      { find: /^@\//, replacement: path.resolve(import.meta.dirname, "src") + "/" },
     ],
     extensions: [".mjs", ".js", ".mts", ".ts", ".jsx", ".tsx", ".json"],
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "@tanstack/react-query", "@tanstack/query-core"],
