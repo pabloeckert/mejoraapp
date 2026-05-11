@@ -5,7 +5,6 @@ Documents
 e2e
 landing-static
 node_modules
-public
 supabase
 *.md
 *.test.*
