@@ -5,7 +5,7 @@ Documents
 e2e
 landing-static
 node_modules
-supabase
+/supabase
 *.md
 *.test.*
 playwright.config.ts
