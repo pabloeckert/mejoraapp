@@ -380,7 +380,12 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
   - Debug logs eliminados de vite.config.ts
   - Alias `@` simplificado (sin trailing slash regex)
   - `engines: { node: ">=22" }` en package.json
-**02:48** — **Pablo necesita: push a main + redeploy en Vercel**
+**02:48** — Fix vite.config: `import.meta.dirname` → `fileURLToPath`. Commit `42376b4`.
+**03:00** — Pablo pasa token. Push a main. Pablo hace redeploy → build falla igual.
+**03:12** — Pablo pasa log de Vercel: `Could not load src/integrations/supabase/client`. Mismo error que antes.
+**03:15** — CTO diagnostica: `.vercelignore` tiene `supabase` (sin `/`), que ignora TODO directorio llamado `supabase` en cualquier nivel, incluyendo `src/integrations/supabase/`. **ESTE era el causa real del 404** — no el alias.
+**03:16** — Fix: `supabase` → `/supabase` en `.vercelignore`. Commit `fae7af3`. Pushed.
+**03:17** — **Pablo: hacer redeploy en Vercel ahora**
 
 ## SESIÓN 10/5/2026 — Log
 
