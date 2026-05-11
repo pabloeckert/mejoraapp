@@ -68,7 +68,7 @@ export default function Emergencia() {
           setWeeklyUsed(thisWeek.length);
         }
       })
-      .catch(() => {})
+      .then(() => {}, () => {})
       .then(() => { if (!cancelled) setLoadingHistory(false); });
     return () => { cancelled = true; };
   }, [user, sending]);

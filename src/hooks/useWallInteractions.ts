@@ -139,7 +139,7 @@ export function useWallInteractions(userId: string | undefined) {
                   body: { action: "reply", target_user_id: post.user_id },
                 })).catch(() => {});
               }
-            }).catch(() => {});
+            }, () => {});
         }
       } catch (err) {
         console.error(err);

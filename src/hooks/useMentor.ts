@@ -70,7 +70,7 @@ export function useMentorChat(options?: UseMentorChatOptions): UseMentorChatRetu
           .order("created_at", { ascending: true });
 
         if (fetchError) throw fetchError;
-        setMessages(data || []);
+        setMessages((data as MentorMessage[]) || []);
       } catch (e) {
         setError("Error al cargar mensajes");
         console.error("useMentor:loadMessages", e);

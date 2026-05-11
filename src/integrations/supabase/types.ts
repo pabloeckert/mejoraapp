@@ -965,6 +965,135 @@ export type Database = {
         }
         Relationships: []
       }
+      mentor_conversations: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          created_at: string
+          updated_at: string
+          is_active: boolean
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title?: string
+          created_at?: string
+          updated_at?: string
+          is_active?: boolean
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string
+          created_at?: string
+          updated_at?: string
+          is_active?: boolean
+        }
+        Relationships: []
+      }
+      mentor_messages: {
+        Row: {
+          id: string
+          conversation_id: string
+          role: string
+          content: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          conversation_id: string
+          role: string
+          content: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          conversation_id?: string
+          role?: string
+          content?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      community_challenges: {
+        Row: {
+          id: string
+          title: string
+          description: string | null
+          challenge_type: string
+          start_date: string
+          end_date: string
+          participant_count: number
+          is_active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          description?: string | null
+          challenge_type?: string
+          start_date: string
+          end_date: string
+          participant_count?: number
+          is_active?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string | null
+          challenge_type?: string
+          start_date?: string
+          end_date?: string
+          participant_count?: number
+          is_active?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      challenge_participants: {
+        Row: {
+          id: string
+          challenge_id: string
+          user_id: string
+          joined_at: string
+        }
+        Insert: {
+          id?: string
+          challenge_id: string
+          user_id: string
+          joined_at?: string
+        }
+        Update: {
+          id?: string
+          challenge_id?: string
+          user_id?: string
+          joined_at?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      public_profiles: {
+        Row: {
+          id: string
+          nombre: string | null
+          apellido: string | null
+          display_name: string | null
+          empresa: string | null
+          cargo: string | null
+          bio: string | null
+          city: string | null
+          industry: string | null
+          linkedin: string | null
+          avatar_url: string | null
+          badge_count: number
+          post_count: number
+          total_likes: number
+        }
+        Relationships: []
+      }
       crm_seller_ranking: {
         Row: {
           user_id: string
@@ -975,8 +1104,6 @@ export type Database = {
         }
         Relationships: []
       }
-    }
-    Views: {
       community_ranking: {
         Row: {
           user_id: string

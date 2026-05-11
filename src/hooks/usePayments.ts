@@ -10,16 +10,16 @@ export interface Payment {
   amount: number | null;
   currency: string | null;
   status: string | null;
-  provider: string | null;
-  provider_payment_id: string | null;
-  description: string | null;
+  payment_method: string | null;
+  external_id: string | null;
+  notes: string | null;
   created_at: string;
 }
 
 async function fetchPayments(userId: string): Promise<Payment[]> {
   const { data, error } = await supabase
     .from("payments")
-    .select("id, amount, currency, status, provider, provider_payment_id, description, created_at")
+    .select("id, amount, currency, status, payment_method, external_id, notes, created_at")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(20);

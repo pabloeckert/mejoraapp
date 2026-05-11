@@ -141,15 +141,15 @@ describe("Edge Function Middleware", () => {
   });
 
   it("rate limit key falls back to origin", () => {
-    const user = null;
+    const user = null as { id: string } | null;
     const origin = "https://example.com";
     const key = user?.id ?? origin ?? "anonymous";
     expect(key).toBe("https://example.com");
   });
 
   it("rate limit key falls back to anonymous", () => {
-    const user = null;
-    const origin = null;
+    const user = null as { id: string } | null;
+    const origin = null as string | null;
     const key = user?.id ?? origin ?? "anonymous";
     expect(key).toBe("anonymous");
   });

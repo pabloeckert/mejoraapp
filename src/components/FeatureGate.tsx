@@ -14,6 +14,7 @@
 import { type ReactNode } from "react";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { useAccessLevel, type AccessLevel } from "@/hooks/useAccessLevel";
+import { useAuth } from "@/contexts/AuthContext";
 import { UpgradePrompt } from "@/components/UpgradePrompt";
 
 interface FeatureGateProps {
@@ -31,8 +32,9 @@ export function FeatureGate({
   fallback,
   requiredLevel = "N1",
 }: FeatureGateProps) {
+  const { user } = useAuth();
   const { hasAccess } = useFeatureAccess(feature);
-  const { level } = useAccessLevel();
+  const { level } = useAccessLevel(user?.id);
 
   if (hasAccess) {
     return <>{children}</>;

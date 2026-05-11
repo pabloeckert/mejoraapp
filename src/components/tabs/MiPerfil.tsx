@@ -545,7 +545,7 @@ export function MiPerfil() {
                         {formatCurrency(payment.amount, payment.currency)}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {payment.description || payment.provider || "Pago"}
+                        {payment.notes || payment.payment_method || "Pago"}
                         {" · "}
                         {formatDate(payment.created_at)}
                       </p>

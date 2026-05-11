@@ -71,7 +71,7 @@ export const wallRepo = {
       .select("id")
       .single();
     throwIfError(error, "wallRepo.createPost");
-    return data.id;
+    return data!.id;
   },
 
   async createComment(postId: string, content: string): Promise<string> {
@@ -83,7 +83,7 @@ export const wallRepo = {
       .select("id")
       .single();
     throwIfError(error, "wallRepo.createComment");
-    return data.id;
+    return data!.id;
   },
 
   async toggleLike(postId: string): Promise<"liked" | "unliked"> {
@@ -188,7 +188,7 @@ export const diagnosticRepo = {
       .select("id")
       .single();
     throwIfError(error, "diagnosticRepo.save");
-    return data.id;
+    return data!.id;
   },
 };
 
