@@ -1,5 +1,5 @@
 # CTO SESSION — Estado Actual
-## Última actualización: 12 de mayo 2026, 04:21 GMT+8
+## Última actualización: 12 de mayo 2026, 05:43 GMT+8
 
 ---
 
@@ -373,13 +373,30 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
    - `VITE_TIENDUP_PRODUCT_N2` (product_id del plan N2)
 
 ### CTO (próxima sesión):
-11. **Resolver 100 errores TypeScript** — tipos Supabase resuelven a `never` (ver investigación arriba)
-    - Opción A: Regenerar types con `npx supabase gen types typescript` (requiere acceso Supabase)
-    - Opción B: Parchear `types.ts` — mover `crm_seller_ranking` a `Views`, ajustar `PostgrestVersion`
-    - Opción C: Agregar `// @ts-nocheck` temporal en archivos afectados (no recomendado)
+11. ~~**Resolver 100 errores TypeScript**~~ — ✅ RESUELTO (commit `0485d2a`, 12/5/2026 05:43)
+    - Se aplicó Opción B: parchear `types.ts`
+    - `crm_seller_ranking` movido de Tables a Views
+    - Agregadas tablas faltantes: `mentor_conversations`, `mentor_messages`, `community_challenges`, `challenge_participants`
+    - Agregada view `public_profiles`
+    - Fix adicional: `usePayments` columnas incorrectas, `FeatureGate` sin userId, `.catch()` en PromiseLike
+    - Build ✅ | 275 tests ✅ | 0 TS errors ✅
 12. Testear flujo completo: registro → upgrade → pago → webhook → nivel actualizado
 
-## SESIÓN 12/5/2026 — Log
+## SESIÓN 12/5/2026 — Log (sesión 2)
+
+**05:31** — Pablo dice "continuemos". CTO clona repo, lee CTO-SESSION.md.
+**05:33** — Estado verificado: Fase 4 completa. Build ✅, 275 tests ✅. Pendiente: resolver ~100 errores TS.
+**05:34** — CTO diagnostica: `crm_seller_ranking` en Tables sin `Insert`/`Update` → resolvía a `never`.
+**05:36** — Fix 1: mover `crm_seller_ranking` de Tables a Views. Errores bajan de 153 a 98 líneas.
+**05:38** — Fix 2: agregar tablas faltantes a types.ts (`mentor_conversations`, `mentor_messages`, `community_challenges`, `challenge_participants`, `public_profiles`).
+**05:39** — Fix 3: `usePayments.ts` — columnas `provider`→`payment_method`, `provider_payment_id`→`external_id`.
+**05:40** — Fix 4: `FeatureGate.tsx` — `useAccessLevel()` sin userId → agregar `useAuth()`.
+**05:41** — Fix 5: `.catch()` en PromiseLike en `Emergencia.tsx` y `useWallInteractions.ts`.
+**05:42** — Fix 6: `MiPerfil.tsx`, `useMentor.ts`, `repositories/index.ts`, `integration.test.ts`.
+**05:43** — ✅ **0 errores TypeScript**. Build ✅ (8.68s). 275 tests ✅. Commit `0485d2a` pushed a main.
+**05:43** — Token GitHub limpiado del remoto. Pablo: **ROTAR TOKEN** después de esta sesión.
+
+## SESIÓN 12/5/2026 — Log (sesión 1)
 
 **02:43** — Pablo dice "continuemos". CTO clona repo, lee CTO-SESSION.md.
 **02:44** — Estado verificado: Fase 4 completa. Vercel sigue en 404 (DEPLOYMENT_NOT_FOUND).
