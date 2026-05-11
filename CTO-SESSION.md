@@ -1,5 +1,5 @@
 # CTO SESSION — Estado Actual
-## Última actualización: 12 de mayo 2026, 04:14 GMT+8
+## Última actualización: 12 de mayo 2026, 04:21 GMT+8
 
 ---
 
@@ -372,9 +372,12 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
    - `VITE_TIENDUP_PRODUCT_N1` (product_id del plan N1)
    - `VITE_TIENDUP_PRODUCT_N2` (product_id del plan N2)
 
-### CTO (cuando Pablo complete lo anterior):
-11. Testear flujo completo: registro → upgrade → pago → webhook → nivel actualizado
-12. Sincronizar tipos de Supabase (types.ts tiene tablas nuevas pero operaciones resuelven a `never`)
+### CTO (próxima sesión):
+11. **Resolver 100 errores TypeScript** — tipos Supabase resuelven a `never` (ver investigación arriba)
+    - Opción A: Regenerar types con `npx supabase gen types typescript` (requiere acceso Supabase)
+    - Opción B: Parchear `types.ts` — mover `crm_seller_ranking` a `Views`, ajustar `PostgrestVersion`
+    - Opción C: Agregar `// @ts-nocheck` temporal en archivos afectados (no recomendado)
+12. Testear flujo completo: registro → upgrade → pago → webhook → nivel actualizado
 
 ## SESIÓN 12/5/2026 — Log
 
@@ -409,6 +412,16 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
 **04:12** — Pablo prueba app.mejoraok.com → SSL 525 (esperado, DNS no configurado).
 **04:13** — Pablo: "olvidate de app.mejoraok.com, todo en Vercel, DNS después de beta2".
 **04:14** — CTO actualiza documentación. App lista para testing en https://mejoraapp.vercel.app.
+**04:17** — Pablo dice "continuemos" — tenemos tiempo, seguimos.
+**04:18** — CTO arranca a resolver los 100 errores TypeScript (todos `never` de Supabase).
+**04:20** — Investigación en progreso:
+  - 100 errores TS, todos `never` — Property 'X' does not exist on type 'never'
+  - 26 archivos afectados
+  - Causa raíz: tipos Supabase generados con CLI no coinciden con `@supabase/supabase-js@2.103.2`
+  - `crm_seller_ranking` está en `Tables:` pero falta `Insert/Update` — debería estar en `Views:`
+  - `__InternalSupabase: { PostgrestVersion: "14.5" }` puede no ser reconocido por esta versión
+  - **PENDIENTE: regenerar tipos o parchear el types.ts para que coincida con la versión instalada**
+**04:21** — Pablo pide documentar para retomar en próxima sesión.
 
 ## SESIÓN 10/5/2026 — Log
 
