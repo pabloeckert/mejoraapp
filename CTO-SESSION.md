@@ -1,5 +1,5 @@
 # CTO SESSION — Estado Actual
-## Última actualización: 12 de mayo 2026, 02:46 GMT+8
+## Última actualización: 12 de mayo 2026, 04:14 GMT+8
 
 ---
 
@@ -17,17 +17,19 @@
 ## REPOSITORIO
 
 - **GitHub:** https://github.com/pabloeckert/MejoraApp
-- **Producción:** https://app.mejoraok.com → **MIGRAR A VERCEL** (mantener subdominio)
+- **Producción (Vercel):** https://mejoraapp.vercel.app — **ACTIVO**
+- **Producción (custom):** https://app.mejoraok.com → pendiente migrar DNS después de beta2
 - **Preview (GH Pages):** https://pabloeckert.github.io/MejoraApp/ — Deploy alternativo para borradores
 - **Vercel:** https://vercel.com/pablo-ecks-projects/mejoraapp
   - Proyecto: `mejoraapp` (Vite, Node 22)
   - Git conectado a `pabloeckert/MejoraApp` (main)
   - Environment Variables: ✅ Cargadas (VITE_SUPABASE_URL, VITE_SUPABASE_PROJECT_ID, VITE_SUPABASE_PUBLISHABLE_KEY)
-  - **Dominio custom `app.mejoraok.com`:** ❌ Pendiente de configurar
-  - Último deploy: 10/5/2026 — **PENDIENTE REDEPLOY MANUAL** (ver sección abajo)
-  - Fix build Vercel: commit `40bc2cf` — alias `@` cambiado a regex `/^@\//` + `resolve.extensions`
+  - **Dominio custom `app.mejoraok.com`:** ❌ Pendiente — se configura después de beta2
+  - **Último deploy:** 12/5/2026 — commit `e82b03b` — fixes producción (.finally(), CSP, JSON-LD)
+  - **URL activa:** https://mejoraapp.vercel.app — ✅ Funcionando
+  - Fix build Vercel: commits `40bc2cf` + `fae7af3` (alias `@` + `.vercelignore`)
   - Fix bugs: commit `d42d7b1` — BottomNav accent, FeatureGate API, i18n duplicados
-  - **Pendiente: Pablo hacer Redeploy en Vercel para probar los fixes**
+  - Fix producción: commit `e82b03b` — .finally() compat, CSP alignment, JSON-LD
 - **Stack:** React 18 + TypeScript + Vite 5 + Supabase + Tailwind CSS + shadcn/ui
 - **Supabase URL:** https://pwiduojwgkaoxxuautkp.supabase.co
 - **Branch principal:** main
@@ -340,15 +342,22 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
 
 ## PRÓXIMOS PASOS — Orden exacto
 
-### Inmediato (Pablo):
-1. **Pablo: Redeploy en Vercel** — Deployments → último → ⋯ → Redeploy (commits `40bc2cf` + `d42d7b1` están en main)
-2. **Pablo: Verificar** que `mejoraapp-bice.vercel.app` funcione
-3. **Pablo: Configurar dominio** `app.mejoraok.com` en Vercel → Settings → Domains → Add
-4. **Pablo: Activar GitHub Pages** — Repo → Settings → Pages → Source: "GitHub Actions"
-5. **Pablo: Configurar secrets en GitHub Actions** — Settings → Secrets → Actions:
+### ✅ COMPLETADO (12/5/2026):
+- [x] Deploy en Vercel funcionando — https://mejoraapp.vercel.app
+- [x] Commit `e82b03b` pushed — fixes producción (.finally(), CSP, JSON-LD)
+- [x] Token GitHub rotado por Pablo
+
+### Inmediato (Pablo — esta sesión):
+1. **Pablo: Testear la app** en https://mejoraapp.vercel.app — probar todos los flujos
+2. **Pablo: Reportar bugs** si encuentra algo roto
+3. **Pablo: Activar GitHub Pages** (opcional) — Repo → Settings → Pages → Source: "GitHub Actions"
+4. **Pablo: Configurar secrets en GitHub Actions** — Settings → Secrets → Actions:
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_PUBLISHABLE_KEY`
    - `VITE_SUPABASE_PROJECT_ID`
+
+### Después de beta2 (migración DNS):
+5. **Pablo: Configurar dominio** `app.mejoraok.com` en Cloudflare → CNAME `cname.vercel-dns.com`
 
 ### Tiendup (Pablo):
 6. **Pablo: Crear Plan N1 y N2** en panel de Tiendup
@@ -364,10 +373,8 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
    - `VITE_TIENDUP_PRODUCT_N2` (product_id del plan N2)
 
 ### CTO (cuando Pablo complete lo anterior):
-11. Verificar deploy exitoso en producción
-12. Testear flujo completo: registro → upgrade → pago → webhook → nivel actualizado
-13. Push final con fixes si hace falta
-14. Sincronizar tipos de Supabase (types.ts tiene tablas nuevas pero operaciones resuelven a `never`)
+11. Testear flujo completo: registro → upgrade → pago → webhook → nivel actualizado
+12. Sincronizar tipos de Supabase (types.ts tiene tablas nuevas pero operaciones resuelven a `never`)
 
 ## SESIÓN 12/5/2026 — Log
 
@@ -385,7 +392,23 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
 **03:12** — Pablo pasa log de Vercel: `Could not load src/integrations/supabase/client`. Mismo error que antes.
 **03:15** — CTO diagnostica: `.vercelignore` tiene `supabase` (sin `/`), que ignora TODO directorio llamado `supabase` en cualquier nivel, incluyendo `src/integrations/supabase/`. **ESTE era el causa real del 404** — no el alias.
 **03:16** — Fix: `supabase` → `/supabase` en `.vercelignore`. Commit `fae7af3`. Pushed.
-**03:17** — **Pablo: hacer redeploy en Vercel ahora**
+**03:17** — Pablo hace redeploy → build exitoso ✅.
+**03:52** — Pablo pasa log de Vercel: build completó (commit `c77b718`). SSL 525 en app.mejoraok.com.
+**03:53** — CTO verifica: `mejoraapp-bice.vercel.app` → 404 (URL viejo). `mejoraapp.vercel.app` → 200 ✅.
+**03:54** — Pablo decide: testear en Vercel primero, dejar 100% listo para beta2, migrar DNS después.
+**03:58** — CTO clona repo, audit completo:
+  - Build ✅ (8.55s), 275 tests ✅
+  - Bugs fixeados:
+    1. `.finally()` en Emergencia.tsx y BusinessMirrorHub.tsx — PromiseLike no soporta .finally()
+    2. FeatureGate no aceptaba `variant` prop
+    3. CSP meta tag inconsistente con vercel.json
+    4. JSON-LD mencionaba CRM eliminado
+  - Commit `e82b03b`
+**04:06** — Pablo pasa token GitHub. Push a main ✅. Token limpiado del remoto.
+**04:10** — Vercel auto-deploy confirmado. Headers CSP actualizados.
+**04:12** — Pablo prueba app.mejoraok.com → SSL 525 (esperado, DNS no configurado).
+**04:13** — Pablo: "olvidate de app.mejoraok.com, todo en Vercel, DNS después de beta2".
+**04:14** — CTO actualiza documentación. App lista para testing en https://mejoraapp.vercel.app.
 
 ## SESIÓN 10/5/2026 — Log
 
@@ -417,11 +440,12 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
 ## NOTA DE SEGURIDAD
 - Token GitHub fue compartido en el chat el 8/5/2026 — **ya fue rotado**
 - Token GitHub fue compartido en el chat el 9/5/2026 (ghp_P8g...Cdym) — **ya fue rotado**
-- Token GitHub fue compartido en el chat el 10/5/2026 (ghp_P8g...Cdym) — **ROTARLO después de esta sesión**
+- Token GitHub fue compartido en el chat el 10/5/2026 (ghp_P8g...Cdym) — **ya fue rotado**
+- Token GitHub fue compartido en el chat el 12/5/2026 (ghp_P8g...Cdym) — **ROTARLO después de esta sesión**
 - Credenciales FTP y Supabase están en los archivos del workspace (Subida.txt, .env.example)
 - **IMPORTANTE:** Nunca commitear tokens, keys o passwords al repo
 
 ---
 
-*Documento generado por el CTO (IA) — 10 de mayo 2026*
-*Fase 4 completa. Pendiente: redeploy Vercel (Pablo) + dominio + GitHub Pages + config Tiendup.*
+*Documento generado por el CTO (IA) — 12 de mayo 2026*
+*App deployada en Vercel. Pendiente: testing Pablo + config Tiendup + DNS después de beta2.*
