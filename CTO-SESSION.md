@@ -1,5 +1,5 @@
 # CTO SESSION — Estado Actual
-## Última actualización: 10 de mayo 2026, 06:27 GMT+8
+## Última actualización: 12 de mayo 2026, 02:46 GMT+8
 
 ---
 
@@ -368,6 +368,19 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
 12. Testear flujo completo: registro → upgrade → pago → webhook → nivel actualizado
 13. Push final con fixes si hace falta
 14. Sincronizar tipos de Supabase (types.ts tiene tablas nuevas pero operaciones resuelven a `never`)
+
+## SESIÓN 12/5/2026 — Log
+
+**02:43** — Pablo dice "continuemos". CTO clona repo, lee CTO-SESSION.md.
+**02:44** — Estado verificado: Fase 4 completa. Vercel sigue en 404 (DEPLOYMENT_NOT_FOUND).
+**02:45** — Build local ✅ (2477 módulos, 8.3s). Tests ✅ (275 passing). TS errors pre-existentes (tipos Supabase).
+**02:46** — CTO diagnostica: `import.meta.dirname` puede no ser soportado en el Node de Vercel.
+**02:47** — Fix aplicado (commit `42376b4`):
+  - `import.meta.dirname` → `fileURLToPath(import.meta.url)` (compatible Node 18+)
+  - Debug logs eliminados de vite.config.ts
+  - Alias `@` simplificado (sin trailing slash regex)
+  - `engines: { node: ">=22" }` en package.json
+**02:48** — **Pablo necesita: push a main + redeploy en Vercel**
 
 ## SESIÓN 10/5/2026 — Log
 
