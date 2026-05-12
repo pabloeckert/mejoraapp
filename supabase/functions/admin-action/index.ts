@@ -43,7 +43,7 @@ function validateAction(action: string): string {
   const allowed = [
     "update-profile", "create-post", "update-post-status", "delete-post",
     "create-category", "upsert-novedad", "delete-novedad", "moderate-post",
-    "moderate-comment", "add-role", "remove-role",
+    "moderate-comment", "add-role", "remove-role", "register-payment",
   ];
   if (!allowed.includes(action)) {
     throw new Error(`Acción desconocida: ${action}`);
@@ -207,6 +207,45 @@ Deno.serve(
             .eq("user_id", targetUserId)
             .eq("role", role);
           if (error) throw error;
+          result = { success: true };
+          break;
+        }
+
+        case "register-payment": {
+          const paymentUserId = requireString(params.user_id, "user_id");
+          const amount = params.amount as number;
+          if (!amount || amount <= 0) throw new Error("Monto inválido");
+
+          // Verify target user exists
+          const { data: targetProfile, error: profileErr } = await supabaseAdmin
+            .from("profiles")
+            .select("user_id")
+            .eq("user_id", paymentUserId)
+            .maybeSingle();
+          if (profileErr || !targetProfile) throw new Error("Usuario no encontrado");
+
+          // Insert payment record
+          const { error: payErr } = await supabaseAdmin.from("payments").insert({
+            user_id: paymentUserId,
+            amount,
+            currency: (params.currency as string) || "ARS",
+            payment_method: (params.payment_method as string) || null,
+            status: "completed",
+            access_level_granted: (params.access_level_granted as string) || "N1",
+            period_start: (params.period_start as string) || null,
+            period_end: (params.period_end as string) || null,
+            notes: (params.notes as string) || null,
+          });
+          if (payErr) throw payErr;
+
+          // Update user access level
+          const targetLevel = (params.access_level_granted as string) || "N1";
+          const { error: updateErr } = await supabaseAdmin
+            .from("profiles")
+            .update({ access_level: targetLevel, updated_at: new Date().toISOString() })
+            .eq("user_id", paymentUserId);
+          if (updateErr) throw updateErr;
+
           result = { success: true };
           break;
         }
