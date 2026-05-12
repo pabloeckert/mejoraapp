@@ -298,4 +298,3 @@ Propietario — © 2026 MejoraApp
 - **Producción:** [app.mejoraok.com](https://app.mejoraok.com)
 - **Repo:** [github.com/pabloeckert/MejoraApp](https://github.com/pabloeckert/MejoraApp)
 - **Issues:** [GitHub Issues](https://github.com/pabloeckert/MejoraApp/issues)
-# test
