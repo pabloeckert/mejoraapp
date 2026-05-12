@@ -1,5 +1,5 @@
 # CTO SESSION — Estado Actual
-## Última actualización: 12 de mayo 2026, 06:05 GMT+8
+## Última actualización: 13 de mayo 2026, 05:45 GMT+8
 
 ---
 
@@ -342,10 +342,11 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
 
 ## PRÓXIMOS PASOS — Orden exacto
 
-### ✅ COMPLETADO (12/5/2026):
-- [x] Deploy en Vercel funcionando — https://mejoraapp.vercel.app
-- [x] Commit `e82b03b` pushed — fixes producción (.finally(), CSP, JSON-LD)
-- [x] Token GitHub rotado por Pablo
+### ✅ COMPLETADO (13/5/2026):
+- [x] Auditoría completa del código — 173 archivos revisados
+- [x] 5 bugs fixeados (stale closures, promise chains, subscription churn)
+- [x] Bug 6 fixeado: register-payment action en admin-action Edge Function
+- [x] Build ✅, 275 tests ✅, 0 lint errors
 
 ### Inmediato (Pablo — esta sesión):
 1. **Pablo: Testear la app** en https://mejoraapp.vercel.app — probar todos los flujos
@@ -372,6 +373,12 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
    - `VITE_TIENDUP_PRODUCT_N1` (product_id del plan N1)
    - `VITE_TIENDUP_PRODUCT_N2` (product_id del plan N2)
 
+### CTO (esta sesión — completado):
+- [x] Auditoría completa del repo — 173 archivos
+- [x] Fix 5 bugs stale closures (GamePlayer timer, GamePlayer selectOption, Muro realtime, Emergencia promise, useWallInteractions toggleExpand)
+- [x] Fix register-payment action en admin-action Edge Function
+- [ ] **Pablo: proveer token GitHub para push de commits**
+
 ### CTO (próxima sesión):
 11. ~~**Resolver 100 errores TypeScript**~~ — ✅ RESUELTO (commit `0485d2a`, 12/5/2026 05:43)
     - Se aplicó Opción B: parchear `types.ts`
@@ -381,6 +388,34 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
     - Fix adicional: `usePayments` columnas incorrectas, `FeatureGate` sin userId, `.catch()` en PromiseLike
     - Build ✅ | 275 tests ✅ | 0 TS errors ✅
 12. Testear flujo completo: registro → upgrade → pago → webhook → nivel actualizado
+
+## SESIÓN 13/5/2026 — Log (sesión 3)
+
+**05:31** — Pablo dice "continuemos". CTO clona repo, lee CTO-SESSION.md.
+**05:33** — Estado verificado: Fase 4 completa. Build ✅, 275 tests ✅. Repo limpio.
+**05:36** — Pablo dice "revisa todo el repo y vas a saber que estamos continuando. Vos sos el CTO".
+**05:37** — CTO arranca auditoría completa del código (173 archivos TS/TSX).
+**05:38** — **Fase 1: Bug hunting + fixes.** Se identifican 5 bugs reales:
+  - Bug 1: `GamePlayer.tsx` — timer stale closure en modo "mental". El `setInterval` capturaba `handleTimeout` obsoleto. Fix: usar `useRef` para mantener callback actual.
+  - Bug 2: `GamePlayer.tsx` — `selectOption` stale closure para `isLast` en auto-advance mental. Fix: usar `useRef` (`goNextRef`).
+  - Bug 3: `Muro.tsx` — realtime subscription se re-suscribía cada vez que se expandía/colapsaba un post (`expandedPosts` en deps). Fix: usar `useRef` para `expandedPosts` en callbacks de realtime.
+  - Bug 4: `Emergencia.tsx` — promise chain anti-pattern: `.then(() => {}, () => {}).then(() => { ... })`. Fix: `.then().catch()` estándar.
+  - Bug 5: `useWallInteractions.ts` — `toggleExpand` usaba `expandedPosts` del closure (stale). Fix: determinar `shouldLoad` dentro del `setExpandedPosts` functional update.
+**05:40** — Build ✅, 275 tests ✅. Commit `6bc749c`.
+**05:41** — **Fase 2: Testing integral de flujos.** Se auditan: Auth, SignupForm, AdminLoginForm, ProfileCompleteModal, Splash, MiPerfil, HomeDashboard, Admin, Emergencia, Eventos, CirculoDorado, Muro, Comunidad, Mentor, GamePlayer, BusinessMirrorHub.
+**05:42** — **Bug 6 encontrado:** `admin-action` Edge Function no tiene acción `register-payment`. AdminCobranza la llama pero el handler no la maneja → los pagos manuales fallan.
+**05:43** — Fix: agregar `register-payment` a allowed actions + implementar el case (insert payment + update access_level).
+**05:44** — Build ✅, 275 tests ✅. Commit `585292f`.
+**05:45** — **Fase 3: Auditoría de edge cases.** Se verifican: plans.ts (all_free mode correcto), useFeatureAccess, useMembers, useChallenges, useRanking, CommunityRanking, security.ts, Providers, Supabase client, middleware Edge Functions.
+**05:46** — Todo sólido. No se encontraron más bugs.
+**05:47** — **Fase 4: Documentación.** Se actualiza CTO-SESSION.md con log de sesión.
+**05:48** — **Pendiente: Pablo necesita proveer token GitHub para push.** Commits listos localmente.
+
+### Resumen de cambios (13/5/2026):
+- 3 commits: `6bc749c` (5 bug fixes), `585292f` (register-payment), docs session
+- Archivos modificados: GamePlayer.tsx, Muro.tsx, Emergencia.tsx, useWallInteractions.ts, admin-action/index.ts
+- Build ✅ | 275 tests ✅ | 0 lint errors
+- **Pendiente push:** Pablo proveer token GitHub
 
 ## SESIÓN 12/5/2026 — Log (sesión 2)
 
