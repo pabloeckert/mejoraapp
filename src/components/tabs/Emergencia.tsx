@@ -67,9 +67,11 @@ export default function Emergencia() {
           );
           setWeeklyUsed(thisWeek.length);
         }
+        if (!cancelled) setLoadingHistory(false);
       })
-      .then(() => {}, () => {})
-      .then(() => { if (!cancelled) setLoadingHistory(false); });
+      .catch(() => {
+        if (!cancelled) setLoadingHistory(false);
+      });
     return () => { cancelled = true; };
   }, [user, sending]);
 

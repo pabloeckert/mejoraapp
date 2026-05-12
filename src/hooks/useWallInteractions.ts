@@ -54,17 +54,24 @@ export function useWallInteractions(userId: string | undefined) {
 
   const toggleExpand = useCallback(
     async (postId: string) => {
+      let shouldLoad = false;
+
       setExpandedPosts((prev) => {
         const next = new Set(prev);
-        if (next.has(postId)) {
+        const wasExpanded = next.has(postId);
+        if (wasExpanded) {
           next.delete(postId);
         } else {
           next.add(postId);
+          // If it wasn't expanded and we don't have comments yet, load them
+          if (!commentsMap[postId]) {
+            shouldLoad = true;
+          }
         }
         return next;
       });
 
-      if (!expandedPosts.has(postId) && !commentsMap[postId]) {
+      if (shouldLoad) {
         setLoadingComments((prev) => new Set(prev).add(postId));
         const { data } = await supabase
           .from("wall_comments")
@@ -80,7 +87,7 @@ export function useWallInteractions(userId: string | undefined) {
         });
       }
     },
-    [expandedPosts, commentsMap]
+    [commentsMap]
   );
 
   const toggleLike = useCallback(

@@ -90,7 +90,11 @@ const Muro = () => {
     staleTime: 30_000,
   });
 
-  // Realtime subscription
+  // Keep refs for values used in realtime callbacks to avoid re-subscribing
+  const expandedPostsRef = useRef(expandedPosts);
+  useEffect(() => { expandedPostsRef.current = expandedPosts; }, [expandedPosts]);
+
+  // Realtime subscription — only re-subscribe when user changes
   useEffect(() => {
     const channelName = `wall_realtime_${user?.id ?? "anon"}`;
     const existing = supabase.getChannels().find((c) => c.topic === channelName);
@@ -115,7 +119,7 @@ const Muro = () => {
               description: comment.content.length > 60 ? comment.content.slice(0, 60) + "…" : comment.content,
             });
           }
-          if (expandedPosts.has(comment.post_id)) {
+          if (expandedPostsRef.current.has(comment.post_id)) {
             supabase
               .from("wall_comments")
               .select("id, post_id, content, created_at, user_id, status")

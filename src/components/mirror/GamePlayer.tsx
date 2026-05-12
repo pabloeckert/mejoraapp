@@ -43,11 +43,24 @@ export function GamePlayer({ test, onBack }: GamePlayerProps) {
   const [profileResult, setProfileResult] = useState<{ key: string; data: TestProfile } | null>(null);
   const [saving, setSaving] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval>>();
+  const handleTimeoutRef = useRef<() => void>(() => {});
 
   const questions = test.questions;
   const currentQuestion = questions[currentIdx];
   const progress = ((currentIdx + 1) / questions.length) * 100;
   const isLast = currentIdx >= questions.length - 1;
+
+  // Keep handleTimeout ref current to avoid stale closures in timer
+  handleTimeoutRef.current = () => {
+    if (!answers[currentQuestion?.id]) {
+      setAnswers((prev) => ({ ...prev, [currentQuestion?.id]: 0 }));
+    }
+    if (isLast) {
+      finishGame();
+    } else {
+      setCurrentIdx((i) => i + 1);
+    }
+  };
 
   // Timer for "mental" game type
   useEffect(() => {
@@ -60,8 +73,7 @@ export function GamePlayer({ test, onBack }: GamePlayerProps) {
       setTimeLeft((prev) => {
         if (prev === null || prev <= 1) {
           clearInterval(timerRef.current);
-          // Auto-advance on timeout
-          handleTimeout();
+          handleTimeoutRef.current();
           return 0;
         }
         return prev - 1;
@@ -73,19 +85,6 @@ export function GamePlayer({ test, onBack }: GamePlayerProps) {
     };
   }, [step, currentIdx, test.gameType]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleTimeout = useCallback(() => {
-    // If no answer selected, give score 0
-    if (!answers[currentQuestion?.id]) {
-      setAnswers((prev) => ({ ...prev, [currentQuestion?.id]: 0 }));
-    }
-    // Auto-advance
-    if (isLast) {
-      finishGame();
-    } else {
-      setCurrentIdx((i) => i + 1);
-    }
-  }, [currentQuestion, answers, isLast]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const startGame = useCallback(() => {
     setStep("playing");
     setCurrentIdx(0);
@@ -94,6 +93,15 @@ export function GamePlayer({ test, onBack }: GamePlayerProps) {
     setTotalTime(0);
   }, []);
 
+  const goNextRef = useRef<() => void>(() => {});
+  goNextRef.current = () => {
+    if (isLast) {
+      finishGame();
+    } else {
+      setCurrentIdx((i) => i + 1);
+    }
+  };
+
   const selectOption = useCallback(
     (questionId: number, score: number) => {
       setAnswers((prev) => ({ ...prev, [questionId]: score }));
@@ -101,16 +109,12 @@ export function GamePlayer({ test, onBack }: GamePlayerProps) {
       // For mental game, auto-advance after selection
       if (test.gameType === "mental") {
         setTimeout(() => {
-          if (isLast) {
-            finishGame();
-          } else {
-            setCurrentIdx((i) => i + 1);
-          }
+          goNextRef.current();
         }, 300);
       }
     },
-    [test.gameType, isLast]
-  ); // eslint-disable-line react-hooks/exhaustive-deps
+    [test.gameType]
+  );
 
   const finishGame = useCallback(async () => {
     if (timerRef.current) clearInterval(timerRef.current);
