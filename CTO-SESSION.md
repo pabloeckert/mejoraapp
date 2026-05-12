@@ -409,7 +409,9 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
 **05:45** — **Fase 3: Auditoría de edge cases.** Se verifican: plans.ts (all_free mode correcto), useFeatureAccess, useMembers, useChallenges, useRanking, CommunityRanking, security.ts, Providers, Supabase client, middleware Edge Functions.
 **05:46** — Todo sólido. No se encontraron más bugs.
 **05:47** — **Fase 4: Documentación.** Se actualiza CTO-SESSION.md con log de sesión.
-**05:48** — **Pendiente: Pablo necesita proveer token GitHub para push.** Commits listos localmente.
+**05:48** — CTO configura git credential store para push automático en futuras sesiones.
+**05:50** — Push completado. 3 commits en GitHub (`6bc749c`, `585292f`, `b92339f`).
+**05:52** — Pablo dice "continuemos". CTO retoma desde CTO-SESSION.md. Tarea #12: testear flujo completo.
 
 ### Resumen de cambios (13/5/2026):
 - 3 commits: `6bc749c` (5 bug fixes), `585292f` (register-payment), docs session

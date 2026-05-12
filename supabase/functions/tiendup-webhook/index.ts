@@ -16,6 +16,10 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const WEBHOOK_SECRET = Deno.env.get("TIENDUP_WEBHOOK_SECRET") ?? "";
 
+// Product ID → Access Level mapping (configurable via env)
+const PRODUCT_N1_ID = Deno.env.get("TIENDUP_PRODUCT_N1_ID") ?? "";
+const PRODUCT_N2_ID = Deno.env.get("TIENDUP_PRODUCT_N2_ID") ?? "";
+
 const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
 // ── Signature verification ──────────────────────────────────────
@@ -65,6 +69,21 @@ interface TiendupEvent {
   };
 }
 
+/** Determine access level from product_id. Falls back to product_name heuristic. */
+function resolveAccessLevel(event: TiendupEvent): string {
+  const pid = event.data.product_id ?? "";
+
+  // Exact match by configured product IDs
+  if (PRODUCT_N2_ID && pid === PRODUCT_N2_ID) return "N2";
+  if (PRODUCT_N1_ID && pid === PRODUCT_N1_ID) return "N1";
+
+  // Fallback: heuristic by product name
+  const name = (event.data.product_name ?? "").toLowerCase();
+  if (name.includes("premium") || name.includes("n2")) return "N2";
+
+  return "N1"; // default
+}
+
 async function findUserByEmail(email: string): Promise<string | null> {
   // Search in auth.users via admin API
   const res = await fetch(`${SUPABASE_URL}/auth/v1/admin/users?email=${encodeURIComponent(email)}`, {
@@ -103,6 +122,17 @@ async function updateAccessLevel(userId: string, level: string) {
     return false;
   }
   return true;
+}
+
+async function setMembershipExpiry(userId: string, expiresAt: string) {
+  const { error } = await supabase
+    .from("profiles")
+    .update({ membership_expires_at: expiresAt })
+    .eq("user_id", userId);
+
+  if (error) {
+    logError("tiendup-webhook", `Failed to set membership_expires_at for ${userId}: ${error.message}`);
+  }
 }
 
 async function registerPayment(
@@ -149,14 +179,14 @@ async function handleSaleCompleted(event: TiendupEvent) {
     return;
   }
 
-  // Determine level from product
-  const productName = (event.data.product_name ?? "").toLowerCase();
-  let targetLevel = "N1";
-  if (productName.includes("premium") || productName.includes("n2")) {
-    targetLevel = "N2";
-  }
+  const targetLevel = resolveAccessLevel(event);
+
+  // Set membership expiry (1 month from now for one-time purchases)
+  const expiresAt = new Date();
+  expiresAt.setMonth(expiresAt.getMonth() + 1);
 
   await updateAccessLevel(userId, targetLevel);
+  await setMembershipExpiry(userId, expiresAt.toISOString());
   await registerPayment(
     userId,
     event.data.amount ?? 0,
@@ -167,7 +197,7 @@ async function handleSaleCompleted(event: TiendupEvent) {
     `Tiendup sale: ${event.data.product_name ?? "unknown"}`
   );
 
-  logInfo("tiendup-webhook", `sale.completed: ${email} → ${targetLevel}`);
+  logInfo("tiendup-webhook", `sale.completed: ${email} → ${targetLevel}, expires ${expiresAt.toISOString()}`);
 }
 
 async function handleSubscriptionActivated(event: TiendupEvent) {
@@ -180,12 +210,7 @@ async function handleSubscriptionActivated(event: TiendupEvent) {
     return;
   }
 
-  const productName = (event.data.product_name ?? "").toLowerCase();
-  let targetLevel = "N1";
-  if (productName.includes("premium") || productName.includes("n2")) {
-    targetLevel = "N2";
-  }
-
+  const targetLevel = resolveAccessLevel(event);
   await updateAccessLevel(userId, targetLevel);
   logInfo("tiendup-webhook", `subscription.activated: ${email} → ${targetLevel}`);
 }

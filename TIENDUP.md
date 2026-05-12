@@ -48,6 +48,18 @@ Plataforma de venta online argentina. Permite vender:
 - API Key en header de cada request
 - La key se genera desde el panel de Tiendup
 
+### Variables de entorno necesarias
+
+**En Supabase Edge Functions (Secrets):**
+- `TIENDUP_API_KEY` — API key de Tiendup
+- `TIENDUP_WEBHOOK_SECRET` — Secreto para verificar firma HMAC del webhook
+- `TIENDUP_PRODUCT_N1_ID` — Product ID del plan N1 (para determinar nivel en webhook)
+- `TIENDUP_PRODUCT_N2_ID` — Product ID del plan N2 (para determinar nivel en webhook)
+
+**En Vercel (Environment Variables):**
+- `VITE_TIENDUP_PRODUCT_N1` — Product ID del plan N1 (para checkout desde frontend)
+- `VITE_TIENDUP_PRODUCT_N2` — Product ID del plan N2 (para checkout desde frontend)
+
 ### Endpoints disponibles
 La documentación completa está en el panel de Tiendup (acceso con la API key).
 Lo que necesitamos:
