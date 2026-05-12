@@ -1,5 +1,5 @@
 # CTO SESSION — Estado Actual
-## Última actualización: 13 de mayo 2026, 05:56 GMT+8
+## Última actualización: 13 de mayo 2026, 07:16 GMT+8
 
 ---
 
@@ -18,14 +18,14 @@
 
 - **GitHub:** https://github.com/pabloeckert/MejoraApp
 - **Producción (Vercel):** https://mejoraapp.vercel.app — **ACTIVO**
-- **Producción (custom):** https://app.mejoraok.com → pendiente migrar DNS después de beta2
+- **Producción (custom):** https://app.mejoraok.com — ⚠️ EN PROGRESO (DNS configurado, pendiente verificación SSL)
 - **Preview (GH Pages):** https://pabloeckert.github.io/MejoraApp/ — Deploy alternativo para borradores
 - **Vercel:** https://vercel.com/pablo-ecks-projects/mejoraapp
   - Proyecto: `mejoraapp` (Vite, Node 22)
   - Git conectado a `pabloeckert/MejoraApp` (main)
   - Environment Variables: ✅ Cargadas (VITE_SUPABASE_URL, VITE_SUPABASE_PROJECT_ID, VITE_SUPABASE_PUBLISHABLE_KEY)
-  - **Dominio custom `app.mejoraok.com`:** ❌ Pendiente — se configura después de beta2
-  - **Último deploy:** 12/5/2026 — commit `e82b03b` — fixes producción (.finally(), CSP, JSON-LD)
+  - **Dominio custom `app.mejoraok.com`:** ⚠️ EN PROGRESO — CNAME configurado en Cloudflare, pendiente verificación SSL en Vercel
+  - **Último deploy:** 13/5/2026 — commit `fe0d1e8` — docs limpieza sesión
   - **URL activa:** https://mejoraapp.vercel.app — ✅ Funcionando
   - Fix build Vercel: commits `40bc2cf` + `fae7af3` (alias `@` + `.vercelignore`)
   - Fix bugs: commit `d42d7b1` — BottomNav accent, FeatureGate API, i18n duplicados
@@ -349,16 +349,20 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
 - [x] Build ✅, 275 tests ✅, 0 lint errors
 
 ### Inmediato (Pablo — esta sesión):
-1. **Pablo: Testear la app** en https://mejoraapp.vercel.app — probar todos los flujos
-2. **Pablo: Reportar bugs** si encuentra algo roto
+1. **Pablo: Verificar `app.mejoraok.com`** — esperar 5-15 min y recargar. Si sigue 525, ir a Vercel → Settings → Domains → click "Verify" o "Refresh"
+2. **Pablo: Testear la app** en https://mejoraapp.vercel.app (o https://app.mejoraok.com cuando funcione) — probar todos los flujos
 3. **Pablo: Activar GitHub Pages** (opcional) — Repo → Settings → Pages → Source: "GitHub Actions"
 4. **Pablo: Configurar secrets en GitHub Actions** — Settings → Secrets → Actions:
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_PUBLISHABLE_KEY`
    - `VITE_SUPABASE_PROJECT_ID`
 
-### Después de beta2 (migración DNS):
-5. **Pablo: Configurar dominio** `app.mejoraok.com` en Cloudflare → CNAME `cname.vercel-dns.com`
+### Después de beta2 (migración DNS — EN PROGRESO):
+5. **Verificar `app.mejoraok.com`** — DNS CNAME configurado, SSL Full (Strict), pendiente verificación certificado Vercel
+6. **Si no funciona en 15 min:** ir a Vercel → Settings → Domains → "Verify" o "Refresh" para forzar detección
+7. **Si sigue sin funcionar:** posible problema con Cloudflare proxy + Vercel SSL. Opciones:
+   - Desactivar proxy de Cloudflare (nube gris) temporalmente para que Vercel genere el certificado
+   - O usar DNS-only (grey cloud) permanentemente (pierde CDN de Cloudflare pero funciona)
 
 ### Tiendup (Pablo):
 6. **Pablo: Crear Plan N1 y N2** en panel de Tiendup
@@ -382,7 +386,9 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
 - [x] Token GitHub configurado para push automático
 
 ### CTO (próxima sesión):
-11. ~~**Resolver 100 errores TypeScript**~~ — ✅ RESUELTO (commit `0485d2a`, 12/5/2026 05:43)
+11. **Verificar estado de `app.mejoraok.com`** — DNS + SSL + certificado Vercel
+12. **Si `app.mejoraok.com` funciona:** actualizar docs, marcar como producción activa
+13. **Si no funciona:** debuggear Cloudflare proxy + Vercel SSL, considerar DNS-only temporal
     - Se aplicó Opción B: parchear `types.ts`
     - `crm_seller_ranking` movido de Tables a Views
     - Agregadas tablas faltantes: `mentor_conversations`, `mentor_messages`, `community_challenges`, `challenge_participants`
@@ -393,6 +399,42 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
     - Webhook ahora usa `product_id` (env vars) para detectar nivel, con fallback a heurística
     - Se setea `membership_expires_at` (1 mes) para compras únicas
     - Env vars necesarias documentadas en TIENDUP.md
+
+## SESIÓN 13/5/2026 — Log (sesión 5)
+
+**06:32** — Pablo dice "continuemos". CTO clona repo, lee CTO-SESSION.md.
+**06:33** — Estado verificado: Fase 4 completa. Build ✅, 275 tests ✅. Repo limpio. Sin tareas técnicas pendientes.
+**06:39** — Pablo reporta error en https://mejoraapp.vercel.app — página no carga contenido (SPA en blanco).
+**06:40** — Pablo reporta error en https://app.mejoraok.com — **SSL 525 (Cloudflare)**.
+**06:41** — CTO diagnostica: son DOS problemas separados:
+  1. `app.mejoraok.com` → SSL 525 (Cloudflare no completa handshake SSL con Vercel)
+  2. `mejoraapp.vercel.app` → 404 (deploy posiblemente no propagado)
+**06:42** — **Fix 1 (SSL 525):** Cloudflare SSL/TLS mode debe ser "Full (Strict)" en vez de "Full".
+**06:43** — **Fix 2 (404):** Verificar deploy en Vercel — commit `fe0d1e8` con status "Ready".
+**06:53** — Pablo confirma deploy en Vercel: status Ready, commit `fe0d1e8`, domains `app.mejoraok.com` + `mejoraapp.vercel.app`.
+**06:54** — CTO verifica: `mejoraapp.vercel.app` → ✅ Funciona (splash screen visible). `app.mejoraok.com` → ❌ SSL 525.
+**06:57** — Pablo cambia SSL/TLS en Cloudflare de "Completo" a "Completo (Estricto)".
+**06:58** — CTO verifica: `app.mejoraok.com` → ❌ Sigue 525. Necesita tiempo de propagación.
+**07:03** — CTO revisa Vercel: `app.mejoraok.com` muestra **"Invalid Configuration"**. Diagnóstico: DNS apunta a IP de Hostinger (185.212.70.250) en vez de CNAME a Vercel.
+**07:04** — **Fix 3:** Cambiar registro DNS de `app` de tipo A (185.212.70.250) a CNAME → `cname.vercel-dns.com` en Cloudflare.
+**07:08** — Pablo cambia el registro DNS en Cloudflare: A → CNAME, Target → `cname.vercel-dns.com`, Proxy activado (naranja), TTL Auto.
+**07:09** — Vercel detecta el cambio: pasa de "Invalid Configuration" a **"Proxy Detected"** (informativo, no error).
+**07:10** — CTO verifica: `app.mejoraok.com` → ❌ Sigue 525. Propagación DNS + generación certificado SSL pendiente.
+**07:16** — Pablo pide documentar todo y dejar guardado en repo. CTO actualiza CTO-SESSION.md.
+
+### Resumen de cambios (sesión 5):
+- **Sin commits de código** — solo configuración de infraestructura
+- **Cloudflare:** SSL/TLS cambiado a Full (Strict)
+- **Cloudflare:** DNS `app` cambiado de A record (185.212.70.250) a CNAME → `cname.vercel-dns.com`
+- **Vercel:** Dominio `app.mejoraok.com` pasa de "Invalid Configuration" a "Proxy Detected"
+- **Pendiente:** Verificar que el certificado SSL de Vercel se genere y `app.mejoraok.com` funcione
+
+### Estado actual de `app.mejoraok.com`:
+- DNS: ✅ CNAME configurado (Cloudflare → Vercel)
+- SSL/TLS mode: ✅ Full (Strict)
+- Vercel domain status: ⚠️ "Proxy Detected" (no es error, pero certificado SSL no verificado aún)
+- App: ❌ Error 525 (SSL handshake failure)
+- **Próximo paso:** Esperar propagación (5-15 min) o verificar en Vercel si hay botón "Verify" para forzar la detección
 
 ## SESIÓN 13/5/2026 — Log (sesión 4)
 
