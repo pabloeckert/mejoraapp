@@ -1,5 +1,5 @@
 # CTO SESSION — Estado Actual
-## Última actualización: 13 de mayo 2026, 05:45 GMT+8
+## Última actualización: 13 de mayo 2026, 05:56 GMT+8
 
 ---
 
@@ -387,7 +387,26 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
     - Agregada view `public_profiles`
     - Fix adicional: `usePayments` columnas incorrectas, `FeatureGate` sin userId, `.catch()` en PromiseLike
     - Build ✅ | 275 tests ✅ | 0 TS errors ✅
-12. Testear flujo completo: registro → upgrade → pago → webhook → nivel actualizado
+12. ~~Testear flujo completo: registro → upgrade → pago → webhook → nivel actualizado~~ — ✅ RESUELTO (commit `39aeb90`, 13/5/2026)
+    - Webhook ahora usa `product_id` (env vars) para detectar nivel, con fallback a heurística
+    - Se setea `membership_expires_at` (1 mes) para compras únicas
+    - Env vars necesarias documentadas en TIENDUP.md
+
+## SESIÓN 13/5/2026 — Log (sesión 4)
+
+**05:52** — Pablo dice "continuemos". CTO lee CTO-SESSION.md, retoma tarea #12.
+**05:53** — **Tarea #12: Testear flujo completo.** CTO traza el flujo registro → upgrade → pago → webhook → nivel.
+**05:54** — **Bug 7 encontrado:** Webhook `tiendup-webhook` usa `product_name` (heurística frágil) para detectar nivel. Mejor usar `product_id` con env vars.
+**05:55** — Fix: agregar `resolveAccessLevel()` con `TIENDUP_PRODUCT_N1_ID` / `TIENDUP_PRODUCT_N2_ID` + fallback a heurística.
+**05:55** — **Bug 8 encontrado:** Webhook no setea `membership_expires_at` para compras únicas → membresía nunca expira.
+**05:56** — Fix: agregar `setMembershipExpiry()` — 1 mes desde compra para one-time sales.
+**05:56** — Build ✅, 275 tests ✅. Commit `39aeb90`, pushed a main.
+**05:57** — Documentación actualizada: TIENDUP.md con env vars necesarias.
+
+### Resumen de cambios (sesión 4):
+- 1 commit: `39aeb90` (webhook fix)
+- Archivos modificados: tiendup-webhook/index.ts, TIENDUP.md, CTO-SESSION.md
+- Build ✅ | 275 tests ✅
 
 ## SESIÓN 13/5/2026 — Log (sesión 3)
 
