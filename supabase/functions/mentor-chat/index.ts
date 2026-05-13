@@ -7,6 +7,7 @@
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { withMiddleware } from "../_shared/middleware.ts";
+import { jsonHeaders } from "../_shared/cors.ts";
 import { logInfo, logWarn, logError } from "../_shared/log.ts";
 
 // ── AI Call Chain ───────────────────────────────────────────────
