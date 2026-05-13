@@ -1,0 +1,5 @@
+Host:     185.212.70.250
+Usuario:  u846064658.mejoraok.com
+Password: T@beg2301
+Puerto:   21
+Carpeta:  public_html
