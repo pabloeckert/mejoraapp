@@ -6,7 +6,7 @@
  * - CommunityRules → standalone component
  */
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import {
   MessageSquare,
@@ -128,8 +128,11 @@ const Muro = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryClient, user, toast, setCommentsMap]);
 
-  const allPosts = data?.pages.flat() ?? [];
-  const filteredPosts = filterType === "all" ? allPosts : allPosts.filter((p) => p.post_type === filterType);
+  const allPosts = useMemo(() => data?.pages.flat() ?? [], [data]);
+  const filteredPosts = useMemo(
+    () => filterType === "all" ? allPosts : allPosts.filter((p) => p.post_type === filterType),
+    [allPosts, filterType]
+  );
   useEffect(() => { postsDataRef.current = allPosts; }, [allPosts]);
 
   const handleReport = useCallback((postId: string, content: string) => {
