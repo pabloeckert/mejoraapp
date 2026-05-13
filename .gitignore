@@ -59,4 +59,5 @@ supabase/.temp/
 
 playwright-report/
 test-results/
+coverage/
 
