@@ -33,6 +33,9 @@ dist-ssr
 *.pem
 *.key
 dist.tar.gz
+Subida.txt
+*.json.bak
+client_secret_*.json
 
 # Build artifacts
 *.zip
