@@ -14,6 +14,7 @@ interface MentorMessageProps {
   modelUsed?: string;
   createdAt: string;
   isLast?: boolean;
+  isStreaming?: boolean;
 }
 
 export const MentorMessage = ({
@@ -22,6 +23,7 @@ export const MentorMessage = ({
   modelUsed,
   createdAt,
   isLast,
+  isStreaming = false,
 }: MentorMessageProps) => {
   const isUser = role === "user";
   const isAssistant = role === "assistant";
@@ -60,27 +62,34 @@ export const MentorMessage = ({
             : "bg-card border border-border rounded-tl-md shadow-card"
         )}
       >
-        <p className="whitespace-pre-wrap break-words">{content}</p>
+        <p className="whitespace-pre-wrap break-words">
+          {content}
+          {isStreaming && (
+            <span className="inline-block w-0.5 h-4 bg-primary ml-0.5 align-middle animate-[blink_0.8s_step-end_infinite]" />
+          )}
+        </p>
 
         {/* Footer: time + model */}
-        <div
-          className={cn(
-            "flex items-center gap-2 mt-1.5 text-caption",
-            isUser ? "text-white/60 justify-end" : "text-muted-foreground"
-          )}
-        >
-          <span>{time}</span>
-          {isAssistant && modelUsed && modelUsed !== "fallback" && (
-            <span
-              className={cn(
-                "px-1.5 py-0.5 rounded text-[10px] font-medium",
-                "bg-primary/10 text-primary"
-              )}
-            >
-              {modelUsed.split("/").pop()?.split(":")[0] || modelUsed}
-            </span>
-          )}
-        </div>
+        {!isStreaming && (
+          <div
+            className={cn(
+              "flex items-center gap-2 mt-1.5 text-caption",
+              isUser ? "text-white/60 justify-end" : "text-muted-foreground"
+            )}
+          >
+            <span>{time}</span>
+            {isAssistant && modelUsed && modelUsed !== "fallback" && (
+              <span
+                className={cn(
+                  "px-1.5 py-0.5 rounded text-[10px] font-medium",
+                  "bg-primary/10 text-primary"
+                )}
+              >
+                {modelUsed.split("/").pop()?.split(":")[0] || modelUsed}
+              </span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

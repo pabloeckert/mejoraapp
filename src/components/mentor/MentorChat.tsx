@@ -6,7 +6,7 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Send, Loader2 } from "lucide-react";
+import { Send, Loader2, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MentorMessage } from "./MentorMessage";
@@ -16,6 +16,7 @@ import { trackMentorMessageSent } from "@/lib/analytics";
 interface MentorChatProps {
   messages: MentorMessageType[];
   sending: boolean;
+  streamingContent: string;
   error: string | null;
   onSend: (content: string) => Promise<void>;
   onClearError: () => void;
@@ -24,6 +25,7 @@ interface MentorChatProps {
 export const MentorChat = ({
   messages,
   sending,
+  streamingContent,
   error,
   onSend,
   onClearError,
@@ -98,23 +100,36 @@ export const MentorChat = ({
             content={msg.content}
             modelUsed={msg.model_used}
             createdAt={msg.created_at}
-            isLast={i === messages.length - 1}
+            isLast={i === messages.length - 1 && !sending}
           />
         ))}
 
-        {/* Typing indicator */}
+        {/* Streaming or typing indicator */}
         {sending && (
           <div className="flex gap-2 animate-in fade-in duration-200">
             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <Loader2 className="w-4 h-4 text-primary animate-spin" />
+              {!streamingContent && <Loader2 className="w-4 h-4 text-primary animate-spin" />}
+              {streamingContent && (
+                <Bot className="w-4 h-4 text-primary" />
+              )}
             </div>
-            <div className="bg-card border border-border rounded-2xl rounded-tl-md px-4 py-3 shadow-card">
-              <div className="flex gap-1.5">
-                <span className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce [animation-delay:0ms]" />
-                <span className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce [animation-delay:150ms]" />
-                <span className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce [animation-delay:300ms]" />
+            {streamingContent ? (
+              <MentorMessage
+                role="assistant"
+                content={streamingContent}
+                createdAt={new Date().toISOString()}
+                isStreaming
+                isLast
+              />
+            ) : (
+              <div className="bg-card border border-border rounded-2xl rounded-tl-md px-4 py-3 shadow-card">
+                <div className="flex gap-1.5">
+                  <span className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce [animation-delay:0ms]" />
+                  <span className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce [animation-delay:150ms]" />
+                  <span className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce [animation-delay:300ms]" />
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 
