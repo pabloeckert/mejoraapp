@@ -48,15 +48,21 @@ export default function Emergencia() {
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
-    setLoadingHistory(true);
-    supabase
-      .from("emergencies")
-      .select("id, message, whatsapp_sent, sent_at, created_at")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(10)
-      .then(({ data }) => {
+
+    const fetchHistory = async () => {
+      setLoadingHistory(true);
+      try {
+        const { data, error } = await supabase
+          .from("emergencies")
+          .select("id, message, whatsapp_sent, sent_at, created_at")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(10);
+
         if (cancelled) return;
+
+        if (error) throw error;
+
         if (data) {
           setHistory(data as EmergencyRecord[]);
           // Count uses this week
@@ -67,11 +73,14 @@ export default function Emergencia() {
           );
           setWeeklyUsed(thisWeek.length);
         }
+      } catch (err) {
+        console.error("Error fetching emergency history:", err);
+      } finally {
         if (!cancelled) setLoadingHistory(false);
-      })
-      .catch(() => {
-        if (!cancelled) setLoadingHistory(false);
-      });
+      }
+    };
+
+    fetchHistory();
     return () => { cancelled = true; };
   }, [user, sending]);
 
