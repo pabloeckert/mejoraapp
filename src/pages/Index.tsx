@@ -20,6 +20,7 @@ import { trackPageView, trackTabSwitch } from "@/lib/analytics";
 import { useLastVisit } from "@/hooks/useLastVisit";
 import { useProfileComplete } from "@/hooks/useProfile";
 import { SEOHead, SEO_CONFIGS } from "@/components/SEOHead";
+import { FeatureBoundary } from "@/components/FeatureBoundary";
 
 const SPLASH_SEEN_KEY = "mc-splash-seen";
 
@@ -99,18 +100,18 @@ const Index = () => {
       <SEOHead {...SEO_CONFIGS.index} />
       <AppHeader />
       <main className="max-w-lg mx-auto px-4 py-4" role="main">
-        {activeTab === "home" && <HomeDashboard onNavigate={handleTabChange} />}
-        {activeTab === "contenido" && <ContenidoDeValor />}
-        {activeTab === "diagnostico" && <DiagnosticTest onComplete={() => setActiveTab("home")} />}
-        {activeTab === "mirror" && <MirrorPage />}
-        {activeTab === "emergencia" && <Emergencia />}
-        {activeTab === "eventos" && <Eventos />}
-        {activeTab === "circulo" && <CirculoDorado />}
-        {activeTab === "muro" && <Muro />}
-        {activeTab === "comunidad" && <Comunidad />}
-        {activeTab === "mentor" && <Mentor />}
-        {activeTab === "novedades" && <Novedades />}
-        {activeTab === "perfil" && <MiPerfil />}
+        {activeTab === "home" && <FeatureBoundary feature="Home"><HomeDashboard onNavigate={handleTabChange} /></FeatureBoundary>}
+        {activeTab === "contenido" && <FeatureBoundary feature="Contenido"><ContenidoDeValor /></FeatureBoundary>}
+        {activeTab === "diagnostico" && <FeatureBoundary feature="Diagnóstico"><DiagnosticTest onComplete={() => setActiveTab("home")} /></FeatureBoundary>}
+        {activeTab === "mirror" && <FeatureBoundary feature="Business Mirror"><MirrorPage /></FeatureBoundary>}
+        {activeTab === "emergencia" && <FeatureBoundary feature="Emergencia"><Emergencia /></FeatureBoundary>}
+        {activeTab === "eventos" && <FeatureBoundary feature="Eventos"><Eventos /></FeatureBoundary>}
+        {activeTab === "circulo" && <FeatureBoundary feature="Círculo Dorado"><CirculoDorado /></FeatureBoundary>}
+        {activeTab === "muro" && <FeatureBoundary feature="Muro"><Muro /></FeatureBoundary>}
+        {activeTab === "comunidad" && <FeatureBoundary feature="Comunidad"><Comunidad /></FeatureBoundary>}
+        {activeTab === "mentor" && <FeatureBoundary feature="Mentor IA"><Mentor /></FeatureBoundary>}
+        {activeTab === "novedades" && <FeatureBoundary feature="Novedades"><Novedades /></FeatureBoundary>}
+        {activeTab === "perfil" && <FeatureBoundary feature="Mi Perfil"><MiPerfil /></FeatureBoundary>}
       </main>
       <BottomNav activeTab={activeTab} onTabChange={handleTabChange} badges={badges} />
 

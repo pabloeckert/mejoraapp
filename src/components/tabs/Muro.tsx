@@ -6,7 +6,7 @@
  * - CommunityRules → standalone component
  */
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import {
   MessageSquare,
@@ -29,19 +29,7 @@ import { CommunityRules } from "@/components/CommunityRules";
 import { trackPublishPost } from "@/lib/analytics";
 import { ReportDialog } from "@/components/ReportDialog";
 import { PostCard, PostSkeleton, type WallPost, type PostType, POST_TYPE_CONFIG, MAX_LENGTH, POSTS_PER_PAGE } from "@/components/muro";
-
-const fetchWallPosts = async ({ pageParam }: { pageParam: number }) => {
-  const from = pageParam * POSTS_PER_PAGE;
-  const to = from + POSTS_PER_PAGE - 1;
-  const { data, error } = await supabase
-    .from("wall_posts")
-    .select("id, content, likes_count, comments_count, created_at, user_id, status, post_type")
-    .eq("status", "approved")
-    .order("created_at", { ascending: false })
-    .range(from, to);
-  if (error) throw error;
-  return (data as WallPost[]) ?? [];
-};
+import { fetchWallPostsPage } from "@/services/wall.service";
 
 const Muro = () => {
   const { user } = useAuth();
@@ -81,7 +69,7 @@ const Muro = () => {
     isRefetching,
   } = useInfiniteQuery({
     queryKey: ["wall-posts"],
-    queryFn: fetchWallPosts,
+    queryFn: fetchWallPostsPage,
     initialPageParam: 0,
     getNextPageParam: (lastPage, pages) => {
       if (lastPage.length < POSTS_PER_PAGE) return undefined;
@@ -135,10 +123,16 @@ const Muro = () => {
       )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [queryClient, expandedPosts, user, toast, setCommentsMap]);
+  // expandedPosts excluded intentionally: we use expandedPostsRef.current inside the callback
+  // to avoid re-subscribing on every expand/collapse action
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryClient, user, toast, setCommentsMap]);
 
-  const allPosts = data?.pages.flat() ?? [];
-  const filteredPosts = filterType === "all" ? allPosts : allPosts.filter((p) => p.post_type === filterType);
+  const allPosts = useMemo(() => data?.pages.flat() ?? [], [data]);
+  const filteredPosts = useMemo(
+    () => filterType === "all" ? allPosts : allPosts.filter((p) => p.post_type === filterType),
+    [allPosts, filterType]
+  );
   useEffect(() => { postsDataRef.current = allPosts; }, [allPosts]);
 
   const handleReport = useCallback((postId: string, content: string) => {

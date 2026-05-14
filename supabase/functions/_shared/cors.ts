@@ -3,6 +3,7 @@
 
 const ALLOWED_ORIGINS = [
   "https://app.mejoraok.com",
+  "https://mejoraapp.vercel.app",
   "http://localhost:8080",
   "http://localhost:5173",
 ];

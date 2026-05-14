@@ -8,6 +8,8 @@
 import { supabase } from "@/integrations/supabase/client";
 
 // ── Types ──────────────────────────────────────────────────────
+export type PostType = "consulta" | "caso" | "convocatoria";
+
 export interface WallPost {
   id: string;
   content: string;
@@ -16,6 +18,7 @@ export interface WallPost {
   created_at: string;
   user_id: string;
   status: string;
+  post_type: PostType;
 }
 
 export interface WallComment {
@@ -44,12 +47,17 @@ export async function fetchWallPosts(page: number): Promise<WallPost[]> {
   const to = from + POSTS_PER_PAGE - 1;
   const { data, error } = await supabase
     .from("wall_posts")
-    .select("id, content, likes_count, comments_count, created_at, user_id, status")
+    .select("id, content, likes_count, comments_count, created_at, user_id, status, post_type")
     .eq("status", "approved")
     .order("created_at", { ascending: false })
     .range(from, to);
   if (error) throw error;
   return (data as WallPost[]) ?? [];
+}
+
+/** Adapter for React Query's useInfiniteQuery — wraps fetchWallPosts */
+export async function fetchWallPostsPage({ pageParam }: { pageParam: number }): Promise<WallPost[]> {
+  return fetchWallPosts(pageParam);
 }
 
 export async function publishPost(content: string): Promise<ModerationResult> {
