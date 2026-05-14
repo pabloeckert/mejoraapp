@@ -36,6 +36,7 @@ interface UseMentorChatReturn {
   messages: MentorMessage[];
   loading: boolean;
   sending: boolean;
+  streamingContent: string;
   error: string | null;
   conversationId: string | null;
   sendMessage: (content: string) => Promise<void>;
@@ -50,6 +51,7 @@ export function useMentorChat(options?: UseMentorChatOptions): UseMentorChatRetu
   const [messages, setMessages] = useState<MentorMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
+  const [streamingContent, setStreamingContent] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(
     options?.conversationId || null
@@ -87,6 +89,7 @@ export function useMentorChat(options?: UseMentorChatOptions): UseMentorChatRetu
       if (!content.trim() || sending) return;
 
       setSending(true);
+      setStreamingContent("");
       setError(null);
 
       // Optimistic: add user message immediately
@@ -104,62 +107,105 @@ export function useMentorChat(options?: UseMentorChatOptions): UseMentorChatRetu
           data: { session },
         } = await supabase.auth.getSession();
 
-        if (!session) {
-          throw new Error("No hay sesión activa");
-        }
+        if (!session) throw new Error("No hay sesión activa");
 
         // Abort previous request if still pending
         if (abortRef.current) abortRef.current.abort();
         abortRef.current = new AbortController();
 
         const res = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/mentor-chat`,
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/mentor-chat-stream`,
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${session.access_token}`,
             },
-            body: JSON.stringify({
-              message: content.trim(),
-              conversationId,
-            }),
+            body: JSON.stringify({ message: content.trim(), conversationId }),
             signal: abortRef.current.signal,
           }
         );
 
-        if (!res.ok) {
+        if (!res.ok || !res.body) {
           const errData = await res.json().catch(() => ({}));
           throw new Error(errData.error || `Error ${res.status}`);
         }
 
-        const data = await res.json();
+        // Consume SSE stream
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let accumulated = "";
+        let finalConversationId = conversationId;
+        let finalModel = "unknown";
 
-        // Update conversation ID if new
-        if (!conversationId && data.conversationId) {
-          setConversationId(data.conversationId);
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() ?? "";
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed.startsWith("data: ")) continue;
+
+            try {
+              const payload = JSON.parse(trimmed.slice(6));
+
+              if (payload.error) throw new Error(payload.error);
+
+              if (payload.conversationId && !finalConversationId) {
+                finalConversationId = payload.conversationId;
+                setConversationId(payload.conversationId);
+              }
+
+              if (payload.chunk) {
+                accumulated += payload.chunk;
+                setStreamingContent(accumulated);
+              }
+
+              if (payload.done) {
+                finalConversationId = payload.conversationId ?? finalConversationId;
+                finalModel = payload.model ?? finalModel;
+                if (!conversationId && finalConversationId) {
+                  setConversationId(finalConversationId);
+                }
+              }
+            } catch (parseErr) {
+              if (parseErr instanceof Error && parseErr.message !== "Unexpected token") {
+                throw parseErr;
+              }
+            }
+          }
         }
 
-        // Replace optimistic message with real ones
+        // Flush: replace optimistic + streaming with final persisted messages
+        setStreamingContent("");
+        const convId = finalConversationId || conversationId || "";
         const assistantMsg: MentorMessage = {
           id: `assistant-${Date.now()}`,
-          conversation_id: data.conversationId || conversationId || "",
+          conversation_id: convId,
           role: "assistant",
-          content: data.response,
-          model_used: data.model,
+          content: accumulated,
+          model_used: finalModel,
           created_at: new Date().toISOString(),
         };
 
         setMessages((prev) => {
-          // Remove temp message, keep the rest, add assistant
           const withoutTemp = prev.filter((m) => m.id !== userMsg.id);
-          return [...withoutTemp, { ...userMsg, id: `user-${Date.now()}`, conversation_id: data.conversationId || conversationId || "" }, assistantMsg];
+          return [
+            ...withoutTemp,
+            { ...userMsg, id: `user-${Date.now()}`, conversation_id: convId },
+            assistantMsg,
+          ];
         });
       } catch (e: unknown) {
         if (e instanceof Error && e.name === "AbortError") return;
         const errorMsg = e instanceof Error ? e.message : "Error desconocido";
         setError(errorMsg);
-        // Remove optimistic message on error
+        setStreamingContent("");
         setMessages((prev) => prev.filter((m) => m.id !== userMsg.id));
         console.error("useMentor:sendMessage", e);
       } finally {
@@ -186,6 +232,7 @@ export function useMentorChat(options?: UseMentorChatOptions): UseMentorChatRetu
     messages,
     loading,
     sending,
+    streamingContent,
     error,
     conversationId,
     sendMessage,

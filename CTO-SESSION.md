@@ -342,7 +342,7 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
 
 ## PRÓXIMOS PASOS — Orden exacto
 
-### ✅ COMPLETADO (sesión 6 — 13/5/2026):
+### ✅ COMPLETADO (sesiones 6 + 7):
 - [x] Auditoría de 200+ archivos, 9 Edge Functions, 6 workflows
 - [x] Bug CRÍTICO: jsonHeaders no importado en mentor-chat (ReferenceError en runtime)
 - [x] Bug CRÍTICO: CORS no incluía mejoraapp.vercel.app (Mentor IA fallaba desde Vercel)
@@ -353,10 +353,18 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
 - [x] @vitest/coverage-v8 instalado — cobertura real medida (15-17% stmts, 68% branches)
 - [x] CI con npm audit + coverage/ en .gitignore
 - [x] useMemo para allPosts y filteredPosts en Muro.tsx
-- [x] Build ✅, 275 tests ✅, 3 commits pusheados
+- [x] Security: 22 archivos sensibles/binarios eliminados del tracking de git
+- [x] Mentor IA Streaming: Edge Function SSE + frontend streaming consumer + cursor parpadeante
+- [x] Build ✅, 275 tests ✅, feature branch pusheada
 
-### Inmediato (Pablo):
-1. **Pablo: Testear Mentor IA** en https://mejoraapp.vercel.app — debería funcionar ahora (CORS + jsonHeaders fijados)
+### 🚨 URGENTE — Pablo debe hacer ahora:
+1. **ROTAR FTP PASSWORD** — Hostinger host 185.212.70.250, user u846064658.mejoraok.com
+2. **ROTAR Google OAuth client secret** — Google Cloud Console → APIs → Credenciales → regenerar
+3. **MERGEAR rama** `claude/upload-project-files-cLVrL` → `main` via PR en GitHub
+4. **DEPLOYAR** Edge Function `mentor-chat-stream` en Supabase Dashboard → Edge Functions
+
+### Inmediato (Pablo, después de mergear):
+1. **Pablo: Testear Mentor IA streaming** en https://mejoraapp.vercel.app — respuesta aparece token a token
 2. **Pablo: Verificar `app.mejoraok.com`** — DNS CNAME configurado, pendiente verificación SSL en Vercel
 3. **Pablo: Activar GitHub Pages** (opcional) — Repo → Settings → Pages → Source: "GitHub Actions"
 
@@ -402,6 +410,67 @@ Los documentos de specs están en `/root/.openclaw/workspace/files/`:
     - Webhook ahora usa `product_id` (env vars) para detectar nivel, con fallback a heurística
     - Se setea `membership_expires_at` (1 mes) para compras únicas
     - Env vars necesarias documentadas en TIENDUP.md
+
+## SESIÓN 14/5/2026 — Log (sesión 7) — SECURITY CLEANUP + MENTOR IA STREAMING
+
+**Contexto:** Continuación de sesión 6. Pablo dice "continuemos". CTO retoma de donde quedó: commit de security cleanup pendiente, y tarea de streaming Mentor IA.
+
+**05:10** — CTO verifica estado git: local `main` tiene staged security cleanup (22 archivos sensibles eliminados + .gitignore actualizado). Push a main bloqueado (403 — rama protegida).
+
+**05:11** — CTO hace commit del security cleanup: `3ff9be6` — "security: remove credentials, binaries and doc artifacts from repo"
+- Eliminados: `Subida.txt` (FTP credentials), `client_secret_*.json` (Google OAuth), 18 .docx docs, build zip, pdf
+- .gitignore actualizado con reglas para estos tipos de archivos
+
+**05:12** — CTO cambia a rama `claude/upload-project-files-cLVrL`, merge de main, push exitoso.
+
+**05:13** — ⚠️ **ACCIÓN REQUERIDA PABLO:** Las credenciales están en el historial de git. Rotar:
+1. FTP Hostinger (Host: 185.212.70.250, usuario: u846064658.mejoraok.com) — cambiar password ahora
+2. Google OAuth client secret (Google Cloud Console → credenciales → regenerar)
+
+**05:15** — CTO arranca implementación de **Mentor IA Streaming (SSE)**.
+
+**05:16** — **Nueva Edge Function: `mentor-chat-stream`**
+- Streaming via Server-Sent Events (SSE): `data: {"chunk":"texto"}\n\n`
+- Cadena: Groq → Gemini → OpenRouter → fallback (mismo patrón que mentor-chat)
+- Groq primero (más rápido para streaming), Gemini segundo, OpenRouter fallback
+- Guarda mensaje en DB cuando el stream termina
+- Envía `data: {"done":true, "conversationId":"...", "model":"..."}` al finalizar
+
+**05:20** — **useMentor.ts actualizado:**
+- Nuevo estado `streamingContent: string` — texto acumulado del stream
+- `sendMessage` ahora llama a `mentor-chat-stream` con `ReadableStream`
+- Parsea SSE chunks en tiempo real, actualiza `streamingContent`
+- Al finalizar, reemplaza con mensaje final persistido
+
+**05:25** — **MentorMessage.tsx actualizado:**
+- Nueva prop `isStreaming?: boolean`
+- Cuando streaming: muestra cursor parpadeante (`animate-blink`)
+- Footer (hora + modelo) se oculta durante streaming
+
+**05:26** — **MentorChat.tsx actualizado:**
+- Recibe `streamingContent` prop
+- Durante streaming: muestra `MentorMessage` con `isStreaming=true` en lugar del typing indicator de puntitos
+- Antes del primer chunk: sigue mostrando typing indicator (puntitos de bouncing)
+
+**05:27** — **tailwind.config.ts:** keyframe `blink` agregado (`step-end` para efecto caret real)
+
+**05:28** — Build ✅ (14.6s), 275/275 tests ✅. TypeScript: solo 1 error pre-existente (`Emergencia.tsx` PromiseLike).
+
+### Resumen de cambios (sesión 7):
+- **Security:** commit `3ff9be6` — remove 22 sensitive/binary files from git tracking
+- **Feature:** `supabase/functions/mentor-chat-stream/index.ts` — nueva Edge Function SSE streaming
+- **Hook:** `src/hooks/useMentor.ts` — streaming consumer + `streamingContent` state
+- **Component:** `src/components/mentor/MentorMessage.tsx` — `isStreaming` prop + blink cursor
+- **Component:** `src/components/mentor/MentorChat.tsx` — wire streaming state
+- **Component:** `src/components/tabs/Mentor.tsx` — pass `streamingContent` prop
+- **Config:** `tailwind.config.ts` — `blink` keyframe animation
+- Build ✅ | 275 tests ✅
+
+### 🚨 PENDIENTE URGENTE (Pablo):
+1. **ROTAR FTP PASSWORD** (Hostinger, host 185.212.70.250) — credenciales públicas en git history
+2. **ROTAR Google OAuth client secret** (Google Cloud Console)
+3. **MERGEAR `claude/upload-project-files-cLVrL` → `main`** — todos los fixes van ahí. Hacerlo via PR en GitHub
+4. **Deployar `mentor-chat-stream`** en Supabase Dashboard (Edge Functions → Deploy)
 
 ## SESIÓN 13/5/2026 — Log (sesión 6) — ANÁLISIS COMPLETO + FASES CTO
 

@@ -29,6 +29,7 @@ const Mentor = () => {
     messages,
     loading,
     sending,
+    streamingContent,
     error,
     conversationId,
     sendMessage,
@@ -142,6 +143,7 @@ const Mentor = () => {
           <MentorChat
             messages={messages}
             sending={sending}
+            streamingContent={streamingContent}
             error={error}
             onSend={sendMessage}
             onClearError={clearError}
