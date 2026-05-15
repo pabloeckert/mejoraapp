@@ -5,7 +5,8 @@
  * Los componentes solo renderizan; la lógica vive aquí.
  */
 
-import { supabase } from "@/integrations/supabase/client";
+import { supabase as defaultSupabase } from "@/integrations/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { BANCO_PREGUNTAS, shuffle, detectarPerfil, PERFILES } from "@/data/diagnosticData";
 import type { DiagnosticQuestion } from "@/data/diagnosticData";
 
@@ -97,9 +98,10 @@ export function generateWhatsAppLink(perfilData: { tagline: string }, waNumber: 
 // ── Database Operations ────────────────────────────────────────
 export async function fetchDiagnosticHistory(
   userId: string,
-  limit: number = 3
+  limit: number = 3,
+  supabaseClient: SupabaseClient = defaultSupabase
 ): Promise<DiagnosticHistoryEntry[]> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from("diagnostic_results")
     .select("id, perfil, puntaje_total, created_at")
     .eq("user_id", userId)
@@ -113,9 +115,10 @@ export async function saveDiagnosticResult(
   userId: string,
   perfil: string,
   puntajeTotal: number,
-  answers: Record<number, number>
+  answers: Record<number, number>,
+  supabaseClient: SupabaseClient = defaultSupabase
 ): Promise<void> {
-  const { error } = await supabase.from("diagnostic_results").insert({
+  const { error } = await supabaseClient.from("diagnostic_results").insert({
     user_id: userId,
     perfil,
     puntaje_total: puntajeTotal,
@@ -124,14 +127,14 @@ export async function saveDiagnosticResult(
   if (error) throw error;
 
   // Mark profile as having completed diagnostic
-  await supabase
+  await supabaseClient
     .from("profiles")
     .update({ has_completed_diagnostic: true })
     .eq("user_id", userId);
 }
 
-export function sendFollowUpEmail(userId: string, perfil: string, puntaje: number): void {
-  supabase.functions
+export function sendFollowUpEmail(userId: string, perfil: string, puntaje: number, supabaseClient: SupabaseClient = defaultSupabase): void {
+  supabaseClient.functions
     .invoke("send-diagnostic-email", {
       body: { user_id: userId, perfil, puntaje },
     })

@@ -5,7 +5,8 @@
  * Los componentes solo renderizan; la lógica vive aquí.
  */
 
-import { supabase } from "@/integrations/supabase/client";
+import { supabase as defaultSupabase } from "@/integrations/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 // ── Types ──────────────────────────────────────────────────────
 export interface ContentPost {
@@ -31,8 +32,8 @@ export interface ContentCategory {
 }
 
 // ── Fetch Operations ───────────────────────────────────────────
-export async function fetchContentPosts(category?: string): Promise<ContentPost[]> {
-  let query = supabase
+export async function fetchContentPosts(category?: string, supabaseClient: SupabaseClient = defaultSupabase): Promise<ContentPost[]> {
+  let query = supabaseClient
     .from("content_posts")
     .select("*, content_categories(nombre)")
     .eq("estado", "publicado")
@@ -43,8 +44,8 @@ export async function fetchContentPosts(category?: string): Promise<ContentPost[
   return (data as unknown as ContentPost[]) ?? [];
 }
 
-export async function searchContentPosts(query: string): Promise<ContentPost[]> {
-  const { data, error } = await supabase
+export async function searchContentPosts(query: string, supabaseClient: SupabaseClient = defaultSupabase): Promise<ContentPost[]> {
+  const { data, error } = await supabaseClient
     .from("content_posts")
     .select("*, content_categories(nombre)")
     .eq("estado", "publicado")
@@ -54,8 +55,8 @@ export async function searchContentPosts(query: string): Promise<ContentPost[]> 
   return (data as unknown as ContentPost[]) ?? [];
 }
 
-export async function fetchContentCategories(): Promise<ContentCategory[]> {
-  const { data, error } = await supabase
+export async function fetchContentCategories(supabaseClient: SupabaseClient = defaultSupabase): Promise<ContentCategory[]> {
+  const { data, error } = await supabaseClient
     .from("content_categories")
     .select("*")
     .order("nombre");
@@ -65,7 +66,8 @@ export async function fetchContentCategories(): Promise<ContentCategory[]> {
 
 export async function fetchRecommendedContent(
   perfil: string,
-  limit: number = 3
+  limit: number = 3,
+  supabaseClient: SupabaseClient = defaultSupabase
 ): Promise<ContentPost[]> {
   // Rule-based recommendations by profile
   const categoryMap: Record<string, string[]> = {
@@ -77,7 +79,7 @@ export async function fetchRecommendedContent(
 
   const categories = categoryMap[perfil] ?? [];
 
-  let query = supabase
+  let query = supabaseClient
     .from("content_posts")
     .select("*, content_categories(nombre)")
     .eq("estado", "publicado")
@@ -91,7 +93,7 @@ export async function fetchRecommendedContent(
   const { data, error } = await query;
   if (error) {
     // Fallback: return latest posts
-    const { data: fallback } = await supabase
+    const { data: fallback } = await supabaseClient
       .from("content_posts")
       .select("*, content_categories(nombre)")
       .eq("estado", "publicado")
