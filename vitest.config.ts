@@ -27,10 +27,10 @@ export default defineConfig({
       // Statements/functions bajos porque la mayoría de la UI no tiene unit tests.
       // Plan: subir 5% por sprint a medida que se agregan tests de integración.
       thresholds: {
-        statements: 15,
-        branches: 65,
-        functions: 18,
-        lines: 15,
+        statements: 25,
+        branches: 70,
+        functions: 25,
+        lines: 25,
       },
     },
   },
