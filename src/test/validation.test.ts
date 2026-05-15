@@ -145,10 +145,18 @@ describe("wallPostSchema", () => {
   });
 
   it("strips HTML tags", () => {
-    const result = wallPostSchema.safeParse({ content: "<b>texto</b>" });
+    const result = wallPostSchema.safeParse({ content: "<p>Hola</p> <b>mundo</b>" });
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.content).toBe("texto");
+      expect(result.data.content).toBe("Hola mundo");
+    }
+  });
+
+  it("strips dangerous tags and content", () => {
+    const result = wallPostSchema.safeParse({ content: "<script>alert('xss')</script>safe" });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.content).toBe("safe");
     }
   });
 
@@ -189,7 +197,7 @@ describe("wallCommentSchema", () => {
     const result = wallCommentSchema.safeParse({ content: "<script>alert('xss')</script>safe" });
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.content).toBe("alert('xss')safe");
+      expect(result.data.content).toBe("safe");
     }
   });
 });

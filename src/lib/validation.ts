@@ -11,6 +11,7 @@
  */
 
 import { z } from "zod";
+import DOMPurify from "dompurify";
 
 // ── Auth Schemas ────────────────────────────────────────────────
 export const loginSchema = z.object({
@@ -111,7 +112,7 @@ export const wallPostSchema = z.object({
     .string()
     .min(1, "El contenido no puede estar vacío")
     .max(500, "Máximo 500 caracteres")
-    .transform((s) => s.replace(/<[^>]*>/g, "").trim()), // Strip HTML
+    .transform((s) => DOMPurify.sanitize(s, { ALLOWED_TAGS: [] }).trim()), // Robust Sanitization
 });
 
 export const wallCommentSchema = z.object({
@@ -119,7 +120,7 @@ export const wallCommentSchema = z.object({
     .string()
     .min(1, "El comentario no puede estar vacío")
     .max(300, "Máximo 300 caracteres")
-    .transform((s) => s.replace(/<[^>]*>/g, "").trim()), // Strip HTML
+    .transform((s) => DOMPurify.sanitize(s, { ALLOWED_TAGS: [] }).trim()), // Robust Sanitization
 });
 
 export const contentPostSchema = z.object({
