@@ -6,6 +6,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { Button } from "@/components/ui/button";
 import NotificationToggle from "@/components/NotificationToggle";
 import UserProfile from "@/components/UserProfile";
+import { MembershipBadge } from "@/components/MembershipBadge";
 import { trackProfileViewed } from "@/lib/analytics";
 import logoComunidad from "@/assets/logo-comunidad.png";
 
@@ -42,6 +43,7 @@ const AppHeader = () => {
       <div className="flex items-center justify-between px-4 h-14 max-w-lg mx-auto">
         <img src={logoComunidad} alt="Mejora Continua - Comunidad de Negocios" className="h-8 object-contain" />
         <div className="flex items-center gap-1">
+          <MembershipBadge onClick={() => setShowProfile(true)} />
           {showAdminReturn && (
             <Button
               variant="ghost"

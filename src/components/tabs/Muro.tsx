@@ -24,8 +24,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useWallInteractions, type WallComment } from "@/hooks/useWallInteractions";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
+import { useMembership } from "@/hooks/useMembership";
 import { CommunityRanking } from "@/components/CommunityRanking";
 import { CommunityRules } from "@/components/CommunityRules";
+import { UpgradeModal } from "@/components/UpgradeModal";
 import { trackPublishPost } from "@/lib/analytics";
 import { ReportDialog } from "@/components/ReportDialog";
 import { PostCard, PostSkeleton, type WallPost, type PostType, POST_TYPE_CONFIG, MAX_LENGTH, POSTS_PER_PAGE } from "@/components/muro";
@@ -35,6 +37,8 @@ const Muro = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { isN0 } = useMembership();
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   const {
     likedPosts,
@@ -186,6 +190,68 @@ const Muro = () => {
     observer.observe(sentinel);
     return () => observer.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // Vista N0: primeros 5 posts con blur + CTA sticky
+  if (isN0) {
+    return (
+      <div className="relative space-y-4 animate-fade-in pb-20">
+        {/* Header */}
+        <div className="space-y-1">
+          <h1 className="text-xl font-bold text-foreground">Muro Anónimo</h1>
+          <p className="text-sm text-muted-foreground">
+            Consultás de líderes, sin nombres, sin ventas.
+          </p>
+        </div>
+
+        {/* Preview borrosa de posts */}
+        <div className="blur-md pointer-events-none select-none space-y-2" aria-hidden>
+          {isLoading
+            ? Array.from({ length: 5 }).map((_, i) => <PostSkeleton key={i} />)
+            : filteredPosts.slice(0, 5).map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  isLiked={false}
+                  isOwn={false}
+                  onLike={() => {}}
+                  onDelete={() => {}}
+                  confirmingDelete={false}
+                  onReport={() => {}}
+                  expanded={false}
+                  onToggle={() => {}}
+                  comments={[]}
+                  loadingComments={false}
+                  onComment={() => {}}
+                  commentText=""
+                  onCommentTextChange={() => {}}
+                  submittingComment={false}
+                  userId={undefined}
+                />
+              ))}
+        </div>
+
+        {/* CTA sticky bottom */}
+        <div
+          className="fixed bottom-16 left-0 right-0 px-4 py-3 z-30"
+          style={{ background: '#0D0D0D', borderTop: '1px solid #2A2A3A' }}
+        >
+          <button
+            onClick={() => setUpgradeOpen(true)}
+            className="w-full h-12 rounded-xl font-semibold text-white flex items-center justify-center gap-2 transition-opacity hover:opacity-90"
+            style={{ background: '#D9072D' }}
+          >
+            Publicá tu consulta → Ser Miembro
+          </button>
+        </div>
+
+        <UpgradeModal
+          targetLevel="n1"
+          isOpen={upgradeOpen}
+          onClose={() => setUpgradeOpen(false)}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 animate-fade-in touch-pan-y" {...handlers}>
@@ -405,6 +471,12 @@ const Muro = () => {
           postContent={reportTarget.content}
         />
       )}
+
+      <UpgradeModal
+        targetLevel="n1"
+        isOpen={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+      />
     </div>
   );
 };

@@ -78,6 +78,21 @@ export default {
           "diag-red": "hsl(var(--mc-diag-red))",
           "diag-yellow": "hsl(var(--mc-diag-yellow))",
         },
+        brand: {
+          black:  '#0D0D0D',
+          red:    '#D9072D',
+          navy:   '#020659',
+          blue:   '#1C4D8C',
+          yellow: '#F2BB16',
+        },
+        surface: {
+          DEFAULT: '#111118',
+          alt:     '#1A1A26',
+        },
+        'mc-border': {
+          DEFAULT: '#2A2A3A',
+          hover:   '#3A3A4A',
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

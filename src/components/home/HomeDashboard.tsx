@@ -1,126 +1,61 @@
 /**
  * HomeDashboard — P03: Home dashboard por nivel de membresía
  *
- * Muestra cards dinámicas según el access_level del usuario.
- * N0: Contenido limitado + upgrade prompts
- * N1: Contenido completo + features básicos
- * N2: Todo + Círculo Dorado + Business Mirror Gamer
- * ADMIN: Panel de administración
+ * Quick Actions dinámicos por nivel + Upgrade CTA.
  */
 
-import { useAccessLevel } from "@/hooks/useAccessLevel";
+import { useState } from "react";
+import { useMembership } from "@/hooks/useMembership";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { AccessGate } from "@/components/AccessGate";
+import { useProfile } from "@/hooks/useProfile";
+import { UpgradeModal } from "@/components/UpgradeModal";
 import {
   BookOpen,
   Users,
   MessageSquare,
   Calendar,
   Crown,
-  Gamepad2,
   AlertTriangle,
-  Settings,
   TrendingUp,
-  Sparkles,
+  ClipboardList,
+  ArrowUpRight,
 } from "lucide-react";
 
-interface DashboardCard {
+interface QuickAction {
   id: string;
-  title: string;
-  description: string;
   icon: typeof BookOpen;
-  color: string;
-  bgColor: string;
-  tab: string;
-  minLevel: "N0" | "N1" | "N2" | "ADMIN";
-  blur?: boolean;
+  label: string;
+  tab?: string;
+  upgrade?: 'n1' | 'n2';
 }
 
-const CARDS: DashboardCard[] = [
-  {
-    id: "muro",
-    title: "Muro",
-    description: "Compartí experiencias con la comunidad",
-    icon: MessageSquare,
-    color: "text-blue-600",
-    bgColor: "bg-blue-50 dark:bg-blue-950/30",
-    tab: "muro",
-    minLevel: "N0",
-  },
-  {
-    id: "contenido",
-    title: "Contenido de Valor",
-    description: "Artículos, videos y recursos curados",
-    icon: BookOpen,
-    color: "text-emerald-600",
-    bgColor: "bg-emerald-50 dark:bg-emerald-950/30",
-    tab: "contenido",
-    minLevel: "N0",
-  },
-  {
-    id: "comunidad",
-    title: "Comunidad",
-    description: "Conectá con otros empresarios",
-    icon: Users,
-    color: "text-violet-600",
-    bgColor: "bg-violet-50 dark:bg-violet-950/30",
-    tab: "comunidad",
-    minLevel: "N0",
-    blur: true,
-  },
-  {
-    id: "eventos",
-    title: "Eventos",
-    description: "Calendario de eventos y reuniones",
-    icon: Calendar,
-    color: "text-amber-600",
-    bgColor: "bg-amber-50 dark:bg-amber-950/30",
-    tab: "eventos",
-    minLevel: "N1",
-  },
-  {
-    id: "mirror",
-    title: "Business Mirror Gamer",
-    description: "Juegos que te hacen pensar y crecer",
-    icon: Gamepad2,
-    color: "text-pink-600",
-    bgColor: "bg-pink-50 dark:bg-pink-950/30",
-    tab: "mirror",
-    minLevel: "N1",
-  },
-  {
-    id: "mentor",
-    title: "Mentor IA",
-    description: "Tu asistente de negocios personal",
-    icon: Sparkles,
-    color: "text-cyan-600",
-    bgColor: "bg-cyan-50 dark:bg-cyan-950/30",
-    tab: "mentor",
-    minLevel: "N1",
-  },
-  {
-    id: "circulo",
-    title: "Círculo Dorado",
-    description: "Contenido VIP, Silla de la Verdad, Mesa de Alianzas",
-    icon: Crown,
-    color: "text-amber-500",
-    bgColor: "bg-amber-50 dark:bg-amber-950/30",
-    tab: "circulo",
-    minLevel: "N2",
-  },
-  {
-    id: "emergencia",
-    title: "Botón de Emergencia",
-    description: "WhatsApp pre-armado para situaciones urgentes",
-    icon: AlertTriangle,
-    color: "text-red-600",
-    bgColor: "bg-red-50 dark:bg-red-950/30",
-    tab: "emergencia",
-    minLevel: "N1",
-  },
+const ACTIONS_N0: QuickAction[] = [
+  { id: "diagnostico",  icon: ClipboardList, label: "Diagnóstico",       tab: "diagnostico" },
+  { id: "ver-comunidad",icon: Users,         label: "Ver comunidad →",   upgrade: "n1" },
+  { id: "contenido",    icon: BookOpen,      label: "Contenido",         tab: "contenido" },
+  { id: "subir-nivel",  icon: ArrowUpRight,  label: "Subir nivel →",     upgrade: "n1" },
 ];
+
+const ACTIONS_N1: QuickAction[] = [
+  { id: "muro",      icon: MessageSquare, label: "Nueva consulta", tab: "muro" },
+  { id: "eventos",   icon: Calendar,      label: "Eventos",        tab: "eventos" },
+  { id: "contenido", icon: BookOpen,      label: "Contenido",      tab: "contenido" },
+  { id: "comunidad", icon: Users,         label: "Directorio",     tab: "comunidad" },
+];
+
+const ACTIONS_N2: QuickAction[] = [
+  { id: "circulo",      icon: Crown,          label: "Círculo Dorado",  tab: "circulo" },
+  { id: "mesa",         icon: Users,          label: "Mesa Alianzas",   tab: "circulo" },
+  { id: "emergencia",   icon: AlertTriangle,  label: "Emergencia",      tab: "emergencia" },
+  { id: "diagnostico",  icon: ClipboardList,  label: "Diagnóstico",     tab: "diagnostico" },
+];
+
+const GREETING: Record<string, string> = {
+  n0:    "Conocé la comunidad. Tu próximo nivel está a un toque.",
+  n1:    "Tu comunidad activa. Seguí creciendo.",
+  n2:    "Círculo Dorado activo. Tu red te espera.",
+  admin: "Panel de administración.",
+};
 
 interface HomeDashboardProps {
   onNavigate: (tab: string) => void;
@@ -128,127 +63,126 @@ interface HomeDashboardProps {
 
 export function HomeDashboard({ onNavigate }: HomeDashboardProps) {
   const { user } = useAuth();
-  const { level, isAdmin, isLoading } = useAccessLevel(user?.id);
+  const { data: profile } = useProfile(user?.id);
+  const { level, isN2, isAdmin } = useMembership();
+  const [upgradeModal, setUpgradeModal] = useState<'n1' | 'n2' | null>(null);
 
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-2 gap-3">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Card key={i} className="animate-pulse">
-            <CardContent className="p-4 h-28" />
-          </Card>
-        ))}
-      </div>
-    );
-  }
+  const firstName = profile?.nombre ?? profile?.display_name?.split(" ")[0] ?? "";
 
-  const visibleCards = CARDS.filter((card) => {
-    if (card.minLevel === "ADMIN") return isAdmin;
-    if (card.minLevel === "N2") return level === "N2" || level === "ADMIN";
-    if (card.minLevel === "N1") return level !== "N0";
-    return true;
-  });
-
-  const lockedCards = CARDS.filter((card) => {
-    if (card.minLevel === "ADMIN") return !isAdmin;
-    if (card.minLevel === "N2") return level !== "N2" && level !== "ADMIN";
-    if (card.minLevel === "N1") return level === "N0";
-    return false;
-  });
+  const actions = isAdmin
+    ? ACTIONS_N1
+    : isN2
+    ? ACTIONS_N2
+    : level === "n1"
+    ? ACTIONS_N1
+    : ACTIONS_N0;
 
   return (
-    <div className="space-y-4">
-      {/* Saludo personalizado */}
-      <div className="space-y-1">
-        <h2 className="text-title font-semibold">
-          Hola{user?.user_metadata?.nombre ? `, ${user.user_metadata.nombre}` : ""} 👋
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          {level === "N0"
-            ? "Explorá la comunidad y descubrí todo lo que tenemos para vos"
-            : level === "N1"
-            ? "Disfrutá de los beneficios de tu membresía Básica"
-            : level === "N2"
-            ? "Accedé a todo el contenido premium y el Círculo Dorado"
-            : "Panel de administración"}
+    <div className="space-y-6">
+      {/* Saludo */}
+      <div className="px-0 pt-2">
+        <h1 className="font-serif text-2xl text-white">
+          Buenos días{firstName ? `, ${firstName}` : ""}.
+        </h1>
+        <p className="font-sans text-sm text-gray-400 mt-1">
+          {GREETING[level] ?? GREETING.n0}
         </p>
       </div>
 
-      {/* Cards de acceso */}
+      {/* Quick Actions */}
       <div className="grid grid-cols-2 gap-3">
-        {visibleCards.map((card) => {
-          const Icon = card.icon;
+        {actions.map((action) => {
+          const Icon = action.icon;
+          const isUpgrade = !!action.upgrade;
           return (
             <button
-              key={card.id}
-              onClick={() => onNavigate(card.tab)}
-              className="text-left"
+              key={action.id}
+              onClick={() => {
+                if (action.upgrade) setUpgradeModal(action.upgrade);
+                else if (action.tab) onNavigate(action.tab);
+              }}
+              className="flex flex-col gap-2 p-4 rounded-xl text-left transition-transform active:scale-95"
+              style={{
+                background: '#111118',
+                border: '1px solid #2A2A3A',
+                minHeight: 88,
+              }}
             >
-              <Card className="h-full hover:shadow-card-hover transition-shadow cursor-pointer">
-                <CardContent className="p-4 flex flex-col gap-2">
-                  <div className={`w-9 h-9 rounded-lg ${card.bgColor} flex items-center justify-center`}>
-                    <Icon className={`w-5 h-5 ${card.color}`} />
-                  </div>
-                  <div>
-                    <p className="text-body font-medium leading-tight">{card.title}</p>
-                    <p className="text-caption text-muted-foreground mt-0.5 line-clamp-2">
-                      {card.description}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+              <Icon
+                className="w-6 h-6"
+                style={{ color: isUpgrade ? '#F2BB16' : '#9CA3AF' }}
+              />
+              <span
+                className="text-sm font-medium"
+                style={{ color: isUpgrade ? '#F2BB16' : '#FFFFFF' }}
+              >
+                {action.label}
+              </span>
             </button>
           );
         })}
       </div>
 
-      {/* Upgrade prompt para N0 */}
-      {level === "N0" && lockedCards.length > 0 && (
-        <Card className="border-dashed border-2">
-          <CardContent className="p-5 text-center space-y-3">
-            <div className="w-10 h-10 rounded-full bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center mx-auto">
-              <TrendingUp className="w-5 h-5 text-amber-500" />
-            </div>
-            <div>
-              <p className="text-body font-medium">Desbloqueá más beneficios</p>
-              <p className="text-caption text-muted-foreground mt-1">
-                Con la membresía Básica accedés a eventos, Mentor IA, Business Mirror Gamer y más
-              </p>
-            </div>
-            <Button
-              size="sm"
-              onClick={async () => {
-                const productId = import.meta.env.VITE_TIENDUP_PRODUCT_N1;
-                if (productId) {
-                  try {
-                    const { openCheckout } = await import("@/services/tiendup.service");
-                    await openCheckout(productId);
-                    return;
-                  } catch { /* fallback */ }
-                }
-                const text = encodeURIComponent("Hola! Quiero info sobre membresías de Mejora Continua.");
-                window.open(`https://wa.me/?text=${text}`, "_blank");
-              }}
-            >
-              Ver membresías
-            </Button>
-          </CardContent>
-        </Card>
+      {/* Upgrade CTAs */}
+      {level === "n0" && (
+        <div
+          className="rounded-xl p-4 flex items-center justify-between"
+          style={{ border: '1px solid #1C4D8C', background: 'rgba(28,77,140,0.06)' }}
+        >
+          <div>
+            <p className="text-sm font-semibold text-white">Únite a la comunidad</p>
+            <p className="text-xs text-gray-400 mt-0.5">Accedé al muro, eventos y directorio</p>
+          </div>
+          <button
+            onClick={() => setUpgradeModal("n1")}
+            className="text-xs font-semibold px-3 py-2 rounded-lg transition-opacity hover:opacity-80"
+            style={{ background: '#1C4D8C', color: '#FFFFFF', minHeight: 44 }}
+          >
+            Ser Miembro
+          </button>
+        </div>
       )}
 
-      {/* Admin shortcut */}
+      {level === "n1" && (
+        <div
+          className="rounded-xl p-4 flex items-center justify-between"
+          style={{ border: '1px solid #F2BB16', background: 'rgba(242,187,22,0.06)' }}
+        >
+          <div>
+            <p className="text-sm font-semibold text-white">Accedé al Círculo Dorado</p>
+            <p className="text-xs text-gray-400 mt-0.5">La red privada de CEOs y Directores</p>
+          </div>
+          <button
+            onClick={() => setUpgradeModal("n2")}
+            className="text-xs font-semibold px-3 py-2 rounded-lg transition-opacity hover:opacity-80"
+            style={{ background: '#F2BB16', color: '#0D0D0D', minHeight: 44 }}
+          >
+            Ver Círculo
+          </button>
+        </div>
+      )}
+
       {isAdmin && (
-        <button onClick={() => onNavigate("admin")} className="w-full text-left">
-          <Card className="border-dashed hover:border-solid transition-all cursor-pointer">
-            <CardContent className="p-4 flex items-center gap-3">
-              <Settings className="w-5 h-5 text-muted-foreground" />
-              <div>
-                <p className="text-body font-medium">Panel de Administración</p>
-                <p className="text-caption text-muted-foreground">Gestionar usuarios, contenido y eventos</p>
-              </div>
-            </CardContent>
-          </Card>
+        <button
+          onClick={() => onNavigate("admin")}
+          className="w-full flex items-center gap-3 p-4 rounded-xl text-left transition-transform active:scale-95"
+          style={{ background: '#111118', border: '1px solid #2A2A3A' }}
+        >
+          <TrendingUp className="w-5 h-5 text-gray-400" />
+          <div>
+            <p className="text-sm font-medium text-white">Panel de Administración</p>
+            <p className="text-xs text-gray-400">Gestionar usuarios y contenido</p>
+          </div>
         </button>
+      )}
+
+      {/* UpgradeModal */}
+      {upgradeModal && (
+        <UpgradeModal
+          targetLevel={upgradeModal}
+          isOpen
+          onClose={() => setUpgradeModal(null)}
+        />
       )}
     </div>
   );

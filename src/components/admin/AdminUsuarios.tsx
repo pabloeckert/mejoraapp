@@ -21,6 +21,8 @@ import {
   Phone,
   ChevronDown,
   ChevronUp,
+  RefreshCw,
+  Crown,
 } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -86,6 +88,15 @@ const AdminUsuarios = () => {
   // Expanded row (mobile)
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  // Membership activation
+  const [activateTarget, setActivateTarget] = useState<ExtendedProfile | null>(null);
+  const [activateForm, setActivateForm] = useState({ level: "n1" as "n1" | "n2", days: 30, note: "" });
+  const [activating, setActivating] = useState(false);
+
+  // Tiendup sync
+  const [syncing, setSyncing] = useState(false);
+  const [lastSync, setLastSync] = useState<string | null>(null);
+
   const loadData = useCallback(async () => {
     setLoading(true);
     const [profs, diags] = await Promise.all([fetchProfiles(), fetchDiagnostics()]);
@@ -133,6 +144,50 @@ const AdminUsuarios = () => {
     setEditingId(null);
   };
 
+  // Activar membresía manual
+  const handleActivate = async () => {
+    if (!activateTarget || activating) return;
+    setActivating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("activate-membership-manual", {
+        body: {
+          user_id: activateTarget.id,
+          level: activateForm.level,
+          days: activateForm.days,
+          note: activateForm.note || undefined,
+        },
+      });
+      if (error) throw error;
+      toast({ title: `✓ Membresía ${activateForm.level.toUpperCase()} activada`, description: `Usuario: ${activateTarget.nombre || activateTarget.email}` });
+      setActivateTarget(null);
+      setActivateForm({ level: "n1", days: 30, note: "" });
+      loadData();
+      return data;
+    } catch (err: unknown) {
+      toast({ title: "Error", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
+    } finally {
+      setActivating(false);
+    }
+  };
+
+  // Sync Tiendup
+  const handleSyncTiendup = async () => {
+    if (syncing) return;
+    setSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("sync-tiendup");
+      if (error) throw error;
+      const { updated = 0, downgraded = 0 } = (data as Record<string, number>) ?? {};
+      setLastSync(new Date().toLocaleTimeString("es-AR"));
+      toast({ title: "Sync completado", description: `${updated} actualizada${updated !== 1 ? "s" : ""}, ${downgraded} bajada${downgraded !== 1 ? "s" : ""} de nivel.` });
+      loadData();
+    } catch (err: unknown) {
+      toast({ title: "Error de sync", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   // Filter
   const filtered = profiles.filter((p) => {
     if (!search.trim()) return true;
@@ -159,9 +214,23 @@ const AdminUsuarios = () => {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <h2 className="text-lg font-bold text-foreground">
-          Usuarios <span className="text-muted-foreground font-normal text-sm">({profiles.length})</span>
-        </h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-lg font-bold text-foreground">
+            Usuarios <span className="text-muted-foreground font-normal text-sm">({profiles.length})</span>
+          </h2>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 gap-1.5 text-xs"
+            onClick={handleSyncTiendup}
+            disabled={syncing}
+            title="Sincronizar membresías con Tiendup"
+          >
+            {syncing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+            Sync Tiendup
+            {lastSync && <span className="text-muted-foreground hidden sm:inline">· {lastSync}</span>}
+          </Button>
+        </div>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
@@ -185,7 +254,8 @@ const AdminUsuarios = () => {
               <th className="pb-2 pr-3 font-medium">Email</th>
               <th className="pb-2 pr-3 font-medium">Teléfono</th>
               <th className="pb-2 pr-3 font-medium">Diagnóstico</th>
-              <th className="pb-2 font-medium w-16"></th>
+              <th className="pb-2 pr-3 font-medium">Membresía</th>
+              <th className="pb-2 font-medium w-24"></th>
             </tr>
           </thead>
           <tbody>
@@ -305,10 +375,39 @@ const AdminUsuarios = () => {
                           <span className="text-muted-foreground">Sin diagnóstico</span>
                         )}
                       </td>
+                      <td className="py-2.5 pr-3">
+                        <div className="flex flex-col gap-0.5">
+                          <span className={`text-xs font-semibold uppercase ${
+                            (p as ExtendedProfile & { membership_level?: string }).membership_level === "n2"
+                              ? "text-amber-500"
+                              : (p as ExtendedProfile & { membership_level?: string }).membership_level === "n1"
+                              ? "text-blue-500"
+                              : "text-muted-foreground"
+                          }`}>
+                            {(p as ExtendedProfile & { membership_level?: string }).membership_level?.toUpperCase() ?? (p.access_level ?? "N0")}
+                          </span>
+                          {p.membership_expires_at && (
+                            <span className="text-[10px] text-muted-foreground">
+                              vence {new Date(p.membership_expires_at).toLocaleDateString("es-AR")}
+                            </span>
+                          )}
+                        </div>
+                      </td>
                       <td className="py-2.5">
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => requestEdit(p)}>
-                          <Pencil className="w-3.5 h-3.5" />
-                        </Button>
+                        <div className="flex gap-1">
+                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => requestEdit(p)} title="Editar perfil">
+                            <Pencil className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7 text-amber-500"
+                            onClick={() => setActivateTarget(p)}
+                            title="Activar membresía"
+                          >
+                            <Crown className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
                       </td>
                     </>
                   )}
@@ -493,6 +592,79 @@ const AdminUsuarios = () => {
       {filtered.length === 0 && (
         <div className="text-center py-8 text-sm text-muted-foreground">
           {search ? "No se encontraron usuarios con ese criterio." : "No hay usuarios registrados."}
+        </div>
+      )}
+
+      {/* Modal: Activar membresía */}
+      {activateTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
+          <Card className="w-full max-w-sm">
+            <CardContent className="p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-sm">Activar membresía</h3>
+                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setActivateTarget(null)}>
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                Usuario: <strong>{activateTarget.nombre || activateTarget.email || activateTarget.id}</strong>
+              </p>
+
+              <div>
+                <Label className="text-xs text-muted-foreground">Nivel</Label>
+                <div className="flex gap-2 mt-1">
+                  {(["n1", "n2"] as const).map((lvl) => (
+                    <button
+                      key={lvl}
+                      onClick={() => setActivateForm((f) => ({ ...f, level: lvl }))}
+                      className={`flex-1 h-9 rounded-lg text-xs font-semibold border transition-all ${
+                        activateForm.level === lvl
+                          ? lvl === "n2"
+                            ? "bg-amber-500/10 border-amber-500 text-amber-500"
+                            : "bg-blue-500/10 border-blue-500 text-blue-500"
+                          : "border-border text-muted-foreground"
+                      }`}
+                    >
+                      {lvl.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-xs text-muted-foreground">Días de acceso</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={365}
+                  value={activateForm.days}
+                  onChange={(e) => setActivateForm((f) => ({ ...f, days: parseInt(e.target.value) || 30 }))}
+                  className="h-8 text-xs mt-1"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs text-muted-foreground">Nota (opcional)</Label>
+                <Input
+                  value={activateForm.note}
+                  onChange={(e) => setActivateForm((f) => ({ ...f, note: e.target.value }))}
+                  placeholder="Motivo de activación..."
+                  className="h-8 text-xs mt-1"
+                />
+              </div>
+
+              <div className="flex gap-2 pt-1">
+                <Button size="sm" onClick={handleActivate} disabled={activating} className="flex-1">
+                  {activating ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <Crown className="w-3.5 h-3.5 mr-1" />}
+                  Activar
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setActivateTarget(null)}>
+                  Cancelar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
     </div>

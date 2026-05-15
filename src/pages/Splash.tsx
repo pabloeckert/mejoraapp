@@ -1,8 +1,8 @@
 /**
- * Splash — Pantalla de bienvenida (P01)
+ * Splash — P01: Pantalla de bienvenida
  *
- * Muestra branding de Mejora Continua en la primera visita.
- * Se muestra una vez, luego se marca como visto y navega a /auth.
+ * Fondo negro, animación de entrada por fases, CTA de registro e ingreso.
+ * Se muestra una vez por sesión; auto-navega si ya fue vista.
  */
 
 import { useEffect, useState, useCallback } from "react";
@@ -13,66 +13,79 @@ const SPLASH_SEEN_KEY = "mc-splash-seen";
 
 export default function Splash() {
   const navigate = useNavigate();
-  const [visible, setVisible] = useState(false);
-  const [exiting, setExiting] = useState(false);
+  const [phase, setPhase] = useState(0); // 0=hidden → 1=logo → 2=headline → 3=sub → 4=btns
 
-  const handleContinue = useCallback(() => {
-    setExiting(true);
+  const goToAuth = useCallback((replace = true) => {
     sessionStorage.setItem(SPLASH_SEEN_KEY, "true");
-    setTimeout(() => {
-      navigate("/auth", { replace: true });
-    }, 500);
+    navigate("/auth", { replace });
   }, [navigate]);
 
   useEffect(() => {
-    // Si ya vio el splash, ir directo a auth
     if (sessionStorage.getItem(SPLASH_SEEN_KEY)) {
       navigate("/auth", { replace: true });
       return;
     }
 
-    // Fade in
-    requestAnimationFrame(() => setVisible(true));
+    // Fases de animación escalonadas
+    const t1 = setTimeout(() => setPhase(1), 50);
+    const t2 = setTimeout(() => setPhase(2), 250);
+    const t3 = setTimeout(() => setPhase(3), 450);
+    const t4 = setTimeout(() => setPhase(4), 650);
 
-    // Auto-navegar después de 3 segundos
-    const timer = setTimeout(() => {
-      handleContinue();
-    }, 3000);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
+  }, [navigate]);
 
-    return () => clearTimeout(timer);
-  }, [navigate, handleContinue]);
+  const fade = (show: boolean, extra = "") =>
+    `transition-opacity duration-[400ms] ease-out ${show ? "opacity-100" : "opacity-0"} ${extra}`;
 
   return (
     <div
-      onClick={handleContinue}
-      className={`min-h-screen flex flex-col items-center justify-center bg-mc-dark-blue px-6 cursor-pointer transition-opacity duration-500 ${visible && !exiting ? "opacity-100" : "opacity-0"}`}
+      className="min-h-screen flex flex-col items-center justify-center px-6"
+      style={{ background: '#0D0D0D' }}
     >
       {/* Logo */}
-      <div className={`mb-8 transition-all duration-700 ease-out ${visible ? "translate-y-0 scale-100 opacity-100" : "translate-y-4 scale-90 opacity-0"}`}>
+      <div className={fade(phase >= 1)}>
         <img
           src={logoHorizontal}
           alt="Mejora Continua"
-          className="h-16 object-contain brightness-0 invert"
+          className="object-contain brightness-0 invert"
+          style={{ maxWidth: 180 }}
         />
       </div>
 
-      {/* Tagline */}
-      <p className={`text-white/80 text-lg font-light tracking-wide text-center transition-all duration-600 delay-300 ${visible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}>
-        Comunidad de Negocios
+      {/* Headline */}
+      <h1
+        className={`font-serif text-xl text-center mt-8 ${fade(phase >= 2)}`}
+        style={{ color: '#F2BB16' }}
+      >
+        La comunidad de líderes que hace crecer empresas
+      </h1>
+
+      {/* Sublínea */}
+      <p
+        className={`font-sans text-sm tracking-widest uppercase text-center mt-2 ${fade(phase >= 3)}`}
+        style={{ color: '#6B7280' }}
+      >
+        C-Level · Directivos · Fundadores · PyMEs
       </p>
 
-      {/* Divider */}
-      <div className={`w-16 h-0.5 bg-white/30 rounded-full my-6 transition-all duration-400 delay-500 ${visible ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"}`} />
-
-      {/* Subtitle */}
-      <p className={`text-white/50 text-sm text-center max-w-xs transition-all duration-600 delay-700 ${visible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}>
-        Conectá, crecé y transformá tu negocio junto a otros líderes
-      </p>
-
-      {/* Tap hint */}
-      <p className={`absolute bottom-12 text-white/30 text-xs transition-opacity duration-500 delay-[2000ms] ${visible ? "opacity-100" : "opacity-0"}`}>
-        Tocá para continuar
-      </p>
+      {/* Botones */}
+      <div className={`mt-12 flex flex-col gap-3 w-full max-w-xs ${fade(phase >= 4)}`}>
+        <button
+          onClick={() => goToAuth()}
+          className="w-full h-12 rounded-xl font-medium text-white flex items-center justify-center transition-opacity hover:opacity-90 active:scale-95"
+          style={{ background: '#D9072D' }}
+        >
+          Crear cuenta gratis
+        </button>
+        <button
+          onClick={() => goToAuth()}
+          className="w-full h-12 rounded-xl text-white flex items-center justify-center transition-opacity hover:opacity-90 active:scale-95"
+          style={{ border: '1px solid rgba(255,255,255,0.30)' }}
+        >
+          Iniciar sesión
+        </button>
+      </div>
     </div>
   );
 }

@@ -37,6 +37,8 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+          VITE_TIENDUP_N1_URL: ${{ secrets.VITE_TIENDUP_N1_URL }}
+          VITE_TIENDUP_N2_URL: ${{ secrets.VITE_TIENDUP_N2_URL }}
 
       - name: Verify build
         run: |
@@ -52,6 +54,12 @@ jobs:
           if [ "$BYTES" -gt 5242880 ]; then
             echo "::warning::Bundle size ($TOTAL) exceeds 5MB. Check for unintended large files."
           fi
+
+      - name: Deploy to Vercel
+        run: npx vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
       - name: Health check (post-deploy)
         if: success()

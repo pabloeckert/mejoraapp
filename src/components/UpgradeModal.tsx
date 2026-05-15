@@ -1,129 +1,113 @@
-/**
- * UpgradeModal — Modal overlay for premium upgrade prompts
- *
- * Shows when a user interacts with a premium-gated feature.
- * Displays feature details, benefits, and upgrade CTA.
- */
-
-import { Lock, Sparkles, X, Check, Crown } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import { trackUpgradeCTAClick } from "@/lib/analytics";
-import { PLAN_CONFIG, PREMIUM_FEATURES, FEATURE_LABELS, type FeatureId } from "@/lib/plans";
+import { X, Check } from 'lucide-react';
+import { MEMBERSHIP_CONFIG } from '@/lib/brand';
 
 interface UpgradeModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  /** The specific feature that triggered the modal */
-  featureId?: FeatureId;
-  /** Feature title to display */
-  title?: string;
-  /** Feature description to display */
-  description?: string;
+  targetLevel: 'n1' | 'n2';
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-const PREMIUM_BENEFITS = [
-  "Diagnósticos ilimitados con historial completo",
-  "Exportá tus resultados a PDF profesional",
-  "Recomendaciones personalizadas por IA",
-  "Contenido exclusivo y workshops",
-  "Directorio de la comunidad",
-  "Soporte prioritario",
-];
+const CHECKOUT_URLS: Record<'n1' | 'n2', string> = {
+  n1: import.meta.env.VITE_TIENDUP_N1_URL ?? '',
+  n2: import.meta.env.VITE_TIENDUP_N2_URL ?? '',
+};
 
-export function UpgradeModal({
-  open,
-  onOpenChange,
-  featureId,
-  title,
-  description,
-}: UpgradeModalProps) {
-  if (!open) return null;
+const SOCIAL_PROOF: Record<'n1' | 'n2', string> = {
+  n1: 'Más de 200 líderes ya hacen crecer sus empresas desde acá.',
+  n2: 'Una reunión del Círculo puede valer más que doce meses de membresía.',
+};
 
-  const featureTitle = title ?? (featureId ? FEATURE_LABELS[featureId]?.title : "Función Premium");
-  const featureDesc = description ?? (featureId ? FEATURE_LABELS[featureId]?.description : "");
+export function UpgradeModal({ targetLevel, isOpen, onClose }: UpgradeModalProps) {
+  if (!isOpen) return null;
 
-  const handleUpgradeClick = () => {
-    const feature = featureId ?? "general";
-    trackUpgradeCTAClick(feature, PLAN_CONFIG.id);
-    // TODO: redirect to pricing page when defined
-    // window.location.href = "/planes";
-    onOpenChange(false);
+  const config = MEMBERSHIP_CONFIG[targetLevel];
+  const borderColor = config.border;
+  const checkoutUrl = CHECKOUT_URLS[targetLevel];
+
+  const handlePay = () => {
+    if (checkoutUrl) window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.9)' }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={() => onOpenChange(false)}
-      />
-
-      {/* Modal */}
-      <Card className="relative w-full max-w-md mx-auto shadow-2xl border-0 overflow-hidden">
-        {/* Close button */}
+        className="relative w-full max-w-sm rounded-2xl p-6 flex flex-col gap-4"
+        style={{ background: '#111118', border: `1px solid ${borderColor}` }}
+      >
+        {/* Cerrar */}
         <button
-          onClick={() => onOpenChange(false)}
-          className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-background/80 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+          onClick={onClose}
+          className="absolute top-4 right-4 flex items-center justify-center text-gray-400 hover:text-white transition-colors"
           aria-label="Cerrar"
+          style={{ minHeight: 44, minWidth: 44 }}
         >
-          <X className="w-4 h-4" />
+          <X className="w-5 h-5" />
         </button>
 
-        {/* Header gradient */}
-        <div className="bg-gradient-to-br from-mc-dark-blue to-mc-dark-blue/80 px-6 pt-8 pb-6 text-center text-white">
-          <div className="mx-auto w-14 h-14 rounded-full bg-white/10 flex items-center justify-center mb-4">
-            <Crown className="w-7 h-7 text-amber-300" />
-          </div>
-          <h2 className="text-lg font-bold mb-1">Pasá a Premium</h2>
-          <p className="text-sm opacity-80">
-            Desbloqueá todo el potencial de MejoraApp
-          </p>
+        {/* Header */}
+        <div>
+          <h2 className="text-xl font-bold text-white">{config.label}</h2>
+          <p className="text-sm mt-1" style={{ color: borderColor }}>{config.tagline}</p>
         </div>
 
-        <CardContent className="p-6 space-y-5">
-          {/* Feature that triggered the modal */}
-          {featureId && (
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
-              <Lock className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
-              <div>
-                <p className="text-sm font-semibold text-foreground">{featureTitle}</p>
-                {featureDesc && (
-                  <p className="text-xs text-muted-foreground mt-0.5">{featureDesc}</p>
-                )}
-              </div>
-            </div>
+        {/* Benefits */}
+        <ul className="flex flex-col gap-2">
+          {config.benefits.map((benefit) => (
+            <li key={benefit} className="flex items-start gap-2 text-sm text-gray-300">
+              <Check className="w-4 h-4 mt-0.5 shrink-0" style={{ color: borderColor }} />
+              {benefit}
+            </li>
+          ))}
+        </ul>
+
+        {/* Precio */}
+        <div className="flex items-baseline gap-2">
+          {config.priceARS && (
+            <>
+              <span className="text-2xl font-bold text-white">
+                ARS {config.priceARS.toLocaleString('es-AR')}
+              </span>
+              {config.priceUSD && (
+                <span className="text-sm text-gray-400">· USD {config.priceUSD}</span>
+              )}
+              <span className="text-xs text-gray-500">/mes</span>
+            </>
           )}
+        </div>
 
-          {/* Benefits list */}
-          <div className="space-y-2.5">
-            <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
-              Con Premium tenés
-            </h3>
-            {PREMIUM_BENEFITS.map((benefit, i) => (
-              <div key={i} className="flex items-start gap-2.5">
-                <Check className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
-                <span className="text-sm text-foreground">{benefit}</span>
-              </div>
-            ))}
-          </div>
+        {/* Social proof */}
+        <p className="text-xs text-gray-400 italic">{SOCIAL_PROOF[targetLevel]}</p>
 
-          {/* CTA */}
-          <div className="space-y-2 pt-2">
-            <Button
-              onClick={handleUpgradeClick}
-              className="w-full bg-gradient-to-r from-mc-dark-blue to-mc-dark-blue/90 hover:from-mc-dark-blue/90 hover:to-mc-dark-blue text-white py-3 gap-2 font-bold"
-            >
-              <Sparkles className="w-4 h-4" />
-              Upgrade a Premium
-            </Button>
-            <p className="text-caption text-center text-muted-foreground">
-              Cancelá cuando quieras. Sin compromiso.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+        {/* CTA principal */}
+        <button
+          onClick={handlePay}
+          className="w-full h-12 rounded-xl font-semibold flex items-center justify-center gap-2 transition-opacity hover:opacity-90 active:scale-95"
+          style={{
+            background: borderColor,
+            color: targetLevel === 'n2' ? '#0D0D0D' : '#FFFFFF',
+          }}
+        >
+          Ir a pagar →
+        </button>
+
+        {/* Nota post-pago */}
+        <p className="text-xs text-center text-gray-500">
+          Después de pagar, volvé y tocá{' '}
+          <strong className="text-gray-400">"Verificar membresía"</strong> en tu perfil.
+        </p>
+
+        {/* Botón secundario */}
+        <button
+          onClick={onClose}
+          className="w-full h-11 rounded-xl text-sm text-gray-400 border border-gray-700 hover:border-gray-500 transition-colors"
+        >
+          Cerrar
+        </button>
+      </div>
     </div>
   );
 }
