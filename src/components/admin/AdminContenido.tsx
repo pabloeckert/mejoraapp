@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Plus, Sparkles, Loader2, Trash2, Eye, EyeOff, Settings2, Play, Image as ImageIcon, Download, BookOpen, FileText, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -69,7 +69,7 @@ const AdminContenido = () => {
   const [newCatName, setNewCatName] = useState("");
   const [newCatSlug, setNewCatSlug] = useState("");
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     const [catRes, postRes] = await Promise.all([
       supabase.from("content_categories").select("*").order("created_at"),
@@ -82,7 +82,7 @@ const AdminContenido = () => {
     if (catRes.data) setCategories(catRes.data);
     if (postRes.data) setPosts(postRes.data as Post[]);
     setLoading(false);
-  };
+  }, []);
 
   useEffect(() => { fetchData(); }, []);
 
@@ -99,7 +99,7 @@ const AdminContenido = () => {
         defaults.map((d) => adminAction("create-category", { category: d }))
       ).then(() => fetchData());
     }
-  }, [categories.length, loading]);
+  }, [categories.length, loading, adminAction, fetchData]);
 
   const resetForm = () => {
     setTitulo("");

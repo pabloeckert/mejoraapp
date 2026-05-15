@@ -125,7 +125,6 @@ const Muro = () => {
     return () => { supabase.removeChannel(channel); };
   // expandedPosts excluded intentionally: we use expandedPostsRef.current inside the callback
   // to avoid re-subscribing on every expand/collapse action
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryClient, user, toast, setCommentsMap]);
 
   const allPosts = useMemo(() => data?.pages.flat() ?? [], [data]);
