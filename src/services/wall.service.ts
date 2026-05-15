@@ -5,7 +5,8 @@
  * Los componentes solo renderizan; la lógica vive aquí.
  */
 
-import { supabase } from "@/integrations/supabase/client";
+import { supabase as defaultSupabase } from "@/integrations/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 // ── Types ──────────────────────────────────────────────────────
 export type PostType = "consulta" | "caso" | "convocatoria";
@@ -42,10 +43,10 @@ export const MAX_COMMENT_LENGTH = 300;
 export const POSTS_PER_PAGE = 20;
 
 // ── Post Operations ────────────────────────────────────────────
-export async function fetchWallPosts(page: number): Promise<WallPost[]> {
+export async function fetchWallPosts(page: number, supabaseClient: SupabaseClient = defaultSupabase): Promise<WallPost[]> {
   const from = page * POSTS_PER_PAGE;
   const to = from + POSTS_PER_PAGE - 1;
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from("wall_posts")
     .select("id, content, likes_count, comments_count, created_at, user_id, status, post_type")
     .eq("status", "approved")
@@ -60,16 +61,16 @@ export async function fetchWallPostsPage({ pageParam }: { pageParam: number }): 
   return fetchWallPosts(pageParam);
 }
 
-export async function publishPost(content: string): Promise<ModerationResult> {
-  const { data, error } = await supabase.functions.invoke("moderate-post", {
+export async function publishPost(content: string, supabaseClient: SupabaseClient = defaultSupabase): Promise<ModerationResult> {
+  const { data, error } = await supabaseClient.functions.invoke("moderate-post", {
     body: { content },
   });
   if (error) throw error;
   return data as ModerationResult;
 }
 
-export async function deletePost(postId: string, userId: string): Promise<void> {
-  const { error } = await supabase
+export async function deletePost(postId: string, userId: string, supabaseClient: SupabaseClient = defaultSupabase): Promise<void> {
+  const { error } = await supabaseClient
     .from("wall_posts")
     .delete()
     .eq("id", postId)
@@ -77,8 +78,8 @@ export async function deletePost(postId: string, userId: string): Promise<void> 
   if (error) throw error;
 }
 
-export function sendNewPostPushNotification(excludeUserId: string): void {
-  supabase.functions
+export function sendNewPostPushNotification(excludeUserId: string, supabaseClient: SupabaseClient = defaultSupabase): void {
+  supabaseClient.functions
     .invoke("send-push-notification", {
       body: { action: "new_post", exclude_user_id: excludeUserId },
     })
@@ -86,8 +87,8 @@ export function sendNewPostPushNotification(excludeUserId: string): void {
 }
 
 // ── Comment Operations ─────────────────────────────────────────
-export async function fetchComments(postId: string): Promise<WallComment[]> {
-  const { data, error } = await supabase
+export async function fetchComments(postId: string, supabaseClient: SupabaseClient = defaultSupabase): Promise<WallComment[]> {
+  const { data, error } = await supabaseClient
     .from("wall_comments")
     .select("id, post_id, content, created_at, user_id, status")
     .eq("post_id", postId)
@@ -97,8 +98,8 @@ export async function fetchComments(postId: string): Promise<WallComment[]> {
   return (data as WallComment[]) ?? [];
 }
 
-export async function publishComment(postId: string, content: string): Promise<ModerationResult> {
-  const { data, error } = await supabase.functions.invoke("moderate-comment", {
+export async function publishComment(postId: string, content: string, supabaseClient: SupabaseClient = defaultSupabase): Promise<ModerationResult> {
+  const { data, error } = await supabaseClient.functions.invoke("moderate-comment", {
     body: { post_id: postId, content },
   });
   if (error) throw error;
@@ -106,11 +107,8 @@ export async function publishComment(postId: string, content: string): Promise<M
 }
 
 // ── Like Operations ────────────────────────────────────────────
-export async function toggleLike(
-  postId: string,
-  userId: string
-): Promise<"liked" | "unliked"> {
-  const { data: existing } = await supabase
+export async function toggleLike(postId: string, userId: string, supabaseClient: SupabaseClient = defaultSupabase): Promise<"liked" | "unliked"> {
+  const { data: existing } = await supabaseClient
     .from("wall_likes")
     .select("id")
     .eq("post_id", postId)
@@ -118,27 +116,23 @@ export async function toggleLike(
     .maybeSingle();
 
   if (existing) {
-    await supabase.from("wall_likes").delete().eq("id", existing.id);
+    await supabaseClient.from("wall_likes").delete().eq("id", existing.id);
     return "unliked";
   } else {
-    await supabase.from("wall_likes").insert({ post_id: postId, user_id: userId });
+    await supabaseClient.from("wall_likes").insert({ post_id: postId, user_id: userId });
     return "liked";
   }
 }
 
 // ── Realtime ───────────────────────────────────────────────────
-export function createWallChannel(
-  userId: string | undefined,
-  onNewPost: () => void,
-  onNewComment: (comment: WallComment) => void
-) {
+export function createWallChannel(userId: string | undefined, onNewPost: () => void, onNewComment: (comment: WallComment) => void, supabaseClient: SupabaseClient = defaultSupabase) {
   const channelName = `wall_realtime_${userId ?? "anon"}`;
 
   // Remove stale channel
-  const existing = supabase.getChannels().find((c) => c.topic === channelName);
-  if (existing) supabase.removeChannel(existing);
+  const existing = supabaseClient.getChannels().find((c) => c.topic === channelName);
+  if (existing) supabaseClient.removeChannel(existing);
 
-  const channel = supabase
+  const channel = supabaseClient
     .channel(channelName)
     .on(
       "postgres_changes",
@@ -152,17 +146,13 @@ export function createWallChannel(
     )
     .subscribe();
 
-  return () => supabase.removeChannel(channel);
+  return () => supabaseClient.removeChannel(channel);
 }
 
 // ── Report ─────────────────────────────────────────────────────
-export async function reportPost(
-  postId: string,
-  reason: string,
-  userId: string
-): Promise<void> {
+export async function reportPost(postId: string, reason: string, userId: string, supabaseClient: SupabaseClient = defaultSupabase): Promise<void> {
   // Uses admin-action with moderate-post action to flag for review
-  const { error } = await supabase.functions.invoke("admin-action", {
+  const { error } = await supabaseClient.functions.invoke("admin-action", {
     body: { action: "moderate-post", postId, status: "flagged" },
   });
   if (error) throw error;
