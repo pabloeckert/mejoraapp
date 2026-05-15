@@ -4,7 +4,8 @@
  * Centraliza: fetch de tests, guardado de resultados, historial.
  */
 
-import { supabase } from "@/integrations/supabase/client";
+import { supabase as defaultSupabase } from "@/integrations/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   ALL_TESTS,
   getTestBySlug,
@@ -46,8 +47,8 @@ export interface MirrorResult {
 // ── Fetch Tests ────────────────────────────────────────────────
 
 /** Obtener tests disponibles desde Supabase */
-export async function fetchAvailableTests(): Promise<MirrorTestSummary[]> {
-  const { data, error } = await supabase
+export async function fetchAvailableTests(supabaseClient: SupabaseClient = defaultSupabase): Promise<MirrorTestSummary[]> {
+  const { data, error } = await supabaseClient
     .from("business_mirror_tests")
     .select("*")
     .eq("is_active", true)
@@ -58,13 +59,13 @@ export async function fetchAvailableTests(): Promise<MirrorTestSummary[]> {
 }
 
 /** Obtener un test por slug (con questions completas) */
-export async function fetchTestBySlug(slug: string): Promise<TestDefinition | null> {
+export async function fetchTestBySlug(slug: string, supabaseClient: SupabaseClient = defaultSupabase): Promise<TestDefinition | null> {
   // Primero intentamos desde los datos locales (más rápido, offline-first)
   const localTest = getTestBySlug(slug);
   if (localTest) return localTest;
 
   // Fallback a Supabase si no está en local
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from("business_mirror_tests")
     .select("*")
     .eq("slug", slug)
@@ -101,9 +102,10 @@ export async function saveMirrorResult(
   profile: string,
   profileData: TestProfile,
   score: number,
-  timeSpentSeconds: number
+  timeSpentSeconds: number,
+  supabaseClient: SupabaseClient = defaultSupabase
 ): Promise<void> {
-  const { error } = await supabase.from("business_mirror_results").insert({
+  const { error } = await supabaseClient.from("business_mirror_results").insert({
     user_id: userId,
     test_id: testId,
     answers,
@@ -121,9 +123,10 @@ export async function saveMirrorResult(
 /** Obtener historial de resultados de un usuario */
 export async function fetchMirrorResults(
   userId: string,
-  limit: number = 10
+  limit: number = 10,
+  supabaseClient: SupabaseClient = defaultSupabase
 ): Promise<MirrorResult[]> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from("business_mirror_results")
     .select("*")
     .eq("user_id", userId)
@@ -137,10 +140,11 @@ export async function fetchMirrorResults(
 /** Obtener el último resultado de un test específico */
 export async function fetchLastResult(
   userId: string,
-  testSlug: string
+  testSlug: string,
+  supabaseClient: SupabaseClient = defaultSupabase
 ): Promise<MirrorResult | null> {
   // Primero necesitamos el test_id
-  const { data: testData } = await supabase
+  const { data: testData } = await supabaseClient
     .from("business_mirror_tests")
     .select("id")
     .eq("slug", testSlug)
@@ -148,7 +152,7 @@ export async function fetchLastResult(
 
   if (!testData) return null;
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from("business_mirror_results")
     .select("*")
     .eq("user_id", userId)
@@ -181,10 +185,10 @@ export function getProfileForTest(
 // ── Seed Data (for admin) ──────────────────────────────────────
 
 /** Inserta los 5 tests en Supabase. Solo para admin/setup. */
-export async function seedTests(): Promise<void> {
+export async function seedTests(supabaseClient: SupabaseClient = defaultSupabase): Promise<void> {
   for (let i = 0; i < ALL_TESTS.length; i++) {
     const test = ALL_TESTS[i];
-    const { error } = await supabase.from("business_mirror_tests").upsert(
+    const { error } = await supabaseClient.from("business_mirror_tests").upsert(
       {
         slug: test.slug,
         title: test.title,
